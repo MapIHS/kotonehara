@@ -31,7 +31,7 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 	isOwner := false
 
 	for _, own := range p.Owners {
-		if strings.Contains(own, senderNonAD) {
+		if strings.EqualFold(own, senderNonAD) {
 			isOwner = true
 			break
 		}
