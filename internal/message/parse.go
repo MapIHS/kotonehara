@@ -114,7 +114,7 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 		QuotedMsg: quotedInfo,
 		ID: &waE2E.ContextInfo{
 			StanzaID:      &mess.Info.ID,
-			Participant:   proto.String(mess.Info.Sender.ToNonAD().String()),
+			Participant:   proto.String(mess.Info.Sender.String()),
 			QuotedMessage: mess.Message,
 		},
 
