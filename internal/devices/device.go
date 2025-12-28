@@ -22,6 +22,7 @@ func New(c *sqlstore.Container) *Devices {
 		container: c,
 		log:       waLog.Stdout("devices", "INFO", true),
 		timeout:   10 * time.Second,
+		ctx:       context.Background(),
 	}
 }
 
@@ -48,17 +49,21 @@ func (d *Devices) NewClient(dev *store.Device) *whatsmeow.Client {
 }
 
 func (d *Devices) registerEventHandler(client *whatsmeow.Client) func(evt interface{}) {
+	c := clients.New(client)
+	m := message.NewParser(c, nil)
+
+	sem := make(chan struct{}, 20)
+
 	return func(evt interface{}) {
-		c := clients.New(client)
-		m := message.NewParser(c, nil)
-		ctx := context.Background()
 		switch v := evt.(type) {
 		case *events.Message:
-			parse := m.Parse(ctx, v)
-			d.log.Infof("msg received: from=%v id=%v timestamp=%v",
-				v.Info.Sender, v.Info.ID, v.Info.Timestamp)
-			fmt.Println(v.Message)
-			go commands.CommandExec(ctx, c, parse)
+			parse := m.Parse(d.ctx, v)
+
+			sem <- struct{}{}
+			go func() {
+				defer func() { <-sem }()
+				commands.CommandExec(d.ctx, c, parse)
+			}()
 
 		case *events.Connected:
 			d.log.Infof("connected")

@@ -1,13 +1,20 @@
 package clients
 
-import "go.mau.fi/whatsmeow"
+import (
+	"time"
+
+	"go.mau.fi/whatsmeow"
+)
 
 type Client struct {
 	WA *whatsmeow.Client
+
+	admins *adminCache
 }
 
 func New(c *whatsmeow.Client) *Client {
 	return &Client{
-		WA: c,
+		WA:     c,
+		admins: newAdminCache(45 * time.Second),
 	}
 }
