@@ -36,7 +36,7 @@ fedora
 dnf install -y libwebp-tools
 ```
 
-### How to run
+## How to run
 
 ### linux
 ```bash
