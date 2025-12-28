@@ -8,30 +8,35 @@ import (
 	"go.mau.fi/whatsmeow"
 	waE2E "go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types/events"
+	waLog "go.mau.fi/whatsmeow/util/log"
 	"google.golang.org/protobuf/proto"
 )
 
 type Parser struct {
 	Client WAClient
 	Owners []string
+	log    waLog.Logger
 }
 
 func NewParser(c WAClient, owners []string) *Parser {
 	if len(owners) == 0 {
-		if o := strings.TrimSpace(os.Getenv("Owner_Number")); o != "" {
+		if o := strings.TrimSpace(os.Getenv("OWNER")); o != "" {
 			owners = append(owners, o)
 		}
-		owners = append(owners, "161469647855806@lid")
 	}
-	return &Parser{Client: c, Owners: owners}
+	return &Parser{
+		Client: c,
+		Owners: owners,
+		log:    waLog.Stdout("parser", "INFO", true),
+	}
 }
 
 func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
-	senderNonAD := mess.Info.Sender.ToNonAD().String()
+	sender := mess.Info.Sender.String()
 	isOwner := false
 
 	for _, own := range p.Owners {
-		if strings.EqualFold(own, senderNonAD) {
+		if strings.EqualFold(own, sender) {
 			isOwner = true
 			break
 		}
@@ -124,55 +129,4 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 
 		Reply: replyFn,
 	}
-}
-
-func extractBody(mess *events.Message) string {
-	if s := mess.Message.GetExtendedTextMessage().GetText(); s != "" {
-		return s
-	}
-	if s := mess.Message.GetImageMessage().GetCaption(); s != "" {
-		return s
-	}
-	if s := mess.Message.GetVideoMessage().GetCaption(); s != "" {
-		return s
-	}
-	if s := mess.Message.GetConversation(); s != "" {
-		return s
-	}
-	return ""
-}
-
-func splitCommand(body string) (cmd, query string) {
-	body = strings.TrimSpace(body)
-	if body == "" {
-		return "", ""
-	}
-	parts := strings.Fields(body)
-	cmd = strings.ToLower(parts[0])
-	if len(parts) > 1 {
-		query = strings.Join(parts[1:], " ")
-	}
-	return cmd, query
-}
-
-func pickMedia(quoted *waE2E.Message, mess *events.Message) whatsmeow.DownloadableMessage {
-	if quoted != nil {
-		if msg := quoted.GetImageMessage(); msg != nil {
-			return msg
-		}
-		if msg := quoted.GetVideoMessage(); msg != nil {
-			return msg
-		}
-		if msg := quoted.GetStickerMessage(); msg != nil {
-			return msg
-		}
-	}
-
-	if msg := mess.Message.GetImageMessage(); msg != nil {
-		return msg
-	}
-	if msg := mess.Message.GetVideoMessage(); msg != nil {
-		return msg
-	}
-	return nil
 }

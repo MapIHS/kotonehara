@@ -7,15 +7,27 @@ import (
 )
 
 func (c *Client) GroupAdmins(ctx context.Context, j types.JID) ([]string, error) {
-	var admin []string
+	key := j.String()
+
+	// get cache
+	if admins, ok := c.admins.get(key); ok {
+		return admins, nil
+	}
+
 	info, err := c.WA.GetGroupInfo(ctx, j)
 	if err != nil {
-		return admin, err
+		return nil, err
 	}
+
+	admins := make([]string, 0, len(info.Participants))
 	for _, p := range info.Participants {
 		if p.IsAdmin || p.IsSuperAdmin {
-			admin = append(admin, p.JID.String())
+			admins = append(admins, p.JID.String())
 		}
 	}
-	return admin, nil
+
+	// set cache
+	c.admins.set(key, admins)
+
+	return admins, nil
 }

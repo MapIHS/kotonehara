@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"context"
 	"time"
 
 	"go.mau.fi/whatsmeow"
@@ -13,6 +14,7 @@ type Devices struct {
 	container *sqlstore.Container
 	log       waLog.Logger
 	timeout   time.Duration
+	ctx       context.Context
 }
 
 type Device struct {
