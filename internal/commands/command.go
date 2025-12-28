@@ -5,24 +5,26 @@ import (
 	"strings"
 
 	"github.com/MapIHS/kotonehara/internal/clients"
+	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"github.com/MapIHS/kotonehara/internal/message"
 )
 
-func CommandExec(ctx context.Context, c *clients.Client, m *message.Message) {
-	s := strings.TrimSpace(m.Command)
+func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg config.Config) {
+	s := strings.TrimSpace(m.Body)
 	if s == "" {
 		return
 	}
 
-	prefix := ""
-	switch s[0] {
-	case '.':
-		prefix = s[:1]
+	cfgPrefix := strings.TrimSpace(cfg.Prefix)
+	msgPrefix := ""
+
+	if cfgPrefix != "" && strings.HasPrefix(s, cfgPrefix) {
+		msgPrefix = cfgPrefix
 	}
 
 	name := s
-	if prefix != "" {
-		name = strings.TrimSpace(strings.TrimPrefix(name, prefix))
+	if msgPrefix != "" {
+		name = strings.TrimSpace(strings.TrimPrefix(name, msgPrefix))
 	}
 
 	parts := strings.Fields(name)
@@ -42,11 +44,10 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message) {
 		return
 	}
 
-	// prefix rules
-	if cmd.IsPrefix && prefix == "" {
+	if cmd.IsPrefix && msgPrefix == "" {
 		return
 	}
-	if !cmd.IsPrefix && prefix != "" {
+	if !cmd.IsPrefix && msgPrefix != "" {
 		return
 	}
 
@@ -85,5 +86,5 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message) {
 		_, _ = m.Reply(ctx, "Tunggu sebentar, yaa.")
 	}
 
-	cmd.Exec(ctx, c, m)
+	cmd.Exec(ctx, c, m, cfg)
 }

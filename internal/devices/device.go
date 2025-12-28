@@ -8,6 +8,7 @@ import (
 
 	"github.com/MapIHS/kotonehara/internal/clients"
 	"github.com/MapIHS/kotonehara/internal/commands"
+	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"github.com/MapIHS/kotonehara/internal/message"
 
 	"go.mau.fi/whatsmeow"
@@ -17,12 +18,13 @@ import (
 	waLog "go.mau.fi/whatsmeow/util/log"
 )
 
-func New(c *sqlstore.Container) *Devices {
+func New(c *sqlstore.Container, cfg config.Config, ctx context.Context) *Devices {
 	return &Devices{
 		container: c,
 		log:       waLog.Stdout("devices", "INFO", true),
 		timeout:   10 * time.Second,
-		ctx:       context.Background(),
+		ctx:       ctx,
+		cfg:       cfg,
 	}
 }
 
@@ -49,11 +51,9 @@ func (d *Devices) NewClient(dev *store.Device) *whatsmeow.Client {
 }
 
 func (d *Devices) registerEventHandler(client *whatsmeow.Client) func(evt interface{}) {
-	c := clients.New(client)
-	m := message.NewParser(c, nil)
-
+	c := clients.New(client, d.cfg)
+	m := message.NewParser(c, d.cfg)
 	sem := make(chan struct{}, 20)
-
 	return func(evt interface{}) {
 		switch v := evt.(type) {
 		case *events.Message:
@@ -61,8 +61,13 @@ func (d *Devices) registerEventHandler(client *whatsmeow.Client) func(evt interf
 
 			sem <- struct{}{}
 			go func() {
-				defer func() { <-sem }()
-				commands.CommandExec(d.ctx, c, parse)
+				defer func() {
+					if r := recover(); r != nil {
+						d.log.Errorf("command panic: %v", r)
+					}
+					<-sem
+				}()
+				commands.CommandExec(d.ctx, c, parse, d.cfg)
 			}()
 
 		case *events.Connected:

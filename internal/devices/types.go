@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/store/sqlstore"
@@ -15,6 +16,7 @@ type Devices struct {
 	log       waLog.Logger
 	timeout   time.Duration
 	ctx       context.Context
+	cfg       config.Config
 }
 
 type Device struct {
