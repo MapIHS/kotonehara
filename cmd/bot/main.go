@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/MapIHS/kotonehara/internal/devices"
+	"github.com/MapIHS/kotonehara/internal/infra/config"
 	dbInfra "github.com/MapIHS/kotonehara/internal/infra/db"
 	"github.com/subosito/gotenv"
 
@@ -26,10 +27,11 @@ func init() { _ = gotenv.Load() }
 
 func main() {
 	ctx := context.Background()
+	cfg := config.Load()
 
 	db, err := dbInfra.Connect(ctx, dbInfra.Config{
 		Driver:       "postgres",
-		URL:          os.Getenv("DATABASE_URL"),
+		URL:          cfg.DBURL,
 		MaxOpenConns: 20,
 		MaxIdleConns: 10,
 		ConnMaxIdle:  5 * time.Minute,
@@ -52,7 +54,7 @@ func main() {
 		log.Fatal("upgrade store: ", err)
 	}
 
-	d := devices.New(container)
+	d := devices.New(container, cfg, ctx)
 	dev, err := d.GetDefaultDevice(ctx)
 	if err != nil {
 		panic(err)

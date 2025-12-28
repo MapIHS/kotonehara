@@ -2,9 +2,9 @@ package message
 
 import (
 	"context"
-	"os"
 	"strings"
 
+	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"go.mau.fi/whatsmeow"
 	waE2E "go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types/events"
@@ -14,20 +14,15 @@ import (
 
 type Parser struct {
 	Client WAClient
-	Owners []string
 	log    waLog.Logger
+	cfg    config.Config
 }
 
-func NewParser(c WAClient, owners []string) *Parser {
-	if len(owners) == 0 {
-		if o := strings.TrimSpace(os.Getenv("OWNER")); o != "" {
-			owners = append(owners, o)
-		}
-	}
+func NewParser(c WAClient, cfg config.Config) *Parser {
 	return &Parser{
 		Client: c,
-		Owners: owners,
 		log:    waLog.Stdout("parser", "INFO", true),
+		cfg:    cfg,
 	}
 }
 
@@ -35,7 +30,7 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 	sender := mess.Info.Sender.String()
 	isOwner := false
 
-	for _, own := range p.Owners {
+	for _, own := range p.cfg.Owners {
 		if strings.EqualFold(own, sender) {
 			isOwner = true
 			break
@@ -96,7 +91,7 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 		From:        mess.Info.Chat,
 		Sender:      mess.Info.Sender,
 		PushName:    mess.Info.PushName,
-		OwnerNumber: p.Owners,
+		OwnerNumber: p.cfg.Owners,
 
 		IsOwner: isOwner,
 		IsBot:   mess.Info.IsFromMe,

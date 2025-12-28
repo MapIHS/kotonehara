@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/MapIHS/kotonehara/internal/clients"
+	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"github.com/MapIHS/kotonehara/internal/message"
 )
 
@@ -22,5 +23,5 @@ type Command struct {
 	ShowWait    bool
 	IsPrivate   bool
 	After       func(ctx context.Context, client *clients.Client, m *message.Message)
-	Exec        func(ctx context.Context, client *clients.Client, m *message.Message)
+	Exec        func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config)
 }
