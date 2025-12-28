@@ -36,8 +36,9 @@ fedora
 dnf install -y libwebp-tools
 ```
 
-## How to run
+### How to run
 
+### linux
 ```bash
 go mod download
 go run cmd/bot/main.go
@@ -50,7 +51,7 @@ go build -o hara cmd/bot/main.go
 ./hara
 ```
 
-## Run with docker or podman
+#### docker or podman
 
 ```bash
 podman build -t kotonehara:latest .
