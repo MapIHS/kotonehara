@@ -22,6 +22,9 @@ OWNER=*@lid
 PREFIX=.
 COOLDOWN=3s
 ADMIN_TTL=45s
+APIKEY=ayankhara # 1k limit
+BASEAPI_URL=https://api.ihsn.dev
+
 ```
 
 
