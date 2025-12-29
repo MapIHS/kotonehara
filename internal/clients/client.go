@@ -1,6 +1,9 @@
 package clients
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"go.mau.fi/whatsmeow"
 )
@@ -10,6 +13,7 @@ type Client struct {
 
 	admins *adminCache
 	cfg    config.Config
+	HTTP   *http.Client
 }
 
 func New(c *whatsmeow.Client, cfg config.Config) *Client {
@@ -17,5 +21,8 @@ func New(c *whatsmeow.Client, cfg config.Config) *Client {
 		WA:     c,
 		cfg:    cfg,
 		admins: newAdminCache(cfg.AdminTTL),
+		HTTP: &http.Client{
+			Timeout: 20 * time.Second,
+		},
 	}
 }

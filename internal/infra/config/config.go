@@ -8,12 +8,14 @@ import (
 )
 
 type Config struct {
-	AppEnv   string
-	Prefix   string
-	DBURL    string
-	Owners   []string
-	Cooldown time.Duration
-	AdminTTL time.Duration
+	AppEnv     string
+	Prefix     string
+	DBURL      string
+	Owners     []string
+	Cooldown   time.Duration
+	AdminTTL   time.Duration
+	APIKEY     string
+	BASEApiURL string
 }
 
 func Load() Config {
@@ -34,13 +36,19 @@ func Load() Config {
 	cd := parseDurationOrSeconds(os.Getenv("COOLDOWN"), 3*time.Second)
 	adminTTL := parseDurationOrSeconds(os.Getenv("ADMIN_TTL"), 45*time.Second)
 
+	apikey := strings.TrimSpace(os.Getenv("APIKEY"))
+
+	baseurl := strings.TrimSpace(os.Getenv("BASEAPI_URL"))
+
 	return Config{
-		AppEnv:   env,
-		Prefix:   prefix,
-		DBURL:    dbURL,
-		Owners:   owners,
-		Cooldown: cd,
-		AdminTTL: adminTTL,
+		AppEnv:     env,
+		Prefix:     prefix,
+		DBURL:      dbURL,
+		Owners:     owners,
+		Cooldown:   cd,
+		AdminTTL:   adminTTL,
+		APIKEY:     apikey,
+		BASEApiURL: baseurl,
 	}
 }
 
