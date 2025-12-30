@@ -38,7 +38,7 @@ func (c *Client) Facebook(ctx context.Context, targetURL string) (*facebookResul
 
 	req.Header.Set("Accept", "application/json")
 	if c.apikey != "" {
-		req.Header.Set("Authorization", "Bearer "+c.apikey)
+		req.Header.Set("X-API-Key", c.apikey)
 	}
 
 	resp, err := c.http.Do(req)

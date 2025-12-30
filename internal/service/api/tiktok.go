@@ -61,7 +61,7 @@ func (c *Client) Tiktok(ctx context.Context, targetURL string) (*tiktokResult, e
 
 	req.Header.Set("Accept", "application/json")
 	if c.apikey != "" {
-		req.Header.Set("Authorization", "Bearer "+c.apikey)
+		req.Header.Set("X-API-Key", c.apikey)
 	}
 
 	resp, err := c.http.Do(req)

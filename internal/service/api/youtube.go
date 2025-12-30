@@ -49,7 +49,7 @@ func (c *Client) YoutubeInfo(ctx context.Context, targetURL string) (*videoInfo,
 
 	req.Header.Set("Accept", "application/json")
 	if c.apikey != "" {
-		req.Header.Set("Authorization", "Bearer "+c.apikey)
+		req.Header.Set("X-API-Key", c.apikey)
 	}
 
 	resp, err := c.http.Do(req)
@@ -92,7 +92,7 @@ func (c *Client) YoutubeDownload(ctx context.Context, targetURL string, quality 
 
 	req.Header.Set("Accept", "application/json")
 	if c.apikey != "" {
-		req.Header.Set("Authorization", "Bearer "+c.apikey)
+		req.Header.Set("X-API-Key", c.apikey)
 	}
 
 	resp, err := c.http.Do(req)
@@ -102,7 +102,7 @@ func (c *Client) YoutubeDownload(ctx context.Context, targetURL string, quality 
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("tiktok api http %d", resp.StatusCode)
+		return nil, fmt.Errorf("youtube api http %d", resp.StatusCode)
 	}
 
 	data, err := io.ReadAll(resp.Body)
