@@ -16,6 +16,8 @@ type Config struct {
 	AdminTTL   time.Duration
 	APIKEY     string
 	BASEApiURL string
+	BASES3URL  string
+	MemeHost   string
 }
 
 func Load() Config {
@@ -40,6 +42,9 @@ func Load() Config {
 
 	baseurl := strings.TrimSpace(os.Getenv("BASEAPI_URL"))
 
+	bases3url := strings.TrimSpace(os.Getenv("BASES3_URL"))
+	memehost := strings.TrimSpace(os.Getenv("MEMEHOST_URL"))
+
 	return Config{
 		AppEnv:     env,
 		Prefix:     prefix,
@@ -49,6 +54,8 @@ func Load() Config {
 		AdminTTL:   adminTTL,
 		APIKEY:     apikey,
 		BASEApiURL: baseurl,
+		BASES3URL:  bases3url,
+		MemeHost:   memehost,
 	}
 }
 

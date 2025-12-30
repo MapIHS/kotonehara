@@ -24,6 +24,8 @@ COOLDOWN=3s
 ADMIN_TTL=45s
 APIKEY=ayankhara # 1k limit
 BASEAPI_URL=https://api.ihsn.dev
+BASES3_URL=https://s3.ihsn.dev
+MEMEHOST_URL=https://apimem.ihsn.dev # or api.memegen.link
 
 ```
 
