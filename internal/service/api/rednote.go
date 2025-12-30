@@ -83,7 +83,7 @@ func (c *Client) Rednote(ctx context.Context, targetURL string) (*xhsResult, err
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("instagram api http %d", resp.StatusCode)
+		return nil, fmt.Errorf("xhs api http %d", resp.StatusCode)
 	}
 
 	var out APIResponse[xhsResult]
