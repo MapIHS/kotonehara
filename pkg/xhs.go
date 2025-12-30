@@ -39,9 +39,6 @@ func init() {
 				m.Reply(ctx, fmt.Sprintf("Ketemu %d file media nih. Lagi dikirim, yaa...", totalMedia))
 
 				for _, p := range res.Images {
-					if p.LivePhoto {
-						continue
-					}
 					buff, err := client.FetchBytes(p.URL)
 					if err != nil {
 						continue
