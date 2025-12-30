@@ -38,7 +38,7 @@ func (c *Client) Instagram(ctx context.Context, targetURL string) (*instagramRes
 
 	req.Header.Set("Accept", "application/json")
 	if c.apikey != "" {
-		req.Header.Set("Authorization", "Bearer "+c.apikey)
+		req.Header.Set("X-API-Key", c.apikey)
 	}
 
 	resp, err := c.http.Do(req)

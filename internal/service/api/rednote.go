@@ -73,7 +73,7 @@ func (c *Client) Rednote(ctx context.Context, targetURL string) (*xhsResult, err
 
 	req.Header.Set("Accept", "application/json")
 	if c.apikey != "" {
-		req.Header.Set("Authorization", "Bearer "+c.apikey)
+		req.Header.Set("X-API-Key", c.apikey)
 	}
 
 	resp, err := c.http.Do(req)
