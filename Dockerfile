@@ -12,11 +12,12 @@ RUN go mod download
 COPY . .
 RUN go build -o hara cmd/bot/main.go
 
-# build untuk tailscale bisa hapus ajh kalo tidak butuh
+# build final
 FROM debian:bookworm-slim
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y ca-certificates \
+    webp \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/hara /app/hara
