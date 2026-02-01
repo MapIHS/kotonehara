@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -36,8 +35,6 @@ func init() {
 			totalMedia := len(res.Images)
 
 			if totalMedia > 0 {
-				m.Reply(ctx, fmt.Sprintf("Ketemu %d file media nih. Lagi dikirim, yaa...", totalMedia))
-
 				for _, p := range res.Images {
 					buff, err := client.FetchBytes(p.URL)
 					if err != nil {

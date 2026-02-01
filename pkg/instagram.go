@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -29,15 +28,13 @@ func init() {
 
 			res, err := ap.Instagram(ctx, args[0])
 			if err != nil {
-				m.Reply(ctx, err.Error())
+				m.Reply(ctx, "Gagal.")
 				return
 			}
 
 			totalMedia := len(res.Photos) + len(res.Videos)
 
 			if totalMedia > 0 {
-				m.Reply(ctx, fmt.Sprintf("Ketemu %d file media nih. Lagi dikirim, yaa...", totalMedia))
-
 				for _, p := range res.Videos {
 					buff, err := client.FetchBytes(p.URL)
 					if err != nil {

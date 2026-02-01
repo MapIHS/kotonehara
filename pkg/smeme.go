@@ -61,8 +61,6 @@ func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 
 	ext := "png"
 
-	m.Reply(ctx, "Sebentar, sedang meracik meme...")
-
 	s3p := s3.New(cfg.BASES3URL, 15*time.Second)
 	publicURL, err := s3p.Upload("temp."+ext, raw)
 	if err != nil {
