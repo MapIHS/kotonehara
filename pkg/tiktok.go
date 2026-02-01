@@ -29,7 +29,7 @@ func init() {
 
 			res, err := ap.Tiktok(ctx, args[0])
 			if err != nil {
-				m.Reply(ctx, err.Error())
+				m.Reply(ctx, "Gagal.")
 				return
 			}
 

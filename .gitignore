@@ -4,3 +4,4 @@ bin/*
 hara
 .air.toml
 tmp
+pull.sh
