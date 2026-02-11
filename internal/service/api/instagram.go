@@ -25,7 +25,7 @@ func (c *Client) Instagram(ctx context.Context, targetURL string) (*instagramRes
 	if err != nil {
 		return nil, err
 	}
-	u.Path = "/api/v1/instagram/info"
+	u.Path = "/api/instagram"
 
 	q := u.Query()
 	q.Set("url", targetURL)
@@ -37,9 +37,6 @@ func (c *Client) Instagram(ctx context.Context, targetURL string) (*instagramRes
 	}
 
 	req.Header.Set("Accept", "application/json")
-	if c.apikey != "" {
-		req.Header.Set("X-API-Key", c.apikey)
-	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {
