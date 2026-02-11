@@ -36,7 +36,7 @@ func (c *Client) YoutubeInfo(ctx context.Context, targetURL string) (*videoInfo,
 	if err != nil {
 		return nil, err
 	}
-	u.Path = "/api/v1/youtube/video"
+	u.Path = "/api/youtube/info"
 
 	q := u.Query()
 	q.Set("url", targetURL)
@@ -48,9 +48,6 @@ func (c *Client) YoutubeInfo(ctx context.Context, targetURL string) (*videoInfo,
 	}
 
 	req.Header.Set("Accept", "application/json")
-	if c.apikey != "" {
-		req.Header.Set("X-API-Key", c.apikey)
-	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {
@@ -74,10 +71,10 @@ func (c *Client) YoutubeDownload(ctx context.Context, targetURL string, quality 
 	if err != nil {
 		return nil, err
 	}
-	u.Path = "/api/v1/youtube/video/download"
+	u.Path = "/api/youtube/video"
 
 	if !isVideo {
-		u.Path = "/api/v1/youtube/audio/download"
+		u.Path = "/api/youtube/audio"
 	}
 
 	q := u.Query()
@@ -91,9 +88,6 @@ func (c *Client) YoutubeDownload(ctx context.Context, targetURL string, quality 
 	}
 
 	req.Header.Set("Accept", "application/json")
-	if c.apikey != "" {
-		req.Header.Set("X-API-Key", c.apikey)
-	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {

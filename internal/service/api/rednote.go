@@ -60,7 +60,7 @@ func (c *Client) Rednote(ctx context.Context, targetURL string) (*xhsResult, err
 	if err != nil {
 		return nil, err
 	}
-	u.Path = "/api/v1/xhs/info"
+	u.Path = "/api/xiaohongshu"
 
 	q := u.Query()
 	q.Set("url", targetURL)
@@ -72,9 +72,6 @@ func (c *Client) Rednote(ctx context.Context, targetURL string) (*xhsResult, err
 	}
 
 	req.Header.Set("Accept", "application/json")
-	if c.apikey != "" {
-		req.Header.Set("X-API-Key", c.apikey)
-	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {

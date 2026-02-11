@@ -48,7 +48,7 @@ func (c *Client) Tiktok(ctx context.Context, targetURL string) (*tiktokResult, e
 	if err != nil {
 		return nil, err
 	}
-	u.Path = "/api/v1/tiktok/download"
+	u.Path = "/api/tiktok/download"
 
 	q := u.Query()
 	q.Set("url", targetURL)
@@ -60,9 +60,6 @@ func (c *Client) Tiktok(ctx context.Context, targetURL string) (*tiktokResult, e
 	}
 
 	req.Header.Set("Accept", "application/json")
-	if c.apikey != "" {
-		req.Header.Set("X-API-Key", c.apikey)
-	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {
