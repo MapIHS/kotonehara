@@ -22,7 +22,7 @@ func ytv(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 	targetURL := args[0]
 	quality := "360p"
 
-	ap := api.New(cfg.BASEApiURL, cfg.APIKEY, 15*time.Second)
+	ap := api.New(cfg.BASEApiURL, 15*time.Second)
 
 	if len(args) > 1 {
 		quality = strings.TrimSuffix(args[1], "p") + "p"
@@ -66,7 +66,7 @@ func yta(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 
 	targetURL := args[0]
 
-	ap := api.New(cfg.BASEApiURL, cfg.APIKEY, 15*time.Second)
+	ap := api.New(cfg.BASEApiURL, 15*time.Second)
 
 	info, err := ap.YoutubeInfo(ctx, targetURL)
 	if err != nil {

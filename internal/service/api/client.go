@@ -13,11 +13,10 @@ import (
 
 type Client struct {
 	baseURL string
-	apikey  string
 	http    *http.Client
 }
 
-func New(baseURL, apikey string, timeout time.Duration) *Client {
+func New(baseURL string, timeout time.Duration) *Client {
 	if timeout <= 0 {
 		timeout = 15 * time.Second
 	}
@@ -32,7 +31,6 @@ func New(baseURL, apikey string, timeout time.Duration) *Client {
 
 	return &Client{
 		baseURL: strings.TrimRight(baseURL, "/"),
-		apikey:  apikey,
 		http:    httpClient,
 	}
 }

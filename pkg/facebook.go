@@ -24,7 +24,7 @@ func init() {
 
 			m.Reply(ctx, "Tunggu Sebentar ya.")
 
-			ap := api.New(cfg.BASEApiURL, cfg.APIKEY, 15*time.Second)
+			ap := api.New(cfg.BASEApiURL, 15*time.Second)
 
 			res, err := ap.Facebook(ctx, args[0])
 			if err != nil {
