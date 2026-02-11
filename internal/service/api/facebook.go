@@ -25,7 +25,7 @@ func (c *Client) Facebook(ctx context.Context, targetURL string) (*facebookResul
 	if err != nil {
 		return nil, err
 	}
-	u.Path = "/api/v1/facebook/info"
+	u.Path = "/api/facebook"
 
 	q := u.Query()
 	q.Set("url", targetURL)
@@ -37,9 +37,6 @@ func (c *Client) Facebook(ctx context.Context, targetURL string) (*facebookResul
 	}
 
 	req.Header.Set("Accept", "application/json")
-	if c.apikey != "" {
-		req.Header.Set("X-API-Key", c.apikey)
-	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {

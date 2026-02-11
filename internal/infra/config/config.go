@@ -14,7 +14,6 @@ type Config struct {
 	Owners     []string
 	Cooldown   time.Duration
 	AdminTTL   time.Duration
-	APIKEY     string
 	BASEApiURL string
 	BASES3URL  string
 	MemeHost   string
@@ -38,8 +37,6 @@ func Load() Config {
 	cd := parseDurationOrSeconds(os.Getenv("COOLDOWN"), 3*time.Second)
 	adminTTL := parseDurationOrSeconds(os.Getenv("ADMIN_TTL"), 45*time.Second)
 
-	apikey := strings.TrimSpace(os.Getenv("APIKEY"))
-
 	baseurl := strings.TrimSpace(os.Getenv("BASEAPI_URL"))
 
 	bases3url := strings.TrimSpace(os.Getenv("BASES3_URL"))
@@ -52,7 +49,6 @@ func Load() Config {
 		Owners:     owners,
 		Cooldown:   cd,
 		AdminTTL:   adminTTL,
-		APIKEY:     apikey,
 		BASEApiURL: baseurl,
 		BASES3URL:  bases3url,
 		MemeHost:   memehost,
