@@ -22,7 +22,7 @@ OWNER=*@lid
 PREFIX=.
 COOLDOWN=3s
 ADMIN_TTL=45s
-BASEAPI_URL=https://api.ihsn.dev
+BASEAPI_URL=
 BASES3_URL=https://s3.ihsn.dev
 MEMEHOST_URL=https://apimem.ihsn.dev # or api.memegen.link
 
