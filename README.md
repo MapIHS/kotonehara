@@ -1,53 +1,60 @@
-## How to Clone
+## Getting started
+### Clone the repository
 
 ```bash
 git clone https://github.com/MapIHS/kotonehara
 cd kotonehara
 ```
 
-## Config
+Make sure you already installed Git
 
-change .env.sample to .env
+
+### Configuration
+
+Copy or rename .env.sample to .env
 
 ```bash
 cp .env.sample .env
+# Or
+mv .env.sample .env
 ```
 
-```bash
-# database url postgres
+```env
+# Postgress database url
 DATABASE_URL=YOUR_DATABASE_URL
 
-# config
-OWNER=*@lid
-PREFIX=.
-COOLDOWN=3s
+# Basic configuration
+OWNER=0123456789@lid # To use the owner features.
+PREFIX=. .           # Prefix for command.
+COOLDOWN=3s          # Cooldown time for the command, set to 0 to disable.
 ADMIN_TTL=45s
 BASEAPI_URL=
 BASES3_URL=https://s3.ihsn.dev
 MEMEHOST_URL=https://apimem.ihsn.dev # or api.memegen.link
-
 ```
 
 
-## Install Webpmux for use sticker
+### Install Webpmux to be able to create stickers.
 
-ubuntu / debian
+Ubuntu / Debian
 ```bash
-apt install -y webpmux
+apt install -y webp
 ```
-fedora
+Fedora
 ```bash
 dnf install -y libwebp-tools
 ```
 
 ## How to run
+### Linux
 
-### linux
+Run it directly,
 ```bash
 go mod download
 go run cmd/bot/main.go
 ```
-or with build
+
+Or build it first.
 ```bash
 go mod download
 go build -o hara cmd/bot/main.go
@@ -55,7 +62,7 @@ go build -o hara cmd/bot/main.go
 ./hara
 ```
 
-#### docker or podman
+### Or via Docker or Podman
 
 ```bash
 podman build -t kotonehara:latest .
