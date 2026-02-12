@@ -61,3 +61,4 @@ go build -o hara cmd/bot/main.go
 podman build -t kotonehara:latest .
 podman run --rm -it --env-file .env --name kotonehara kotonehara:latest
 ```
+
