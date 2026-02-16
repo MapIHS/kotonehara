@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -14,6 +16,7 @@ import (
 	"github.com/MapIHS/kotonehara/internal/media/sticker"
 	"github.com/MapIHS/kotonehara/internal/message"
 	"github.com/MapIHS/kotonehara/internal/service/s3"
+	"golang.org/x/net/proxy"
 )
 
 func cleanMemeText(text string) string {
@@ -76,13 +79,41 @@ func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 		publicURL,
 	)
 
-	resp, err := http.Get(targetURL)
+	timeout := 15 * time.Second
+
+	httpClient := &http.Client{Timeout: timeout}
+
+	if os.Getenv("TAILSCALE_SOCKS5") == "1" {
+		if c, err := newSOCKS5HTTPClient(timeout, "127.0.0.1:1055"); err == nil {
+			httpClient = c
+		}
+	}
+
+	resp, err := httpClient.Get(targetURL)
 	if err != nil {
+		m.Reply(ctx, "Gagal akses meme server: "+err.Error())
 		return
 	}
 	defer resp.Body.Close()
 
-	memeData, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		b, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
+		m.Reply(ctx, fmt.Sprintf("Meme server error (%d): %s", resp.StatusCode, strings.TrimSpace(string(b))))
+		return
+	}
+
+	ct := resp.Header.Get("Content-Type")
+	if !strings.HasPrefix(ct, "image/") {
+		b, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
+		m.Reply(ctx, "Response bukan gambar: "+ct+" "+strings.TrimSpace(string(b)))
+		return
+	}
+
+	memeData, err := io.ReadAll(resp.Body)
+	if err != nil || len(memeData) == 0 {
+		m.Reply(ctx, "Gagal baca gambar dari meme server.")
+		return
+	}
 
 	stc, err := sticker.BuildSticker(ctx, memeData, m.PushName, false)
 	if err != nil {
@@ -103,4 +134,27 @@ func init() {
 		IsPrefix: true,
 		Exec:     smeme,
 	})
+}
+
+func newSOCKS5HTTPClient(timeout time.Duration, socksAddr string) (*http.Client, error) {
+	d, err := proxy.SOCKS5("tcp", socksAddr, nil, proxy.Direct)
+	if err != nil {
+		return nil, err
+	}
+
+	dialContext := func(ctx context.Context, network, addr string) (net.Conn, error) {
+		return d.Dial(network, addr)
+	}
+
+	tr := &http.Transport{
+		DialContext:           dialContext,
+		ForceAttemptHTTP2:     false,
+		ResponseHeaderTimeout: 30 * time.Second,
+		IdleConnTimeout:       90 * time.Second,
+	}
+
+	return &http.Client{
+		Timeout:   timeout,
+		Transport: tr,
+	}, nil
 }
