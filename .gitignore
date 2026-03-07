@@ -5,3 +5,4 @@ hara
 .air.toml
 tmp
 pull.sh
+test_*

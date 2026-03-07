@@ -26,6 +26,36 @@ func NewParser(c WAClient, cfg config.Config) *Parser {
 	}
 }
 
+func extractQuoteContext(mess *events.Message) *waE2E.ContextInfo {
+	info := &waE2E.ContextInfo{
+		StanzaID:      &mess.Info.ID,
+		Participant:   proto.String(mess.Info.Sender.String()),
+		QuotedMessage: mess.Message,
+	}
+
+	if ext := mess.Message.GetExtendedTextMessage(); ext != nil {
+		if ctx := ext.GetContextInfo(); ctx != nil {
+			info.MentionedJID = ctx.MentionedJID
+			info.IsForwarded = ctx.IsForwarded
+			info.ForwardingScore = ctx.ForwardingScore
+		}
+	} else if vid := mess.Message.GetVideoMessage(); vid != nil {
+		if ctx := vid.GetContextInfo(); ctx != nil {
+			info.MentionedJID = ctx.MentionedJID
+			info.IsForwarded = ctx.IsForwarded
+			info.ForwardingScore = ctx.ForwardingScore
+		}
+	} else if img := mess.Message.GetImageMessage(); img != nil {
+		if ctx := img.GetContextInfo(); ctx != nil {
+			info.MentionedJID = ctx.MentionedJID
+			info.IsForwarded = ctx.IsForwarded
+			info.ForwardingScore = ctx.ForwardingScore
+		}
+	}
+
+	return info
+}
+
 func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 	sender := mess.Info.Sender.String()
 	isOwner := false
@@ -79,13 +109,7 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 		}
 	}
 
-	replyFn := func(ctx context.Context, text string, opts ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error) {
-		return p.Client.SendText(ctx, mess.Info.Chat, text, &waE2E.ContextInfo{
-			StanzaID:      &mess.Info.ID,
-			Participant:   proto.String(mess.Info.Sender.String()),
-			QuotedMessage: mess.Message,
-		}, opts...)
-	}
+	msgID := extractQuoteContext(mess)
 
 	return &Message{
 		From:        mess.Info.Chat,
@@ -112,16 +136,14 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 		IsBotAdmin: isBotAdmin,
 
 		QuotedMsg: quotedInfo,
-		ID: &waE2E.ContextInfo{
-			StanzaID:      &mess.Info.ID,
-			Participant:   proto.String(mess.Info.Sender.String()),
-			QuotedMessage: mess.Message,
-		},
+		ID:        msgID,
 
 		IsQuotedImage:   isQuotedImage,
 		IsQuotedVideo:   isQuotedVideo,
 		IsQuotedSticker: isQuotedSticker,
 
-		Reply: replyFn,
+		Reply: func(ctx context.Context, text string, opts ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error) {
+			return p.Client.SendText(ctx, mess.Info.Chat, text, msgID, opts...)
+		},
 	}
 }

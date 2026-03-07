@@ -53,7 +53,7 @@ func (c *Client) FetchBytes(u string) ([]byte, error) {
 	return io.ReadAll(resp.Body)
 }
 
-func (c *Client) SendVideo(ctx context.Context, to types.JID, data []byte, caption string, opts *waE2E.ContextInfo) (whatsmeow.SendResponse, error) {
+func (c *Client) SendVideo(ctx context.Context, to types.JID, data []byte, gifPlayback bool, caption string, opts *waE2E.ContextInfo) (whatsmeow.SendResponse, error) {
 	up, err := c.WA.Upload(ctx, data, whatsmeow.MediaVideo)
 	if err != nil {
 		return whatsmeow.SendResponse{}, err
@@ -64,6 +64,7 @@ func (c *Client) SendVideo(ctx context.Context, to types.JID, data []byte, capti
 			DirectPath:    proto.String(up.DirectPath),
 			MediaKey:      up.MediaKey,
 			Caption:       proto.String(caption),
+			GifPlayback:   proto.Bool(gifPlayback),
 			Mimetype:      proto.String(http.DetectContentType(data)),
 			FileEncSHA256: up.FileEncSHA256,
 			FileSHA256:    up.FileSHA256,
