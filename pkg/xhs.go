@@ -24,7 +24,7 @@ func init() {
 
 			m.Reply(ctx, "Tunggu Sebentar ya.")
 
-			ap := api.New(cfg.BASEApiURL, 15*time.Second)
+			ap := api.New(cfg.BASEApiURL, 60*time.Second)
 
 			res, err := ap.Rednote(ctx, args[0])
 			if err != nil {
@@ -51,7 +51,7 @@ func init() {
 					m.Reply(ctx, "Maaf Terjadi kesalahan, yaa.")
 					return
 				}
-				client.SendVideo(ctx, m.From, buff, "", m.ID)
+				client.SendVideo(ctx, m.From, buff, false, "", m.ID)
 
 			}
 		},
