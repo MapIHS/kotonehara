@@ -128,7 +128,7 @@ func cekAPI(ctx context.Context, client *clients.Client, m *message.Message, cfg
 
 	for _, ep := range endpoints {
 		if ep.URL == "" {
-			results = append(results, fmt.Sprintf("• *%s:* [⚠️ Not Configured]", ep.Name))
+			results = append(results, fmt.Sprintf("• *%s:* [⚠️ Not Configured]", ep.URL))
 			continue
 		}
 
@@ -139,7 +139,7 @@ func cekAPI(ctx context.Context, client *clients.Client, m *message.Message, cfg
 
 			req, err = http.NewRequestWithContext(ctx, http.MethodGet, target, nil)
 			if err != nil {
-				results = append(results, fmt.Sprintf("• *%s:* [🔴 Invalid URL]", ep.Name))
+				results = append(results, fmt.Sprintf("• *%s:* [🔴 Invalid URL]", ep.URL))
 				continue
 			}
 		}
@@ -149,13 +149,13 @@ func cekAPI(ctx context.Context, client *clients.Client, m *message.Message, cfg
 		elapsed := time.Since(start).Milliseconds()
 
 		if err != nil {
-			results = append(results, fmt.Sprintf("• *%s:* [🔴 Offline - Timeout/Err]", ep.Name))
+			results = append(results, fmt.Sprintf("• *%s:* [🔴 Offline - Timeout/Err]", ep.URL))
 		} else {
 			resp.Body.Close()
 			if resp.StatusCode >= 200 && resp.StatusCode < 500 {
-				results = append(results, fmt.Sprintf("• *%s:* [🟢 Online] (%dms)", ep.Name, elapsed))
+				results = append(results, fmt.Sprintf("• *%s:* [🟢 Online] (%dms)", ep.URL, elapsed))
 			} else {
-				results = append(results, fmt.Sprintf("• *%s:* [🟡 Warning: HTTP %d] (%dms)", ep.Name, resp.StatusCode, elapsed))
+				results = append(results, fmt.Sprintf("• *%s:* [🟡 Warning: HTTP %d] (%dms)", ep.URL, resp.StatusCode, elapsed))
 			}
 		}
 	}
