@@ -44,7 +44,7 @@ type author struct {
 }
 
 func (c *Client) Tiktok(ctx context.Context, targetURL string) (*tiktokResult, error) {
-	u, err := neturl.Parse(c.baseURL)
+	u, err := neturl.Parse(c.BaseURL)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (c *Client) Tiktok(ctx context.Context, targetURL string) (*tiktokResult, e
 
 	req.Header.Set("Accept", "application/json")
 
-	resp, err := c.http.Do(req)
+	resp, err := c.HTTP.Do(req)
 	if err != nil {
 		return nil, err
 	}
