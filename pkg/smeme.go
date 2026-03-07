@@ -4,9 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
-	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -15,8 +12,8 @@ import (
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"github.com/MapIHS/kotonehara/internal/media/sticker"
 	"github.com/MapIHS/kotonehara/internal/message"
+	"github.com/MapIHS/kotonehara/internal/service/httpclient"
 	"github.com/MapIHS/kotonehara/internal/service/s3"
-	"golang.org/x/net/proxy"
 )
 
 func cleanMemeText(text string) string {
@@ -79,15 +76,7 @@ func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 		publicURL,
 	)
 
-	timeout := 15 * time.Second
-
-	httpClient := &http.Client{Timeout: timeout}
-
-	if os.Getenv("TAILSCALE_SOCKS5") == "1" {
-		if c, err := newSOCKS5HTTPClient(timeout, "127.0.0.1:1055"); err == nil {
-			httpClient = c
-		}
-	}
+	httpClient := httpclient.New("", 15*time.Second).HTTP
 
 	resp, err := httpClient.Get(targetURL)
 	if err != nil {
@@ -134,27 +123,4 @@ func init() {
 		IsPrefix: true,
 		Exec:     smeme,
 	})
-}
-
-func newSOCKS5HTTPClient(timeout time.Duration, socksAddr string) (*http.Client, error) {
-	d, err := proxy.SOCKS5("tcp", socksAddr, nil, proxy.Direct)
-	if err != nil {
-		return nil, err
-	}
-
-	dialContext := func(ctx context.Context, network, addr string) (net.Conn, error) {
-		return d.Dial(network, addr)
-	}
-
-	tr := &http.Transport{
-		DialContext:           dialContext,
-		ForceAttemptHTTP2:     false,
-		ResponseHeaderTimeout: 30 * time.Second,
-		IdleConnTimeout:       90 * time.Second,
-	}
-
-	return &http.Client{
-		Timeout:   timeout,
-		Transport: tr,
-	}, nil
 }

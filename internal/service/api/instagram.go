@@ -21,7 +21,7 @@ type mediaFile struct {
 }
 
 func (c *Client) Instagram(ctx context.Context, targetURL string) (*instagramResult, error) {
-	u, err := neturl.Parse(c.baseURL)
+	u, err := neturl.Parse(c.BaseURL)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (c *Client) Instagram(ctx context.Context, targetURL string) (*instagramRes
 
 	req.Header.Set("Accept", "application/json")
 
-	resp, err := c.http.Do(req)
+	resp, err := c.HTTP.Do(req)
 	if err != nil {
 		return nil, err
 	}
