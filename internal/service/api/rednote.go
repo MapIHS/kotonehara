@@ -56,7 +56,7 @@ type xhsVideo struct {
 }
 
 func (c *Client) Rednote(ctx context.Context, targetURL string) (*xhsResult, error) {
-	u, err := neturl.Parse(c.baseURL)
+	u, err := neturl.Parse(c.BaseURL)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (c *Client) Rednote(ctx context.Context, targetURL string) (*xhsResult, err
 
 	req.Header.Set("Accept", "application/json")
 
-	resp, err := c.http.Do(req)
+	resp, err := c.HTTP.Do(req)
 	if err != nil {
 		return nil, err
 	}

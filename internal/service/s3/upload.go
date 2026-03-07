@@ -30,19 +30,22 @@ func (c *Client) Upload(filename string, file []byte) (string, error) {
 		return "", err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, c.baseURL+"/upload", body)
+	req, err := http.NewRequest(http.MethodPost, c.BaseURL+"/upload", body)
 	if err != nil {
 		return "", err
 	}
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
-	resp, err := c.http.Do(req)
+	resp, err := c.HTTP.Do(req)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
-	respBody, _ := io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response body: %w", err)
+	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return "", fmt.Errorf("upload failed: %s", string(respBody))
@@ -53,5 +56,5 @@ func (c *Client) Upload(filename string, file []byte) (string, error) {
 		return "", fmt.Errorf("failed to parse json: %w", err)
 
 	}
-	return fmt.Sprintf("%s/file/%s", c.baseURL, result.Data.Key), nil
+	return fmt.Sprintf("%s/file/%s", c.BaseURL, result.Data.Key), nil
 }

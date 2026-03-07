@@ -32,7 +32,7 @@ type videoInfo struct {
 }
 
 func (c *Client) YoutubeInfo(ctx context.Context, targetURL string) (*videoInfo, error) {
-	u, err := neturl.Parse(c.baseURL)
+	u, err := neturl.Parse(c.BaseURL)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (c *Client) YoutubeInfo(ctx context.Context, targetURL string) (*videoInfo,
 
 	req.Header.Set("Accept", "application/json")
 
-	resp, err := c.http.Do(req)
+	resp, err := c.HTTP.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (c *Client) YoutubeInfo(ctx context.Context, targetURL string) (*videoInfo,
 }
 
 func (c *Client) YoutubeDownload(ctx context.Context, targetURL string, quality string, isVideo bool) ([]byte, error) {
-	u, err := neturl.Parse(c.baseURL)
+	u, err := neturl.Parse(c.BaseURL)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (c *Client) YoutubeDownload(ctx context.Context, targetURL string, quality 
 
 	req.Header.Set("Accept", "application/json")
 
-	resp, err := c.http.Do(req)
+	resp, err := c.HTTP.Do(req)
 	if err != nil {
 		return nil, err
 	}
