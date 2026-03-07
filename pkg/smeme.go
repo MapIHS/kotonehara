@@ -115,7 +115,7 @@ func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 		return
 	}
 
-	stc, err := sticker.BuildSticker(ctx, memeData, m.PushName, false)
+	stc, err := sticker.BuildSticker(ctx, memeData, m.PushName, false, false)
 	if err != nil {
 		m.Reply(ctx, fmt.Sprintf("Ada yang salah: %s", err))
 	}

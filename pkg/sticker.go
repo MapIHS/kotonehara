@@ -17,18 +17,13 @@ func stc(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 		return
 	}
 
-	if m.IsVideo || m.IsQuotedVideo {
-		m.Reply(ctx, "Belom support video, yaa.")
-		return
-	}
-
 	raw, err := client.WA.Download(ctx, m.Media)
 	if err != nil || len(raw) == 0 {
 		m.Reply(ctx, "Gambarnya belum bisa diambil, yaa.")
 		return
 	}
 
-	stc, err := sticker.BuildSticker(ctx, raw, m.PushName, m.IsQuotedSticker)
+	stc, err := sticker.BuildSticker(ctx, raw, m.PushName, m.IsQuotedSticker, m.IsVideo || m.IsQuotedVideo)
 	if err != nil {
 		m.Reply(ctx, fmt.Sprintf("Ada yang salah: %s", err))
 	}
