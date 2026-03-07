@@ -22,7 +22,7 @@ func ytv(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 	targetURL := args[0]
 	quality := "360p"
 
-	ap := api.New(cfg.BASEApiURL, 15*time.Second)
+	ap := api.New(cfg.BASEApiURL, 1000*time.Second)
 
 	if len(args) > 1 {
 		quality = strings.TrimSuffix(args[1], "p") + "p"
@@ -55,7 +55,7 @@ func ytv(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 		return
 	}
 
-	client.SendVideo(ctx, m.From, res, "", m.ID)
+	client.SendVideo(ctx, m.From, res, false, "", m.ID)
 
 }
 

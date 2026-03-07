@@ -2,7 +2,9 @@ package commands
 
 import (
 	"context"
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/MapIHS/kotonehara/internal/clients"
 	"github.com/MapIHS/kotonehara/internal/infra/config"
@@ -86,5 +88,32 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 		_, _ = m.Reply(ctx, "Tunggu sebentar, yaa.")
 	}
 
+	userName := m.PushName
+	if userName == "" {
+		userName = m.Sender.User
+	}
+
+	spinner := []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
+	done := make(chan struct{})
+	finished := make(chan struct{})
+
+	go func() {
+		i := 0
+		for {
+			select {
+			case <-done:
+				fmt.Printf("\r\033[K\033[1;32m[✓]\033[0m \033[1;36m%s\033[0m use command \033[1;32m%s\033[0m\n", userName, cmd.Name)
+				close(finished)
+				return
+			default:
+				fmt.Printf("\r\033[K\033[1;35m[%s]\033[0m \033[1;36m%s\033[0m use command \033[1;32m%s\033[0m", spinner[i%len(spinner)], userName, cmd.Name)
+				i++
+				time.Sleep(100 * time.Millisecond)
+			}
+		}
+	}()
+
 	cmd.Exec(ctx, c, m, cfg)
+	close(done)
+	<-finished
 }

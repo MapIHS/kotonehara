@@ -22,7 +22,7 @@ func brat(ctx context.Context, client *clients.Client, m *message.Message, cfg c
 		return
 	}
 
-	stc, err := sticker.BuildSticker(ctx, res, m.PushName, false)
+	stc, err := sticker.BuildSticker(ctx, res, m.PushName, false, false)
 	if err != nil {
 		m.Reply(ctx, fmt.Sprintf("Ada yang salah: %s", err))
 	}
