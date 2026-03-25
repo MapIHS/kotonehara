@@ -123,8 +123,6 @@ func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 	isGif := false
 	isWebp := false
 
-	m.Reply(ctx, fmt.Sprintf("%s", ext))
-
 	switch ext {
 	case "gif":
 		isGif = true
