@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"strings"
 	"time"
 
@@ -61,6 +62,21 @@ func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 
 	ext := "png"
 
+	ctInput := http.DetectContentType(raw)
+
+	if ctInput == "image/webp" {
+		if isAnimatedWebP(raw) {
+			ext = "gif"
+		} else {
+			ext = "png"
+		}
+	} else if strings.HasPrefix(ctInput, "image/") {
+		parts := strings.Split(ctInput, "/")
+		if len(parts) == 2 {
+			ext = parts[1]
+		}
+	}
+
 	s3p := s3.New(cfg.BASES3URL, 15*time.Second)
 	publicURL, err := s3p.Upload("temp."+ext, raw)
 	if err != nil {
@@ -104,7 +120,19 @@ func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 		return
 	}
 
-	stc, err := sticker.BuildSticker(ctx, memeData, m.PushName, false, false)
+	isGif := false
+	isWebp := false
+
+	m.Reply(ctx, fmt.Sprintf("%s", ext))
+
+	switch ext {
+	case "gif":
+		isGif = true
+	case "webp":
+		isWebp = true
+	}
+
+	stc, err := sticker.BuildSticker(ctx, memeData, m.PushName, isWebp, isGif)
 	if err != nil {
 		m.Reply(ctx, fmt.Sprintf("Ada yang salah: %s", err))
 	}
@@ -123,4 +151,18 @@ func init() {
 		IsPrefix: true,
 		Exec:     smeme,
 	})
+}
+
+func isAnimatedWebP(data []byte) bool {
+	if len(data) < 16 {
+		return false
+	}
+
+	// cek signature WEBP
+	if string(data[8:12]) != "WEBP" {
+		return false
+	}
+
+	// cari chunk ANIM
+	return strings.Contains(string(data), "ANIM")
 }
