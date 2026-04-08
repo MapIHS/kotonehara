@@ -1,0 +1,9 @@
+[tools]
+go = "latest"
+
+[tasks]
+tidy = "go mod tidy && go fmt ./..."
+
+build = "go build -o bin/hara ./cmd/bot/main.go"
+
+dev = "go run ./cmd/bot/main.go"
