@@ -13,11 +13,11 @@ import (
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:        "Get quoted message",
+		Name:        "q",
 		Description: "Replies with the message quoted by the one you replied to.",
 		Tags:        "main",
 		IsPrefix:    true,
-		As:          []string{"getquote", "getquoted", "q"},
+		As:          []string{"q"},
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			if m.QuotedMsg == nil || m.QuotedMsg.GetQuotedMessage() == nil {
 				m.Reply(ctx, "Sialahkan reply pesan yg ada reply an :3")
