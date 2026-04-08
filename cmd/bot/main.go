@@ -12,6 +12,7 @@ import (
 	"github.com/MapIHS/kotonehara/internal/devices"
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	dbInfra "github.com/MapIHS/kotonehara/internal/infra/db"
+	"github.com/MapIHS/kotonehara/internal/message"
 	"github.com/subosito/gotenv"
 
 	_ "github.com/MapIHS/kotonehara/pkg"
@@ -43,6 +44,10 @@ func main() {
 	}
 
 	defer db.Close()
+
+	if err := message.InitDBStore(db); err != nil {
+		log.Printf("failed to init message store: %v", err)
+	}
 
 	dbLog := waLog.Stdout("Database", "INFO", true)
 	container := sqlstore.NewWithDB(db.DB, "postgres", dbLog)
