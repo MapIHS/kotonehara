@@ -3,6 +3,7 @@ package pkg
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/MapIHS/kotonehara/internal/clients"
@@ -40,9 +41,9 @@ func init() {
 				if sender == "" {
 					sender = "Unknown"
 				}
-				sb.WriteString(fmt.Sprintf("%d. [%s] ID: %s\n   Dari: @%s\n   Waktu: %s\n\n", i+1, strings.ToUpper(item.MsgType), item.ID, sender, item.CreatedAt))
+				sb.WriteString(fmt.Sprintf("%d. [%s] Dari: %s\n   Waktu: %s\n\n", i+1, strings.ToUpper(item.MsgType), sender, item.CreatedAt))
 			}
-			sb.WriteString("Ketik *.getmedia <ID>* untuk mengambil kembali medianya.")
+			sb.WriteString("Ketik *.getmedia <nomor>* untuk mengambil kembali medianya. Contoh: *.getmedia 1*")
 
 			m.Reply(ctx, sb.String())
 		},
@@ -57,14 +58,29 @@ func init() {
 		As:          []string{"getmedia", "gm"},
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			if m.Query == "" {
-				m.Reply(ctx, "Harap sertakan ID pesannya. Contoh:\n*.getmedia 3EB0Cxxxx*")
+				m.Reply(ctx, "Harap sertakan nomor urut pesannya. Contoh:\n*.getmedia 1*")
 				return
 			}
 
-			targetID := strings.TrimSpace(m.Query)
+			target := strings.TrimSpace(m.Query)
+			var targetID string
+
+			idx, errParse := strconv.Atoi(target)
+			if errParse == nil && idx > 0 && idx <= 10 {
+				items, errDB := message.MsgStore.GetRecentMedia(10)
+				if errDB == nil && len(items) >= idx {
+					targetID = items[idx-1].ID
+				} else {
+					m.Reply(ctx, "Nomor indeks tidak valid atau media tidak ditemukan.")
+					return
+				}
+			} else {
+				targetID = target
+			}
+
 			msgProto := message.MsgStore.Get(targetID)
 			if msgProto == nil {
-				m.Reply(ctx, "Pesan tidak ditemukan di database atau ID salah.")
+				m.Reply(ctx, "Pesan tidak ditemukan di database.")
 				return
 			}
 

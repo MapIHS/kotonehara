@@ -54,13 +54,32 @@ func (s *MessageStore) Add(msg *events.Message) {
 		return
 	}
 
-	msgType := getMsgType(msg)
-	sender := msg.Info.Sender.User
+	msgType := getMsgType(msg.Message)
+	sender := msg.Info.PushName
+	if sender == "" {
+		sender = msg.Info.Sender.User
+	}
 
 	query := `INSERT INTO bot_messages (id, payload, msg_type, sender) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING;`
 	_, err = s.db.Exec(query, id, data, msgType, sender)
 	if err != nil {
 		log.Printf("store message insert error: %v", err)
+	}
+
+	// Extract and save the quoted message if any (solves ViewOnce issue that are only visible when replied)
+	ctxInfo := extractContextInfo(msg.Message)
+	if ctxInfo != nil && ctxInfo.QuotedMessage != nil && ctxInfo.StanzaID != nil && *ctxInfo.StanzaID != "" {
+		quotedID := *ctxInfo.StanzaID
+		quotedData, err := proto.Marshal(ctxInfo.QuotedMessage)
+		if err == nil {
+			quotedMsgType := getMsgType(ctxInfo.QuotedMessage)
+			quotedSender := "unknown_quoted"
+			if ctxInfo.Participant != nil {
+				quotedSender = *ctxInfo.Participant
+			}
+			qQuery := `INSERT INTO bot_messages (id, payload, msg_type, sender) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING;`
+			s.db.Exec(qQuery, quotedID, quotedData, quotedMsgType, quotedSender)
+		}
 	}
 }
 
@@ -87,23 +106,36 @@ func (s *MessageStore) Get(id string) *waE2E.Message {
 	return msgProto
 }
 
-func getMsgType(msg *events.Message) string {
-	if msg.Message == nil {
+func getMsgType(realMsg *waE2E.Message) string {
+	if realMsg == nil {
 		return "unknown"
 	}
-	if msg.Message.ImageMessage != nil {
+
+	// Unwrap EphemeralMessage if sent in a disappearing chat
+	if realMsg.EphemeralMessage != nil && realMsg.EphemeralMessage.Message != nil {
+		realMsg = realMsg.EphemeralMessage.Message
+	}
+	// Unwrap DocumentWithCaptionMessage
+	if realMsg.DocumentWithCaptionMessage != nil && realMsg.DocumentWithCaptionMessage.Message != nil {
+		realMsg = realMsg.DocumentWithCaptionMessage.Message
+	}
+
+	if realMsg.ViewOnceMessage != nil || realMsg.ViewOnceMessageV2 != nil || realMsg.ViewOnceMessageV2Extension != nil {
+		return "viewonce"
+	}
+	if realMsg.ImageMessage != nil {
 		return "image"
-	} else if msg.Message.VideoMessage != nil {
+	} else if realMsg.VideoMessage != nil {
 		return "video"
-	} else if msg.Message.AudioMessage != nil {
+	} else if realMsg.AudioMessage != nil {
 		return "audio"
-	} else if msg.Message.DocumentMessage != nil {
+	} else if realMsg.DocumentMessage != nil {
 		return "document"
-	} else if msg.Message.StickerMessage != nil {
+	} else if realMsg.StickerMessage != nil {
 		return "sticker"
-	} else if msg.Message.ExtendedTextMessage != nil {
+	} else if realMsg.ExtendedTextMessage != nil {
 		return "text"
-	} else if msg.Message.Conversation != nil {
+	} else if realMsg.Conversation != nil {
 		return "text"
 	}
 	return "other"
@@ -127,7 +159,7 @@ func (s *MessageStore) GetRecentMedia(limit int) ([]MediaItem, error) {
 	query := `
 		SELECT id, msg_type, sender, TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS created_at 
 		FROM bot_messages 
-		WHERE msg_type IN ('image', 'video', 'audio', 'sticker', 'document') 
+		WHERE msg_type IN ('image', 'video', 'audio', 'sticker', 'document', 'viewonce') 
 		ORDER BY created_at DESC 
 		LIMIT $1;
 	`
@@ -137,4 +169,48 @@ func (s *MessageStore) GetRecentMedia(limit int) ([]MediaItem, error) {
 	}
 
 	return items, nil
+}
+
+func extractContextInfo(msg *waE2E.Message) *waE2E.ContextInfo {
+	if msg == nil {
+		return nil
+	}
+	if msg.ExtendedTextMessage != nil {
+		return msg.ExtendedTextMessage.ContextInfo
+	} else if msg.ImageMessage != nil {
+		return msg.ImageMessage.ContextInfo
+	} else if msg.VideoMessage != nil {
+		return msg.VideoMessage.ContextInfo
+	} else if msg.DocumentMessage != nil {
+		return msg.DocumentMessage.ContextInfo
+	} else if msg.AudioMessage != nil {
+		return msg.AudioMessage.ContextInfo
+	} else if msg.StickerMessage != nil {
+		return msg.StickerMessage.ContextInfo
+	} else if msg.LocationMessage != nil {
+		return msg.LocationMessage.ContextInfo
+	} else if msg.ContactMessage != nil {
+		return msg.ContactMessage.ContextInfo
+	} else if msg.ContactsArrayMessage != nil {
+		return msg.ContactsArrayMessage.ContextInfo
+	} else if msg.TemplateMessage != nil {
+		return msg.TemplateMessage.ContextInfo
+	} else if msg.ButtonsMessage != nil {
+		return msg.ButtonsMessage.ContextInfo
+	} else if msg.ListMessage != nil {
+		return msg.ListMessage.ContextInfo
+	} else if msg.PtvMessage != nil {
+		return msg.PtvMessage.ContextInfo
+	} else if msg.ViewOnceMessage != nil {
+		return extractContextInfo(msg.ViewOnceMessage.Message)
+	} else if msg.ViewOnceMessageV2 != nil {
+		return extractContextInfo(msg.ViewOnceMessageV2.Message)
+	} else if msg.ViewOnceMessageV2Extension != nil {
+		return extractContextInfo(msg.ViewOnceMessageV2Extension.Message)
+	} else if msg.DocumentWithCaptionMessage != nil {
+		return extractContextInfo(msg.DocumentWithCaptionMessage.Message)
+	} else if msg.EphemeralMessage != nil {
+		return extractContextInfo(msg.EphemeralMessage.Message)
+	}
+	return nil
 }
