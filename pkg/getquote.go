@@ -32,7 +32,7 @@ func init() {
 
 			bFullMsg := message.MsgStore.Get(bMsgId)
 			if bFullMsg == nil {
-				m.Reply(ctx, "Pesan aslinya sudah tidak ada di memori bot (terlalu lama atau bot baru di-restart).")
+				m.Reply(ctx, "Pesan aslinya sudah tidak ada di memori bot.")
 				return
 			}
 
