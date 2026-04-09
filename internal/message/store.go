@@ -30,6 +30,13 @@ func InitDBStore(db *sqlx.DB) error {
 		return fmt.Errorf("failed to create bot_messages table: %w", err)
 	}
 
+	// Add msg_type and sender for existing tables or new columns
+	alterQuery1 := `ALTER TABLE bot_messages ADD COLUMN IF NOT EXISTS msg_type TEXT DEFAULT '';`
+	db.Exec(alterQuery1) // ignore error as it might already exist
+
+	alterQuery2 := `ALTER TABLE bot_messages ADD COLUMN IF NOT EXISTS sender TEXT DEFAULT '';`
+	db.Exec(alterQuery2) // ignore error
+
 	MsgStore.db = db
 	return nil
 }
@@ -47,8 +54,11 @@ func (s *MessageStore) Add(msg *events.Message) {
 		return
 	}
 
-	query := `INSERT INTO bot_messages (id, payload) VALUES ($1, $2) ON CONFLICT DO NOTHING;`
-	_, err = s.db.Exec(query, id, data)
+	msgType := getMsgType(msg)
+	sender := msg.Info.Sender.User
+
+	query := `INSERT INTO bot_messages (id, payload, msg_type, sender) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING;`
+	_, err = s.db.Exec(query, id, data, msgType, sender)
 	if err != nil {
 		log.Printf("store message insert error: %v", err)
 	}
@@ -75,4 +85,56 @@ func (s *MessageStore) Get(id string) *waE2E.Message {
 	}
 
 	return msgProto
+}
+
+func getMsgType(msg *events.Message) string {
+	if msg.Message == nil {
+		return "unknown"
+	}
+	if msg.Message.ImageMessage != nil {
+		return "image"
+	} else if msg.Message.VideoMessage != nil {
+		return "video"
+	} else if msg.Message.AudioMessage != nil {
+		return "audio"
+	} else if msg.Message.DocumentMessage != nil {
+		return "document"
+	} else if msg.Message.StickerMessage != nil {
+		return "sticker"
+	} else if msg.Message.ExtendedTextMessage != nil {
+		return "text"
+	} else if msg.Message.Conversation != nil {
+		return "text"
+	}
+	return "other"
+}
+
+// MediaItem represents a summary of a saved media message
+type MediaItem struct {
+	ID        string `db:"id"`
+	MsgType   string `db:"msg_type"`
+	Sender    string `db:"sender"`
+	CreatedAt string `db:"created_at"`
+}
+
+// GetRecentMedia fetches recent media entries from the store.
+func (s *MessageStore) GetRecentMedia(limit int) ([]MediaItem, error) {
+	if s.db == nil {
+		return nil, fmt.Errorf("db not initialized")
+	}
+
+	var items []MediaItem
+	query := `
+		SELECT id, msg_type, sender, TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS created_at 
+		FROM bot_messages 
+		WHERE msg_type IN ('image', 'video', 'audio', 'sticker', 'document') 
+		ORDER BY created_at DESC 
+		LIMIT $1;
+	`
+	err := s.db.Select(&items, query, limit)
+	if err != nil {
+		return nil, fmt.Errorf("query error: %w", err)
+	}
+
+	return items, nil
 }
