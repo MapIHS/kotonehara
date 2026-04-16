@@ -2,10 +2,15 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"net"
+	"os"
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
+	"golang.org/x/net/proxy"
 )
 
 type Config struct {
@@ -18,6 +23,18 @@ type Config struct {
 	ConnMaxLife  time.Duration
 }
 
+type pqDialer struct {
+	proxy proxy.Dialer
+}
+
+func (d *pqDialer) Dial(network, address string) (net.Conn, error) {
+	return d.proxy.Dial(network, address)
+}
+
+func (d *pqDialer) DialTimeout(network, address string, timeout time.Duration) (net.Conn, error) {
+	return d.proxy.Dial(network, address)
+}
+
 func Connect(ctx context.Context, cfg Config) (*sqlx.DB, error) {
 	if cfg.Driver == "" {
 		cfg.Driver = "postgres"
@@ -26,9 +43,28 @@ func Connect(ctx context.Context, cfg Config) (*sqlx.DB, error) {
 		return nil, fmt.Errorf("DATABASE_URL kosong")
 	}
 
-	db, err := sqlx.ConnectContext(ctx, cfg.Driver, cfg.URL)
-	if err != nil {
-		return nil, fmt.Errorf("connect db: %w", err)
+	var db *sqlx.DB
+	var err error
+
+	// Cek apakah mode Tailscale aktif
+	if os.Getenv("TAILSCALE_SOCKS5") == "1" && cfg.Driver == "postgres" {
+		dialer, err := proxy.SOCKS5("tcp", "127.0.0.1:1055", nil, proxy.Direct)
+		if err != nil {
+			return nil, fmt.Errorf("socks5 dialer: %w", err)
+		}
+		connector, err := pq.NewConnector(cfg.URL)
+		if err != nil {
+			return nil, fmt.Errorf("pq connector: %w", err)
+		}
+
+		connector.Dialer(&pqDialer{proxy: dialer})
+
+		db = sqlx.NewDb(sql.OpenDB(connector), "postgres")
+	} else {
+		db, err = sqlx.ConnectContext(ctx, cfg.Driver, cfg.URL)
+		if err != nil {
+			return nil, fmt.Errorf("connect db: %w", err)
+		}
 	}
 
 	if cfg.MaxOpenConns > 0 {
