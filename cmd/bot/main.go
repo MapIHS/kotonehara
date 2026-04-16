@@ -70,11 +70,11 @@ func main() {
 	if client.Store.ID == nil {
 		// No ID stored, new login
 		qrChan, _ := client.GetQRChannel(ctx)
-		// err = client.Connect()
-		// if err != nil {
-		// 	panic(err)
-		// }
-		// code, err := client.PairPhone(ctx, "6283142111875", true, whatsmeow.PairClientChrome, "Chrome (Linux)")
+		err = client.Connect()
+		if err != nil {
+			panic(err)
+		}
+		// code, err := client.PairPhone(ctx, "", true, whatsmeow.PairClientChrome, "Chrome (Linux)")
 		// if err != nil {
 		// 	panic(err)
 		// }
