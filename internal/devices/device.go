@@ -57,7 +57,6 @@ func (d *Devices) registerEventHandler(client *whatsmeow.Client) func(evt interf
 	return func(evt interface{}) {
 		switch v := evt.(type) {
 		case *events.Message:
-			go message.MsgStore.Add(v)
 			parse := m.Parse(d.ctx, v)
 
 			sem <- struct{}{}
