@@ -12,15 +12,15 @@ import (
 	"github.com/MapIHS/kotonehara/internal/devices"
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	dbInfra "github.com/MapIHS/kotonehara/internal/infra/db"
-	"github.com/MapIHS/kotonehara/internal/message"
+	"github.com/mdp/qrterminal"
 	"github.com/subosito/gotenv"
 
 	_ "github.com/MapIHS/kotonehara/pkg"
 
 	_ "github.com/lib/pq"
 
-	"github.com/mdp/qrterminal"
 	"go.mau.fi/whatsmeow/store/sqlstore"
+	"go.mau.fi/whatsmeow/types"
 	waLog "go.mau.fi/whatsmeow/util/log"
 )
 
@@ -45,10 +45,6 @@ func main() {
 
 	defer db.Close()
 
-	if err := message.InitDBStore(db); err != nil {
-		log.Printf("failed to init message store: %v", err)
-	}
-
 	dbLog := waLog.Stdout("Database", "INFO", true)
 	container := sqlstore.NewWithDB(db.DB, "postgres", dbLog)
 
@@ -67,13 +63,24 @@ func main() {
 
 	client := d.NewClient(dev)
 
+	client.PrePairCallback = func(jid types.JID, platform, businessName string) bool {
+		fmt.Printf("Pairing request from %s (platform: %s, business: %s)\n", jid, platform, businessName)
+		return true
+	}
 	if client.Store.ID == nil {
 		// No ID stored, new login
 		qrChan, _ := client.GetQRChannel(ctx)
-		err = client.Connect()
-		if err != nil {
-			panic(err)
-		}
+		// err = client.Connect()
+		// if err != nil {
+		// 	panic(err)
+		// }
+		// code, err := client.PairPhone(ctx, "6283142111875", true, whatsmeow.PairClientChrome, "Chrome (Linux)")
+		// if err != nil {
+		// 	panic(err)
+		// }
+
+		// fmt.Println("ini code kamu : " + code)
+
 		for evt := range qrChan {
 			if evt.Event == "code" {
 				// Render the QR code here

@@ -26,7 +26,6 @@ type videoInfo struct {
 	Views       int         `json:"views"`
 	Likes       int         `json:"likes"`
 	Comments    int         `json:"comments"`
-	Uploaded    float64     `json:"uploaded"`
 	Channel     channelInfo `json:"channel"`
 	Videos      []string    `json:"videos"`
 }
