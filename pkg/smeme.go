@@ -135,7 +135,7 @@ func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 		m.Reply(ctx, fmt.Sprintf("Ada yang salah: %s", err))
 	}
 
-	if _, err := client.SendSticker(ctx, m.From, stc, m.ID); err != nil {
+	if _, err := client.SendSticker(ctx, m.From, stc, false, false, nil); err != nil {
 		m.Reply(ctx, "Stikernya belum bisa dikirim, yaa.")
 		return
 	}

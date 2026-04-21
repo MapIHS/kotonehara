@@ -38,7 +38,7 @@ type Message struct {
 	IsAdmin    bool
 	IsBotAdmin bool
 
-	QuotedMsg *waE2E.ContextInfo
+	QuotedMsg *waE2E.Message
 	ID        *waE2E.ContextInfo
 
 	IsQuotedImage   bool
