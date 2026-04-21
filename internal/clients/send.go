@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"time"
 
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/proto/waE2E"
@@ -20,19 +21,26 @@ func (c *Client) SendText(ctx context.Context, to types.JID, txt string, opts *w
 	}, extra...)
 }
 
-func (c *Client) SendSticker(ctx context.Context, to types.JID, data []byte, opts *waE2E.ContextInfo) (whatsmeow.SendResponse, error) {
+func (c *Client) SendSticker(ctx context.Context, to types.JID, data []byte, isLottie bool, isAnimate bool, opts *waE2E.ContextInfo) (whatsmeow.SendResponse, error) {
 	up, err := c.WA.Upload(ctx, data, whatsmeow.MediaImage)
 	if err != nil {
 		return whatsmeow.SendResponse{}, err
+	}
+	mime := http.DetectContentType(data)
+	if isLottie {
+		mime = "application/was"
 	}
 	msg := &waE2E.Message{
 		StickerMessage: &waE2E.StickerMessage{
 			URL:           proto.String(up.URL),
 			DirectPath:    proto.String(up.DirectPath),
 			MediaKey:      up.MediaKey,
-			Mimetype:      proto.String(http.DetectContentType(data)),
+			IsLottie:      proto.Bool(isLottie),
+			IsAnimated:    proto.Bool(isAnimate),
+			Mimetype:      proto.String(mime),
 			FileEncSHA256: up.FileEncSHA256,
 			FileSHA256:    up.FileSHA256,
+			StickerSentTS: proto.Int64(time.Now().Unix()),
 			FileLength:    proto.Uint64(uint64(len(data))),
 			ContextInfo:   opts,
 		},
