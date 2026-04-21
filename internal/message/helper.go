@@ -48,6 +48,9 @@ func pickMedia(quoted *waE2E.Message, mess *events.Message) whatsmeow.Downloadab
 		if msg := quoted.GetStickerMessage(); msg != nil {
 			return msg
 		}
+		if msg := quoted.GetLottieStickerMessage().GetMessage().GetStickerMessage(); msg != nil {
+			return msg
+		}
 	}
 
 	if msg := mess.Message.GetImageMessage(); msg != nil {
@@ -56,5 +59,33 @@ func pickMedia(quoted *waE2E.Message, mess *events.Message) whatsmeow.Downloadab
 	if msg := mess.Message.GetVideoMessage(); msg != nil {
 		return msg
 	}
+	return nil
+}
+
+func pickQuoted(mess *events.Message) *waE2E.Message {
+	if ext := mess.Message.GetExtendedTextMessage(); ext != nil {
+		if ctx := ext.GetContextInfo(); ctx != nil {
+			return ctx.GetQuotedMessage()
+		}
+	}
+
+	if vid := mess.Message.GetVideoMessage(); vid != nil {
+		if ctx := vid.GetContextInfo(); ctx != nil {
+			return ctx.GetQuotedMessage()
+		}
+	}
+
+	if img := mess.Message.GetImageMessage(); img != nil {
+		if ctx := img.GetContextInfo(); ctx != nil {
+			return ctx.GetQuotedMessage()
+		}
+	}
+
+	if st := mess.Message.GetStickerMessage(); st != nil {
+		if ctx := st.GetContextInfo(); ctx != nil {
+			return ctx.GetQuotedMessage()
+		}
+	}
+
 	return nil
 }

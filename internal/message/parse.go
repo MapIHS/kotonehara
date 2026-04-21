@@ -31,6 +31,7 @@ func extractQuoteContext(mess *events.Message) *waE2E.ContextInfo {
 		StanzaID:      &mess.Info.ID,
 		Participant:   proto.String(mess.Info.Sender.String()),
 		QuotedMessage: mess.Message,
+		MentionedJID:  []string{},
 	}
 
 	if ext := mess.Message.GetExtendedTextMessage(); ext != nil {
@@ -135,7 +136,7 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 		IsAdmin:    isAdmin,
 		IsBotAdmin: isBotAdmin,
 
-		QuotedMsg: quotedInfo,
+		QuotedMsg: pickQuoted(mess),
 		ID:        msgID,
 
 		IsQuotedImage:   isQuotedImage,
