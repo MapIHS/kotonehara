@@ -34,6 +34,7 @@ type Message struct {
 
 	IsImage bool
 	IsVideo bool
+	isGif   bool
 
 	IsAdmin    bool
 	IsBotAdmin bool
@@ -44,6 +45,7 @@ type Message struct {
 	IsQuotedImage   bool
 	IsQuotedVideo   bool
 	IsQuotedSticker bool
+	isQuotedGif     bool
 
 	Reply func(ctx context.Context, text string, opts ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error)
 }
