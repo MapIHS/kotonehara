@@ -84,10 +84,12 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 
 	isImage := mess.Message.GetImageMessage() != nil
 	isVideo := mess.Message.GetVideoMessage() != nil
+	isGif := mess.Message.GetImageMessage().GetMimetype() == "image/gif"
 
 	isQuotedImage := quotedMsg != nil && quotedMsg.GetImageMessage() != nil
 	isQuotedVideo := quotedMsg != nil && quotedMsg.GetVideoMessage() != nil
 	isQuotedSticker := quotedMsg != nil && quotedMsg.GetStickerMessage() != nil
+	isQuotedGif := quotedMsg != nil && quotedMsg.GetImageMessage() != nil && quotedMsg.GetImageMessage().GetMimetype() == "image/gif"
 
 	isAdmin := false
 	isBotAdmin := false
@@ -132,6 +134,7 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 
 		IsImage: isImage,
 		IsVideo: isVideo,
+		isGif:   isGif,
 
 		IsAdmin:    isAdmin,
 		IsBotAdmin: isBotAdmin,
@@ -142,6 +145,7 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 		IsQuotedImage:   isQuotedImage,
 		IsQuotedVideo:   isQuotedVideo,
 		IsQuotedSticker: isQuotedSticker,
+		isQuotedGif:     isQuotedGif,
 
 		Reply: func(ctx context.Context, text string, opts ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error) {
 			return p.Client.SendText(ctx, mess.Info.Chat, text, msgID, opts...)
