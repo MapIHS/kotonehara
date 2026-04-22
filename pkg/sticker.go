@@ -33,6 +33,10 @@ func stc(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 
 	if m.IsVideo || m.IsQuotedVideo {
 		isGif = true
+	} else if m.IsGif || m.IsQuotedGif {
+		isGif = true
+	} else if m.IsQuotedStickerGif {
+		isGif = true
 	}
 
 	stc, err := sticker.BuildSticker(ctx, raw, m.PushName, m.IsQuotedSticker, m.IsVideo || m.IsQuotedVideo)

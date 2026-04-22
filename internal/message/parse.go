@@ -91,6 +91,8 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 	isQuotedSticker := quotedMsg != nil && quotedMsg.GetStickerMessage() != nil
 	isQuotedGif := quotedMsg != nil && quotedMsg.GetImageMessage() != nil && quotedMsg.GetImageMessage().GetMimetype() == "image/gif"
 
+	isQuotedStickerGif := quotedMsg != nil && quotedMsg.GetStickerMessage() != nil && quotedMsg.GetStickerMessage().GetIsAnimated()
+
 	isAdmin := false
 	isBotAdmin := false
 	if mess.Info.IsGroup {
@@ -134,7 +136,7 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 
 		IsImage: isImage,
 		IsVideo: isVideo,
-		isGif:   isGif,
+		IsGif:   isGif,
 
 		IsAdmin:    isAdmin,
 		IsBotAdmin: isBotAdmin,
@@ -145,7 +147,9 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 		IsQuotedImage:   isQuotedImage,
 		IsQuotedVideo:   isQuotedVideo,
 		IsQuotedSticker: isQuotedSticker,
-		isQuotedGif:     isQuotedGif,
+		IsQuotedGif:     isQuotedGif,
+
+		IsQuotedStickerGif: isQuotedStickerGif,
 
 		Reply: func(ctx context.Context, text string, opts ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error) {
 			return p.Client.SendText(ctx, mess.Info.Chat, text, msgID, opts...)

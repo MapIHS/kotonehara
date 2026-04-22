@@ -34,7 +34,7 @@ type Message struct {
 
 	IsImage bool
 	IsVideo bool
-	isGif   bool
+	IsGif   bool
 
 	IsAdmin    bool
 	IsBotAdmin bool
@@ -42,10 +42,11 @@ type Message struct {
 	QuotedMsg *waE2E.Message
 	ID        *waE2E.ContextInfo
 
-	IsQuotedImage   bool
-	IsQuotedVideo   bool
-	IsQuotedSticker bool
-	isQuotedGif     bool
+	IsQuotedImage      bool
+	IsQuotedVideo      bool
+	IsQuotedSticker    bool
+	IsQuotedGif        bool
+	IsQuotedStickerGif bool
 
 	Reply func(ctx context.Context, text string, opts ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error)
 }
