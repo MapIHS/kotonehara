@@ -84,20 +84,39 @@ func (c *Client) SendVideo(ctx context.Context, to types.JID, data []byte, gifPl
 }
 
 func (c *Client) SendImage(ctx context.Context, to types.JID, data []byte, caption string, opts *waE2E.ContextInfo) (whatsmeow.SendResponse, error) {
+	mime, width, height, err := c.DetectImageInfo(data)
+	if err != nil {
+		return whatsmeow.SendResponse{}, err
+	}
+
+	var widthVal, heightVal *uint32
+	if width > 0 {
+		widthVal = proto.Uint32(uint32(width))
+	}
+	if height > 0 {
+		heightVal = proto.Uint32(uint32(height))
+	}
+
 	up, err := c.WA.Upload(ctx, data, whatsmeow.MediaImage)
 	if err != nil {
 		return whatsmeow.SendResponse{}, err
 	}
+
+	thumb, _ := c.MakeJPEGThumb(data, 256, 256)
+
 	msg := &waE2E.Message{
 		ImageMessage: &waE2E.ImageMessage{
-			URL:           proto.String(up.URL),
-			DirectPath:    proto.String(up.DirectPath),
+			URL:           &up.URL,
+			DirectPath:    &up.DirectPath,
 			MediaKey:      up.MediaKey,
+			JPEGThumbnail: thumb,
 			Caption:       proto.String(caption),
-			Mimetype:      proto.String(http.DetectContentType(data)),
+			Mimetype:      proto.String(mime),
 			FileEncSHA256: up.FileEncSHA256,
 			FileSHA256:    up.FileSHA256,
-			FileLength:    proto.Uint64(uint64(len(data))),
+			FileLength:    &up.FileLength,
+			Width:         widthVal,
+			Height:        heightVal,
 			ContextInfo:   opts,
 		},
 	}
