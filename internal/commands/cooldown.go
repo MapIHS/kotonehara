@@ -1,11 +1,10 @@
 package commands
 
 import (
-	"os"
-	"path/filepath"
-	"runtime"
 	"sync"
 	"time"
+
+	staticassets "github.com/MapIHS/kotonehara/internal/static"
 )
 
 var cd = struct {
@@ -16,12 +15,6 @@ var cd = struct {
 	d: 3 * time.Second,
 	m: map[string]time.Time{},
 }
-
-var spamSticker = struct {
-	once sync.Once
-	data []byte
-	err  error
-}{}
 
 func SetCooldown(d time.Duration) {
 	if d <= 0 {
@@ -47,17 +40,5 @@ func allowCooldown(key string) bool {
 }
 
 func loadSpamSticker() ([]byte, error) {
-	spamSticker.once.Do(func() {
-		path := spamStickerPath()
-		spamSticker.data, spamSticker.err = os.ReadFile(path)
-	})
-	return spamSticker.data, spamSticker.err
-}
-
-func spamStickerPath() string {
-	_, file, _, ok := runtime.Caller(0)
-	if !ok {
-		return filepath.Join("internal", "static", "spam.webp")
-	}
-	return filepath.Clean(filepath.Join(filepath.Dir(file), "..", "static", "spam.webp"))
+	return staticassets.SpamSticker, nil
 }
