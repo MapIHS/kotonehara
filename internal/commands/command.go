@@ -42,8 +42,10 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 
 	ck := m.Sender.String() + "|" + cmd.Name
 	if !allowCooldown(ck) {
-		if data, err := loadSpamSticker(); err == nil && len(data) > 0 {
-			_, _ = c.SendSticker(ctx, m.From, data, false, false, m.ID)
+		if shouldSendCooldownSticker(ck) {
+			if data, err := loadSpamSticker(); err == nil && len(data) > 0 {
+				_, _ = c.SendSticker(ctx, m.From, data, false, false, m.ID)
+			}
 		}
 		return
 	}

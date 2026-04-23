@@ -11,9 +11,11 @@ var cd = struct {
 	mu sync.Mutex
 	d  time.Duration
 	m  map[string]time.Time
+	n  map[string]time.Time
 }{
 	d: 3 * time.Second,
 	m: map[string]time.Time{},
+	n: map[string]time.Time{},
 }
 
 func SetCooldown(d time.Duration) {
@@ -36,6 +38,20 @@ func allowCooldown(key string) bool {
 		return false
 	}
 	cd.m[key] = now.Add(cd.d)
+	return true
+}
+
+func shouldSendCooldownSticker(key string) bool {
+	cd.mu.Lock()
+	defer cd.mu.Unlock()
+	if cd.d == 0 {
+		return false
+	}
+	now := time.Now()
+	if until, ok := cd.n[key]; ok && now.Before(until) {
+		return false
+	}
+	cd.n[key] = now.Add(cd.d)
 	return true
 }
 
