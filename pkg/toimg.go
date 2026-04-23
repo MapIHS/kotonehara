@@ -4,12 +4,15 @@ import (
 	"bytes"
 	"context"
 	"image"
+	_ "image/gif"
+	_ "image/jpeg"
 	"image/png"
 
 	"github.com/MapIHS/kotonehara/internal/clients"
 	"github.com/MapIHS/kotonehara/internal/commands"
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"github.com/MapIHS/kotonehara/internal/message"
+	_ "golang.org/x/image/webp"
 )
 
 func init() {
@@ -34,11 +37,13 @@ func init() {
 				m.Reply(ctx, "Media belum bisa diproses, yaa.")
 				return
 			}
+
 			var buf bytes.Buffer
 			if err := png.Encode(&buf, img); err != nil {
 				m.Reply(ctx, "Gambarnya belum bisa dibuat, yaa.")
 				return
 			}
+
 			if _, err := client.SendImage(ctx, m.From, buf.Bytes(), "", m.ID); err != nil {
 				m.Reply(ctx, "Gambarnya belum bisa dikirim, yaa.")
 				return

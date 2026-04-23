@@ -44,7 +44,7 @@ func stc(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 		m.Reply(ctx, fmt.Sprintf("Ada yang salah: %s", err))
 	}
 
-	if _, err := client.SendSticker(ctx, m.From, stc, false, isGif, nil); err != nil {
+	if _, err := client.SendSticker(ctx, m.From, stc, false, isGif, m.ID); err != nil {
 		m.Reply(ctx, "Stikernya belum bisa dikirim, yaa.")
 		return
 	}
