@@ -51,9 +51,3 @@ func (c *adminCache) set(key string, admins []string) {
 	c.m[key] = ent
 	c.mu.Unlock()
 }
-
-func (c *adminCache) invalidate(key string) {
-	c.mu.Lock()
-	delete(c.m, key)
-	c.mu.Unlock()
-}

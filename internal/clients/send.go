@@ -66,6 +66,9 @@ func (c *Client) SendVideo(ctx context.Context, to types.JID, data []byte, gifPl
 	if err != nil {
 		return whatsmeow.SendResponse{}, err
 	}
+
+	thumb, _ := c.MakeVideoThumb(ctx, data, 256, 256)
+
 	msg := &waE2E.Message{
 		VideoMessage: &waE2E.VideoMessage{
 			URL:           proto.String(up.URL),
@@ -73,6 +76,7 @@ func (c *Client) SendVideo(ctx context.Context, to types.JID, data []byte, gifPl
 			MediaKey:      up.MediaKey,
 			Caption:       proto.String(caption),
 			GifPlayback:   proto.Bool(gifPlayback),
+			JPEGThumbnail: thumb,
 			Mimetype:      proto.String(http.DetectContentType(data)),
 			FileEncSHA256: up.FileEncSHA256,
 			FileSHA256:    up.FileSHA256,
