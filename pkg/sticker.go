@@ -39,7 +39,7 @@ func stc(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 		isGif = true
 	}
 
-	stc, err := sticker.BuildSticker(ctx, raw, m.PushName, m.IsQuotedSticker, m.IsVideo || m.IsQuotedVideo)
+	stc, err := sticker.BuildSticker(ctx, raw, m.PushName, m.IsQuotedSticker, isGif)
 	if err != nil {
 		m.Reply(ctx, fmt.Sprintf("Ada yang salah: %s", err))
 	}
