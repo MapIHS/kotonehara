@@ -58,3 +58,7 @@ func shouldSendCooldownSticker(key string) bool {
 func loadSpamSticker() ([]byte, error) {
 	return staticassets.SpamSticker, nil
 }
+
+func loadOwnerSticker() ([]byte, error) {
+	return staticassets.OwnerSticker, nil
+}
