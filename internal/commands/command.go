@@ -62,6 +62,9 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 	}
 
 	if cmd.IsOwner && !m.IsOwner {
+		if data, err := loadOwnerSticker(); err == nil && len(data) > 0 {
+			_, _ = c.SendSticker(ctx, m.From, data, false, false, m.ID)
+		}
 		return
 	}
 	if cmd.IsMedia && m.Media == nil {
