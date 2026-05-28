@@ -57,6 +57,28 @@ func extractQuoteContext(mess *events.Message) *waE2E.ContextInfo {
 	return info
 }
 
+func quoteContextInfo(mess *events.Message) *waE2E.ContextInfo {
+	msg := mess.Message
+	if msg == nil {
+		return nil
+	}
+
+	if ext := msg.GetExtendedTextMessage(); ext != nil {
+		return ext.GetContextInfo()
+	}
+	if vid := msg.GetVideoMessage(); vid != nil {
+		return vid.GetContextInfo()
+	}
+	if img := msg.GetImageMessage(); img != nil {
+		return img.GetContextInfo()
+	}
+	if st := msg.GetStickerMessage(); st != nil {
+		return st.GetContextInfo()
+	}
+
+	return nil
+}
+
 func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 	sender := mess.Info.Sender.String()
 	isOwner := false
@@ -150,6 +172,9 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 		IsQuotedGif:     isQuotedGif,
 
 		IsQuotedStickerGif: isQuotedStickerGif,
+
+		Msg:         mess,
+		ContextInfo: quoteContextInfo(mess),
 
 		Reply: func(ctx context.Context, text string, opts ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error) {
 			return p.Client.SendText(ctx, mess.Info.Chat, text, msgID, opts...)

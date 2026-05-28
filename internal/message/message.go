@@ -6,6 +6,7 @@ import (
 	"go.mau.fi/whatsmeow"
 	waE2E "go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types"
+	"go.mau.fi/whatsmeow/types/events"
 )
 
 type WAClient interface {
@@ -47,6 +48,10 @@ type Message struct {
 	IsQuotedSticker    bool
 	IsQuotedGif        bool
 	IsQuotedStickerGif bool
+
+	ContextInfo *waE2E.ContextInfo
+
+	Msg *events.Message
 
 	Reply func(ctx context.Context, text string, opts ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error)
 }
