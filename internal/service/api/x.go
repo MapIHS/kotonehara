@@ -26,7 +26,7 @@ func (c *Client) X(ctx context.Context, targetURL string) (*XResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	u.Path = "/api/twitter"
+	u.Path = "/api/twitter/download"
 
 	q := u.Query()
 	q.Set("url", targetURL)
