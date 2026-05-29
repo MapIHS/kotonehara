@@ -8,6 +8,14 @@ import (
 	neturl "net/url"
 )
 
+type TwitterMediaType string
+
+const (
+	TwitterMediaTypeVideo TwitterMediaType = "video"
+	TwitterMediaTypeAudio TwitterMediaType = "audio"
+	TwitterMediaTypeImage TwitterMediaType = "image"
+)
+
 type XResult struct {
 	Status        string             `json:"status,omitempty"`
 	InputURL      string             `json:"input_url,omitempty"`
@@ -16,9 +24,10 @@ type XResult struct {
 }
 
 type TwitterMediaLink struct {
-	Label   string `json:"label,omitempty"`
-	Quality string `json:"quality,omitempty"`
-	URL     string `json:"url,omitempty"`
+	Label     string           `json:"label,omitempty"`
+	Quality   string           `json:"quality,omitempty"`
+	MediaType TwitterMediaType `json:"media_type"`
+	URL       string           `json:"url,omitempty"`
 }
 
 func (c *Client) X(ctx context.Context, targetURL string) (*XResult, error) {
