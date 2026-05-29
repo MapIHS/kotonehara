@@ -3,9 +3,12 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	neturl "net/url"
+	"strings"
 )
 
 type TwitterMediaType string
@@ -18,6 +21,7 @@ const (
 
 type XResult struct {
 	Status        string             `json:"status,omitempty"`
+	Message       string             `json:"message,omitempty"`
 	InputURL      string             `json:"input_url,omitempty"`
 	DownloaderURL string             `json:"downloader_url,omitempty"`
 	MediaLinks    []TwitterMediaLink `json:"media_links,omitempty"`
@@ -58,9 +62,42 @@ func (c *Client) X(ctx context.Context, targetURL string) (*XResult, error) {
 		return nil, fmt.Errorf("X api http %d", resp.StatusCode)
 	}
 
-	var out APIResponse[XResult]
-	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
 		return nil, err
 	}
-	return &out.Data, nil
+
+	var out APIResponse[XResult]
+	if err := json.Unmarshal(body, &out); err == nil {
+		if len(out.Data.MediaLinks) > 0 {
+			return &out.Data, nil
+		}
+
+		status := strings.ToLower(strings.TrimSpace(out.Status))
+		if status != "" && status != "success" && status != "ok" {
+			if out.Message != "" {
+				return nil, errors.New(out.Message)
+			}
+			return nil, fmt.Errorf("X api status: %s", out.Status)
+		}
+	}
+
+	var direct XResult
+	if err := json.Unmarshal(body, &direct); err != nil {
+		return nil, err
+	}
+
+	status := strings.ToLower(strings.TrimSpace(direct.Status))
+	if status != "" && status != "success" && status != "ok" {
+		if direct.Message != "" {
+			return nil, errors.New(direct.Message)
+		}
+		return nil, fmt.Errorf("X api status: %s", direct.Status)
+	}
+
+	if len(direct.MediaLinks) == 0 {
+		return nil, fmt.Errorf("X api tidak mengembalikan media")
+	}
+
+	return &direct, nil
 }
