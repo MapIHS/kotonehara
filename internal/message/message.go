@@ -11,8 +11,6 @@ import (
 
 type WAClient interface {
 	SendText(ctx context.Context, to types.JID, txt string, opts *waE2E.ContextInfo, extra ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error)
-	GroupAdmins(ctx context.Context, j types.JID) ([]string, error)
-	BotJID() string
 }
 
 type Message struct {

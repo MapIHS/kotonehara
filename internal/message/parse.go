@@ -90,7 +90,7 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 		}
 	}
 
-	body := extractBody(mess)
+	body := ExtractBody(mess)
 	cmd, query := splitCommand(body)
 	var quotedMsg *waE2E.Message
 	var quotedInfo *waE2E.ContextInfo
@@ -115,27 +115,6 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 
 	isQuotedStickerGif := quotedMsg != nil && quotedMsg.GetStickerMessage() != nil && quotedMsg.GetStickerMessage().GetIsAnimated()
 
-	isAdmin := false
-	isBotAdmin := false
-	if mess.Info.IsGroup {
-		admins, err := p.Client.GroupAdmins(ctx, mess.Info.Chat)
-		if err == nil && len(admins) > 0 {
-			senderStr := mess.Info.Sender.String()
-			botStr := p.Client.BotJID()
-			for _, a := range admins {
-				if a == senderStr {
-					isAdmin = true
-				}
-				if a == botStr {
-					isBotAdmin = true
-				}
-				if isAdmin && isBotAdmin {
-					break
-				}
-			}
-		}
-	}
-
 	msgID := extractQuoteContext(mess)
 
 	return &Message{
@@ -159,9 +138,6 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 		IsImage: isImage,
 		IsVideo: isVideo,
 		IsGif:   isGif,
-
-		IsAdmin:    isAdmin,
-		IsBotAdmin: isBotAdmin,
 
 		QuotedMsg: pickQuoted(mess),
 		ID:        msgID,
