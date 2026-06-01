@@ -3,6 +3,7 @@ package sticker
 import (
 	"bytes"
 	"context"
+	"errors"
 	"image"
 	idraw "image/draw"
 	"os"
@@ -36,7 +37,7 @@ func toWebP512(b []byte) ([]byte, error) {
 	h := int(float64(bh) * scale)
 	x := (sz - w) / 2
 	y := (sz - h) / 2
-	xdraw.CatmullRom.Scale(dst, image.Rect(x, y, x+w, y+h), img, img.Bounds(), xdraw.Over, nil)
+	xdraw.ApproxBiLinear.Scale(dst, image.Rect(x, y, x+w, y+h), img, img.Bounds(), xdraw.Over, nil)
 	var out bytes.Buffer
 	if err := webpenc.Encode(&out, dst, &webpenc.Options{Quality: 80}); err != nil {
 		return nil, err
@@ -45,6 +46,10 @@ func toWebP512(b []byte) ([]byte, error) {
 }
 
 func videoToWebP(ctx context.Context, data []byte) ([]byte, error) {
+	if _, err := exec.LookPath("ffmpeg"); err != nil {
+		return nil, errors.New("ffmpeg belum terpasang")
+	}
+
 	dir, err := os.MkdirTemp("", "vidtowebp")
 	if err != nil {
 		return nil, err
@@ -58,9 +63,34 @@ func videoToWebP(ctx context.Context, data []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	// Tweak: crop to 1:1 aspect ratio, limit to 10 seconds, scale to 512x512
-	cmd := exec.CommandContext(ctx, "ffmpeg", "-y", "-i", inFile, "-vcodec", "libwebp", "-vf", "fps=15,crop=w='min(in_w\\,in_h)':h='min(in_w\\,in_h)',scale=512:512", "-lossless", "0", "-q:v", "40", "-loop", "0", "-preset", "default", "-an", "-vsync", "0", "-t", "00:00:10", outFile)
-	if err := cmd.Run(); err != nil {
+	cmd := exec.CommandContext(
+		ctx,
+		"ffmpeg",
+		"-hide_banner",
+		"-loglevel", "error",
+		"-y",
+		"-t", "10",
+		"-i", inFile,
+		"-an",
+		"-sn",
+		"-dn",
+		"-vcodec", "libwebp",
+		"-vf", "fps=15,crop=w='min(in_w\\,in_h)':h='min(in_w\\,in_h)',scale=512:512",
+		"-lossless", "0",
+		"-q:v", "45",
+		"-compression_level", "3",
+		"-loop", "0",
+		"-preset", "default",
+		"-vsync", "0",
+		outFile,
+	)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
+		if len(out) > 0 {
+			return nil, errors.New(string(bytes.TrimSpace(out)))
+		}
 		return nil, err
 	}
 
