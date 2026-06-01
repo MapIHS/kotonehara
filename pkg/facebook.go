@@ -15,7 +15,7 @@ import (
 func init() {
 	commands.Register(&commands.Command{
 		Name:     "facebook",
-		As:       []string{"fbdl"},
+		As:       []string{"fbdl", "fb"},
 		Tags:     "downloader",
 		IsQuery:  true,
 		IsPrefix: true,
