@@ -83,6 +83,9 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 		_, _ = m.Reply(ctx, "Hanya untuk chat pribadi, yaa.")
 		return
 	}
+	if m.IsGroup && (cmd.IsAdmin || cmd.IsBotAdmin) {
+		fillAdminStatus(ctx, c, m)
+	}
 	if m.IsGroup && cmd.IsAdmin && !m.IsAdmin {
 		_, _ = m.Reply(ctx, "Perintah ini untuk admin grup, yaa.")
 		return
@@ -106,16 +109,34 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 
 	go func() {
 		i := 0
+		printed := false
+		timer := time.NewTimer(250 * time.Millisecond)
+		defer timer.Stop()
+		var ticker *time.Ticker
+		var tick <-chan time.Time
+		defer func() {
+			if ticker != nil {
+				ticker.Stop()
+			}
+		}()
+
 		for {
 			select {
 			case <-done:
 				fmt.Printf("\r\033[K\033[1;32m[✓]\033[0m \033[1;36m%s\033[0m use command \033[1;32m%s\033[0m\n", userName, cmd.Name)
 				close(finished)
 				return
-			default:
+			case <-timer.C:
+				printed = true
 				fmt.Printf("\r\033[K\033[1;35m[%s]\033[0m \033[1;36m%s\033[0m use command \033[1;32m%s\033[0m", spinner[i%len(spinner)], userName, cmd.Name)
 				i++
-				time.Sleep(100 * time.Millisecond)
+				ticker = time.NewTicker(250 * time.Millisecond)
+				tick = ticker.C
+			case <-tick:
+				if printed {
+					fmt.Printf("\r\033[K\033[1;35m[%s]\033[0m \033[1;36m%s\033[0m use command \033[1;32m%s\033[0m", spinner[i%len(spinner)], userName, cmd.Name)
+					i++
+				}
 			}
 		}
 	}()
@@ -123,4 +144,25 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 	cmd.Exec(ctx, c, m, cfg)
 	close(done)
 	<-finished
+}
+
+func fillAdminStatus(ctx context.Context, c *clients.Client, m *message.Message) {
+	admins, err := c.GroupAdmins(ctx, m.From)
+	if err != nil || len(admins) == 0 {
+		return
+	}
+
+	sender := m.Sender.String()
+	bot := c.BotJID()
+	for _, admin := range admins {
+		if admin == sender {
+			m.IsAdmin = true
+		}
+		if admin == bot {
+			m.IsBotAdmin = true
+		}
+		if m.IsAdmin && m.IsBotAdmin {
+			return
+		}
+	}
 }

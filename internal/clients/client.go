@@ -21,8 +21,20 @@ func New(c *whatsmeow.Client, cfg config.Config) *Client {
 		WA:     c,
 		cfg:    cfg,
 		admins: newAdminCache(cfg.AdminTTL),
-		HTTP: &http.Client{
-			Timeout: 20 * time.Second,
-		},
+		HTTP:   newHTTPClient(20 * time.Second),
+	}
+}
+
+func newHTTPClient(timeout time.Duration) *http.Client {
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	tr.MaxIdleConns = 100
+	tr.MaxIdleConnsPerHost = 20
+	tr.IdleConnTimeout = 90 * time.Second
+	tr.ResponseHeaderTimeout = 15 * time.Second
+	tr.ExpectContinueTimeout = time.Second
+
+	return &http.Client{
+		Timeout:   timeout,
+		Transport: tr,
 	}
 }

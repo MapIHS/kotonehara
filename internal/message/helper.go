@@ -8,7 +8,7 @@ import (
 	"go.mau.fi/whatsmeow/types/events"
 )
 
-func extractBody(mess *events.Message) string {
+func ExtractBody(mess *events.Message) string {
 	if s := mess.Message.GetExtendedTextMessage().GetText(); s != "" {
 		return s
 	}

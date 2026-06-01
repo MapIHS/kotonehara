@@ -45,7 +45,15 @@ func (d *Devices) GetDefaultDevice(ctx context.Context) (*store.Device, error) {
 func (d *Devices) NewClient(dev *store.Device) *whatsmeow.Client {
 	clientLog := waLog.Stdout("whatsmeow", "ERROR", true)
 
+	if d.cfg.DisableContactImport {
+		d.log.Infof("contact import disabled")
+		disableContactImportForDevice(dev)
+	}
+
 	client := whatsmeow.NewClient(dev, clientLog)
+	if d.cfg.DisableContactImport {
+		disableContactImportForDevice(client.Store)
+	}
 	client.AddEventHandler(d.registerEventHandler(client))
 	return client
 }
@@ -57,7 +65,9 @@ func (d *Devices) registerEventHandler(client *whatsmeow.Client) func(evt interf
 	return func(evt interface{}) {
 		switch v := evt.(type) {
 		case *events.Message:
-			parse := m.Parse(d.ctx, v)
+			if !commands.CanHandle(message.ExtractBody(v), d.cfg) {
+				return
+			}
 
 			sem <- struct{}{}
 			go func() {
@@ -67,10 +77,14 @@ func (d *Devices) registerEventHandler(client *whatsmeow.Client) func(evt interf
 					}
 					<-sem
 				}()
+				parse := m.Parse(d.ctx, v)
 				commands.CommandExec(d.ctx, c, parse, d.cfg)
 			}()
 
 		case *events.Connected:
+			if d.cfg.DisableContactImport {
+				disableContactImportForDevice(client.Store)
+			}
 			d.log.Infof("connected")
 		case *events.Disconnected:
 			d.log.Warnf("disconnected")

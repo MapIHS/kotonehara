@@ -8,15 +8,16 @@ import (
 )
 
 type Config struct {
-	AppEnv     string
-	Prefix     string
-	DBURL      string
-	Owners     []string
-	Cooldown   time.Duration
-	AdminTTL   time.Duration
-	BASEApiURL string
-	BASES3URL  string
-	MemeHost   string
+	AppEnv               string
+	Prefix               string
+	DBURL                string
+	Owners               []string
+	Cooldown             time.Duration
+	AdminTTL             time.Duration
+	DisableContactImport bool
+	BASEApiURL           string
+	BASES3URL            string
+	MemeHost             string
 }
 
 func Load() Config {
@@ -36,6 +37,7 @@ func Load() Config {
 
 	cd := parseDurationOrSeconds(os.Getenv("COOLDOWN"), 3*time.Second)
 	adminTTL := parseDurationOrSeconds(os.Getenv("ADMIN_TTL"), 45*time.Second)
+	disableContactImport := parseBoolDefault(os.Getenv("DISABLE_CONTACT_IMPORT"), true)
 
 	baseurl := strings.TrimSpace(os.Getenv("BASEAPI_URL"))
 
@@ -43,15 +45,16 @@ func Load() Config {
 	memehost := strings.TrimSpace(os.Getenv("MEMEHOST_URL"))
 
 	return Config{
-		AppEnv:     env,
-		Prefix:     prefix,
-		DBURL:      dbURL,
-		Owners:     owners,
-		Cooldown:   cd,
-		AdminTTL:   adminTTL,
-		BASEApiURL: baseurl,
-		BASES3URL:  bases3url,
-		MemeHost:   memehost,
+		AppEnv:               env,
+		Prefix:               prefix,
+		DBURL:                dbURL,
+		Owners:               owners,
+		Cooldown:             cd,
+		AdminTTL:             adminTTL,
+		DisableContactImport: disableContactImport,
+		BASEApiURL:           baseurl,
+		BASES3URL:            bases3url,
+		MemeHost:             memehost,
 	}
 }
 
@@ -83,4 +86,23 @@ func parseDurationOrSeconds(s string, def time.Duration) time.Duration {
 		return time.Duration(n) * time.Second
 	}
 	return def
+}
+
+func parseBool(s string) bool {
+	return parseBoolDefault(s, false)
+}
+
+func parseBoolDefault(s string, def bool) bool {
+	s = strings.TrimSpace(strings.ToLower(s))
+	if s == "" {
+		return def
+	}
+	switch s {
+	case "1", "true", "yes", "y", "on":
+		return true
+	case "0", "false", "no", "n", "off":
+		return false
+	default:
+		return def
+	}
 }

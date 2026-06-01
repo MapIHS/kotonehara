@@ -3,6 +3,8 @@ package commands
 import (
 	"strings"
 	"sync"
+
+	"github.com/MapIHS/kotonehara/internal/infra/config"
 )
 
 type registry struct {
@@ -66,6 +68,41 @@ func lookup(key string) (*Command, bool) {
 
 	c, ok := reg.byKey[key]
 	return c, ok
+}
+
+func CanHandle(body string, cfg config.Config) bool {
+	s := strings.TrimSpace(body)
+	if s == "" {
+		return false
+	}
+
+	cfgPrefix := strings.TrimSpace(cfg.Prefix)
+	msgPrefix := ""
+	if cfgPrefix != "" && strings.HasPrefix(s, cfgPrefix) {
+		msgPrefix = cfgPrefix
+	}
+
+	name := s
+	if msgPrefix != "" {
+		name = strings.TrimSpace(strings.TrimPrefix(name, msgPrefix))
+	}
+
+	parts := strings.Fields(name)
+	if len(parts) == 0 {
+		return false
+	}
+
+	cmd, ok := lookup(parts[0])
+	if !ok {
+		return false
+	}
+	if cmd.IsPrefix && msgPrefix == "" {
+		return false
+	}
+	if !cmd.IsPrefix && msgPrefix != "" {
+		return false
+	}
+	return true
 }
 
 func groupByTag() map[string][]*Command {
