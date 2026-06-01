@@ -15,7 +15,7 @@ import (
 func init() {
 	commands.Register(&commands.Command{
 		Name:     "instagram",
-		As:       []string{"ig"},
+		As:       []string{"ig", "igdl"},
 		Tags:     "downloader",
 		IsQuery:  true,
 		IsPrefix: true,

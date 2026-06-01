@@ -59,6 +59,7 @@ func convertToVideo(ctx context.Context, data []byte) ([]byte, bool, error) {
 func init() {
 	commands.Register(&commands.Command{
 		Name:        "tovideo",
+		As:          []string{"tomp4"},
 		Tags:        "convert",
 		Description: "Change Media to Video",
 		IsPrefix:    true,

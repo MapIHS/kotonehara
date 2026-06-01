@@ -18,6 +18,7 @@ import (
 func init() {
 	commands.Register(&commands.Command{
 		Name:        "toimg",
+		As:          []string{"toimage"},
 		Tags:        "convert",
 		Description: "Change Media to Image",
 		IsPrefix:    true,
