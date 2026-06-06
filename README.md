@@ -31,6 +31,13 @@ ADMIN_TTL=45s
 BASEAPI_URL=
 BASES3_URL=https://s3.ihsn.dev
 MEMEHOST_URL=https://apimem.ihsn.dev # or api.memegen.link
+
+# OpenAI-compatible AI command
+OPENAI_BASE_URL=https://bedrock-mantle.<your-region>.api.aws/v1
+OPENAI_API_KEY=YOUR_BEDROCK_API_KEY
+OPENAI_MODEL=openai.gpt-oss-120b
+OPENAI_TIMEOUT=90s
+OPENAI_SYSTEM_PROMPT=Kamu adalah Kotonehara, asisten WhatsApp yang membantu dengan jawaban jelas, ringkas, dan ramah dalam Bahasa Indonesia.
 ```
 
 
@@ -68,4 +75,3 @@ go build -o hara cmd/bot/main.go
 podman build -t kotonehara:latest .
 podman run --rm -it --env-file .env --name kotonehara kotonehara:latest
 ```
-

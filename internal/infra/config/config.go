@@ -18,6 +18,11 @@ type Config struct {
 	BASEApiURL           string
 	BASES3URL            string
 	MemeHost             string
+	OpenAIBaseURL        string
+	OpenAIAPIKey         string
+	OpenAIModel          string
+	OpenAISystemPrompt   string
+	OpenAITimeout        time.Duration
 }
 
 func Load() Config {
@@ -43,6 +48,17 @@ func Load() Config {
 
 	bases3url := strings.TrimSpace(os.Getenv("BASES3_URL"))
 	memehost := strings.TrimSpace(os.Getenv("MEMEHOST_URL"))
+	openAIBaseURL := strings.TrimRight(strings.TrimSpace(os.Getenv("OPENAI_BASE_URL")), "/")
+	if openAIBaseURL == "" {
+		openAIBaseURL = "https://api.openai.com/v1"
+	}
+	openAIAPIKey := strings.TrimSpace(os.Getenv("OPENAI_API_KEY"))
+	openAIModel := strings.TrimSpace(os.Getenv("OPENAI_MODEL"))
+	openAISystemPrompt := strings.TrimSpace(os.Getenv("OPENAI_SYSTEM_PROMPT"))
+	if openAISystemPrompt == "" {
+		openAISystemPrompt = "Kamu adalah Kotonehara, asisten WhatsApp yang membantu dengan jawaban jelas, ringkas, dan ramah dalam Bahasa Indonesia."
+	}
+	openAITimeout := parseDurationOrSeconds(os.Getenv("OPENAI_TIMEOUT"), 90*time.Second)
 
 	return Config{
 		AppEnv:               env,
@@ -55,6 +71,11 @@ func Load() Config {
 		BASEApiURL:           baseurl,
 		BASES3URL:            bases3url,
 		MemeHost:             memehost,
+		OpenAIBaseURL:        openAIBaseURL,
+		OpenAIAPIKey:         openAIAPIKey,
+		OpenAIModel:          openAIModel,
+		OpenAISystemPrompt:   openAISystemPrompt,
+		OpenAITimeout:        openAITimeout,
 	}
 }
 
