@@ -120,6 +120,40 @@ func (c *Client) SendVideo(ctx context.Context, to types.JID, data []byte, gifPl
 	return c.WA.SendMessage(ctx, to, msg)
 }
 
+func (c *Client) SendAudio(ctx context.Context, to types.JID, data []byte, ptt bool, opts *waE2E.ContextInfo) (whatsmeow.SendResponse, error) {
+	mime := http.DetectContentType(data)
+	switch mime {
+	case "application/octet-stream":
+		mime = "audio/mpeg"
+	case "application/ogg":
+		mime = "audio/ogg"
+	}
+	if !strings.HasPrefix(mime, "audio/") {
+		return whatsmeow.SendResponse{}, fmt.Errorf("data bukan audio valid (mime: %s)", mime)
+	}
+
+	up, err := c.WA.Upload(ctx, data, whatsmeow.MediaAudio)
+	if err != nil {
+		return whatsmeow.SendResponse{}, err
+	}
+
+	msg := &waE2E.Message{
+		AudioMessage: &waE2E.AudioMessage{
+			URL:           proto.String(up.URL),
+			DirectPath:    proto.String(up.DirectPath),
+			MediaKey:      up.MediaKey,
+			Mimetype:      proto.String(mime),
+			FileEncSHA256: up.FileEncSHA256,
+			FileSHA256:    up.FileSHA256,
+			FileLength:    &up.FileLength,
+			PTT:           proto.Bool(ptt),
+			ContextInfo:   opts,
+		},
+	}
+
+	return c.WA.SendMessage(ctx, to, msg)
+}
+
 func (c *Client) SendImage(ctx context.Context, to types.JID, data []byte, caption string, opts *waE2E.ContextInfo) (whatsmeow.SendResponse, error) {
 	mime, width, height, err := c.DetectImageInfo(data)
 	if err != nil {
