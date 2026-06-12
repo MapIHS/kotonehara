@@ -117,7 +117,6 @@ func cekAPI(ctx context.Context, client *clients.Client, m *message.Message, cfg
 	}{
 		{"BASE Api URL", cfg.BASEApiURL},
 		{"BASES3 URL", cfg.BASES3URL},
-		{"Meme Host", cfg.MemeHost},
 	}
 
 	httpClient := httpclient.New("", 5*time.Second).HTTP

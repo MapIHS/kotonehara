@@ -30,7 +30,6 @@ COOLDOWN=3s          # Cooldown time for the command, set to 0 to disable.
 ADMIN_TTL=45s
 BASEAPI_URL=
 BASES3_URL=https://s3.ihsn.dev
-MEMEHOST_URL=https://apimem.ihsn.dev # or api.memegen.link
 
 # OpenAI-compatible AI command
 OPENAI_BASE_URL=https://bedrock-mantle.<your-region>.api.aws/v1
