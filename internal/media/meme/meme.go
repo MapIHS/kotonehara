@@ -16,8 +16,8 @@ import (
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
 	"golang.org/x/image/math/fixed"
+	xwebp "golang.org/x/image/webp"
 
-	_ "golang.org/x/image/webp"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
@@ -49,7 +49,7 @@ func Render(data []byte, opts Options) ([]byte, error) {
 		return nil, fmt.Errorf("gambar kosong")
 	}
 
-	src, _, err := image.Decode(bytes.NewReader(data))
+	src, err := decodeSourceImage(data)
 	if err != nil {
 		return nil, fmt.Errorf("gambar belum bisa dibaca: %w", err)
 	}
@@ -80,6 +80,35 @@ func Render(data []byte, opts Options) ([]byte, error) {
 		return nil, err
 	}
 	return out.Bytes(), nil
+}
+
+func decodeSourceImage(data []byte) (image.Image, error) {
+	if isWebP(data) {
+		if isAnimatedWebP(data) {
+			return nil, fmt.Errorf("WebP animasi belum didukung untuk sticker meme lokal")
+		}
+
+		img, err := xwebp.Decode(bytes.NewReader(data))
+		if err == nil {
+			return img, nil
+		}
+	}
+
+	img, _, err := image.Decode(bytes.NewReader(data))
+	return img, err
+}
+
+func isWebP(data []byte) bool {
+	return len(data) >= 12 &&
+		string(data[:4]) == "RIFF" &&
+		string(data[8:12]) == "WEBP"
+}
+
+func isAnimatedWebP(data []byte) bool {
+	if !isWebP(data) {
+		return false
+	}
+	return bytes.Contains(data, []byte("ANIM")) || bytes.Contains(data, []byte("ANMF"))
 }
 
 func scaleForMeme(src image.Image, minDim, maxDim int) *image.RGBA {
