@@ -25,6 +25,10 @@ func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 		m.Reply(ctx, "Sticker meme untuk gambar dulu, yaa.")
 		return
 	}
+	if m.IsQuotedStickerGif {
+		m.Reply(ctx, "Sticker meme belum mendukung sticker animasi, yaa.")
+		return
+	}
 
 	args := strings.TrimSpace(m.Query)
 	parts := strings.Split(args, "|")
@@ -50,7 +54,7 @@ func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 		BottomText: bottomText,
 	})
 	if err != nil {
-		m.Reply(ctx, "Gagal bikin meme lokal: "+err.Error())
+		m.Reply(ctx, "Gagal bikin meme: "+err.Error())
 		return
 	}
 
