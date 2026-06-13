@@ -56,5 +56,11 @@ func (c *Client) Upload(filename string, file []byte) (string, error) {
 		return "", fmt.Errorf("failed to parse json: %w", err)
 
 	}
+	if result.Data == nil || result.Data.Key == "" {
+		if result.Error != "" {
+			return "", fmt.Errorf("upload failed: %s", result.Error)
+		}
+		return "", fmt.Errorf("upload failed: response key kosong")
+	}
 	return fmt.Sprintf("%s/file/%s", c.BaseURL, result.Data.Key), nil
 }
