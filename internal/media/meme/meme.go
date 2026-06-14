@@ -154,10 +154,10 @@ func drawMemeText(img *image.RGBA, text string, top bool) error {
 	}
 
 	maxWidth := int(float64(w) * 0.92)
-	maxHeight := int(float64(h) * 0.28)
-	startSize := int(math.Min(float64(w)/7.5, float64(h)/4.8))
-	if startSize < 18 {
-		startSize = 18
+	maxHeight := int(float64(h) * 0.24)
+	startSize := int(math.Min(float64(w)/9, float64(h)/5.8))
+	if startSize < 16 {
+		startSize = 16
 	}
 
 	layout, err := fitMemeText(text, maxWidth, maxHeight, startSize)
@@ -204,7 +204,7 @@ func fitMemeText(text string, maxWidth, maxHeight, startSize int) (memeTextLayou
 				lines:      lines,
 				face:       face,
 				lineHeight: lineHeight,
-				stroke:     max(2, size/14),
+				stroke:     max(1, size/16),
 			}
 		}
 		if len(lines) > 0 && totalHeight <= maxHeight && widestLine(face, lines) <= maxWidth {
@@ -218,6 +218,10 @@ func fitMemeText(text string, maxWidth, maxHeight, startSize int) (memeTextLayou
 }
 
 func memeFontFace(size float64) (font.Face, error) {
+	return FontFace(size)
+}
+
+func FontFace(size float64) (font.Face, error) {
 	boldFontOnce.Do(func() {
 		boldFont, boldFontErr = opentype.Parse(memegenThickTTF)
 	})
