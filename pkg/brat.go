@@ -3,31 +3,31 @@ package pkg
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/MapIHS/kotonehara/internal/clients"
 	"github.com/MapIHS/kotonehara/internal/commands"
 	"github.com/MapIHS/kotonehara/internal/infra/config"
+	bratimage "github.com/MapIHS/kotonehara/internal/media/brat"
 	"github.com/MapIHS/kotonehara/internal/media/sticker"
 	"github.com/MapIHS/kotonehara/internal/message"
-	"github.com/MapIHS/kotonehara/internal/service/api"
 )
 
 func brat(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
-	ap := api.New(cfg.BASEApiURL, 15*time.Second)
+	_ = cfg
 
-	res, err := ap.Brat(ctx, m.Query)
+	res, err := bratimage.Render(bratimage.Options{Text: m.Query})
 	if err != nil {
-		m.Reply(ctx, "Gagal.")
+		m.Reply(ctx, "Gagal bikin brat lokal: "+err.Error())
 		return
 	}
 
 	stc, err := sticker.BuildSticker(ctx, res, m.PushName, false, false)
 	if err != nil {
 		m.Reply(ctx, fmt.Sprintf("Ada yang salah: %s", err))
+		return
 	}
 
-	if _, err := client.SendSticker(ctx, m.From, stc, false, false, nil); err != nil {
+	if _, err := client.SendSticker(ctx, m.From, stc, false, false, m.ID); err != nil {
 		m.Reply(ctx, "Stikernya belum bisa dikirim, yaa.")
 		return
 	}
