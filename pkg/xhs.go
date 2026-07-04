@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"context"
+	"regexp"
 	"strings"
 	"time"
 
@@ -12,6 +13,17 @@ import (
 	"github.com/MapIHS/kotonehara/internal/service/api"
 )
 
+var urlPattern = regexp.MustCompile(`https?://\S+`)
+
+func firstURLFromText(text string) string {
+	match := urlPattern.FindString(text)
+	if match == "" {
+		return ""
+	}
+
+	return strings.TrimRight(match, ".,;:!?。。，，、）)]}>")
+}
+
 func init() {
 	commands.Register(&commands.Command{
 		Name:     "xiahongsu",
@@ -20,13 +32,17 @@ func init() {
 		IsQuery:  true,
 		IsPrefix: true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
-			args := strings.Fields(m.Query)
+			targetURL := firstURLFromText(m.Query)
+			if targetURL == "" {
+				m.Reply(ctx, "Link XHS/Rednote-nya belum ada.")
+				return
+			}
 
 			m.Reply(ctx, "Tunggu Sebentar ya.")
 
 			ap := api.New(cfg.BASEApiURL, 60*time.Second)
 
-			res, err := ap.Rednote(ctx, args[0])
+			res, err := ap.Rednote(ctx, targetURL)
 			if err != nil {
 				m.Reply(ctx, err.Error())
 				return
