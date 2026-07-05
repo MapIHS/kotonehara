@@ -17,10 +17,6 @@ type Client struct {
 }
 
 func New(baseURL string, timeout time.Duration) *Client {
-	if timeout <= 0 {
-		timeout = 15 * time.Second
-	}
-
 	httpClient := newHTTPClient(timeout)
 
 	if os.Getenv("TAILSCALE_SOCKS5") == "1" {
@@ -46,12 +42,14 @@ func newSOCKS5HTTPClient(timeout time.Duration, socksAddr string) (*http.Client,
 	}
 
 	tr := &http.Transport{
-		DialContext:           dialContext,
-		ForceAttemptHTTP2:     false,
-		MaxIdleConns:          100,
-		MaxIdleConnsPerHost:   20,
-		ResponseHeaderTimeout: 30 * time.Second,
-		IdleConnTimeout:       90 * time.Second,
+		DialContext:         dialContext,
+		ForceAttemptHTTP2:   false,
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 20,
+		IdleConnTimeout:     90 * time.Second,
+	}
+	if timeout > 0 {
+		tr.ResponseHeaderTimeout = 30 * time.Second
 	}
 
 	return &http.Client{
@@ -65,7 +63,9 @@ func newHTTPClient(timeout time.Duration) *http.Client {
 	tr.MaxIdleConns = 100
 	tr.MaxIdleConnsPerHost = 20
 	tr.IdleConnTimeout = 90 * time.Second
-	tr.ResponseHeaderTimeout = 15 * time.Second
+	if timeout > 0 {
+		tr.ResponseHeaderTimeout = 15 * time.Second
+	}
 	tr.ExpectContinueTimeout = time.Second
 
 	return &http.Client{
