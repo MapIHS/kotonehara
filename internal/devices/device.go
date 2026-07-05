@@ -10,6 +10,7 @@ import (
 	"github.com/MapIHS/kotonehara/internal/commands"
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"github.com/MapIHS/kotonehara/internal/message"
+	meowcaller "github.com/purpshell/meowcaller"
 
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/store"
@@ -51,15 +52,19 @@ func (d *Devices) NewClient(dev *store.Device) *whatsmeow.Client {
 	}
 
 	client := whatsmeow.NewClient(dev, clientLog)
+	callClient := meowcaller.NewClient(client)
+	callClient.OnIncomingCall(func(call *meowcaller.Call) {
+		d.log.Infof("incoming call from %s (%s)", call.Peer().String(), call.ID())
+	})
 	if d.cfg.DisableContactImport {
 		disableContactImportForDevice(client.Store)
 	}
-	client.AddEventHandler(d.registerEventHandler(client))
+	client.AddEventHandler(d.registerEventHandler(client, callClient))
 	return client
 }
 
-func (d *Devices) registerEventHandler(client *whatsmeow.Client) func(evt interface{}) {
-	c := clients.New(client, d.cfg)
+func (d *Devices) registerEventHandler(client *whatsmeow.Client, callClient *meowcaller.Client) func(evt interface{}) {
+	c := clients.New(client, d.cfg, callClient)
 	m := message.NewParser(c, d.cfg)
 	sem := make(chan struct{}, 20)
 	return func(evt interface{}) {

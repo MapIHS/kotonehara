@@ -2,7 +2,7 @@
 bin/*
 .env
 hara
-.air.toml
 tmp
 pull.sh
 test_*
+*.mp3

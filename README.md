@@ -10,6 +10,7 @@ Kotonehara adalah bot WhatsApp berbasis Go yang dibangun dengan [`whatsmeow`](ht
 - Downloader untuk Instagram, TikTok, Facebook, X/Twitter, YouTube, Threads, dan Rednote/Xiaohongshu melalui API eksternal.
 - Tools media: sticker, sticker meme, brat, image/video conversion, upload ke URL.
 - Command AI via OpenAI-compatible API.
+- WhatsApp outbound call via [`meowcaller`](https://github.com/purpshell/meowcaller) untuk owner.
 - Docker/Podman support.
 
 ## Requirements
@@ -131,9 +132,16 @@ Image menjalankan `tailscale.sh` sebagai command default. Pastikan konfigurasi y
 Jika memakai [`mise`](https://mise.jdx.dev/), task yang tersedia:
 
 ```bash
-mise run dev      # go run ./cmd/bot/main.go
+mise run dev      # live reload dengan air
+mise run run      # go run ./cmd/bot/main.go
 mise run build    # build ke bin/hara
 mise run tidy     # go mod tidy dan go fmt ./...
+```
+
+Untuk live reload tanpa `mise`:
+
+```bash
+air -c .air.toml
 ```
 
 Format dan rapikan dependency secara manual:
