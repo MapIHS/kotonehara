@@ -22,6 +22,9 @@ type Config struct {
 	OpenAIModel          string
 	OpenAISystemPrompt   string
 	OpenAITimeout        time.Duration
+	WebUsername          string
+	WebPassword          string
+	WebSessionTTL        time.Duration
 }
 
 func Load() Config {
@@ -57,6 +60,9 @@ func Load() Config {
 		openAISystemPrompt = "Kamu adalah Kotonehara, asisten WhatsApp yang membantu dengan jawaban jelas, ringkas, dan ramah dalam Bahasa Indonesia."
 	}
 	openAITimeout := parseDurationOrSeconds(os.Getenv("OPENAI_TIMEOUT"), 90*time.Second)
+	webUsername := strings.TrimSpace(os.Getenv("WEB_USERNAME"))
+	webPassword := strings.TrimSpace(os.Getenv("WEB_PASSWORD"))
+	webSessionTTL := parseDurationOrSeconds(os.Getenv("WEB_SESSION_TTL"), 24*time.Hour)
 
 	return Config{
 		AppEnv:               env,
@@ -73,6 +79,9 @@ func Load() Config {
 		OpenAIModel:          openAIModel,
 		OpenAISystemPrompt:   openAISystemPrompt,
 		OpenAITimeout:        openAITimeout,
+		WebUsername:          webUsername,
+		WebPassword:          webPassword,
+		WebSessionTTL:        webSessionTTL,
 	}
 }
 

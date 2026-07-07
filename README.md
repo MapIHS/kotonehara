@@ -60,6 +60,9 @@ Variabel penting:
 | `OPENAI_MODEL` | Model AI yang digunakan. | kosong |
 | `OPENAI_TIMEOUT` | Timeout request AI. | `90s` |
 | `OPENAI_SYSTEM_PROMPT` | System prompt untuk command AI. | prompt Bahasa Indonesia bawaan |
+| `WEB_USERNAME` | Username login dashboard web. | kosong |
+| `WEB_PASSWORD` | Password login dashboard web. | kosong |
+| `WEB_SESSION_TTL` | Lama sesi login web. | `24h` |
 
 Contoh minimal:
 
@@ -77,6 +80,9 @@ OPENAI_API_KEY=
 OPENAI_MODEL=
 OPENAI_TIMEOUT=90s
 OPENAI_SYSTEM_PROMPT=Kamu adalah Kotonehara, asisten WhatsApp yang membantu dengan jawaban jelas, ringkas, dan ramah dalam Bahasa Indonesia.
+WEB_USERNAME=admin
+WEB_PASSWORD=change-me
+WEB_SESSION_TTL=24h
 ```
 
 > Jangan commit `.env` atau secret/API key ke repository.
@@ -92,13 +98,13 @@ go mod download
 Jalankan langsung:
 
 ```bash
-go run ./cmd/bot/main.go
+go run ./cmd/bot
 ```
 
 Atau build binary:
 
 ```bash
-go build -o hara ./cmd/bot/main.go
+go build -o hara ./cmd/bot
 ./hara
 ```
 
@@ -133,7 +139,7 @@ Jika memakai [`mise`](https://mise.jdx.dev/), task yang tersedia:
 
 ```bash
 mise run dev      # live reload dengan air
-mise run run      # go run ./cmd/bot/main.go
+mise run run      # go run ./cmd/bot
 mise run build    # build ke bin/hara
 mise run tidy     # go mod tidy dan go fmt ./...
 ```

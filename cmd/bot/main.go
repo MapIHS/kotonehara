@@ -21,14 +21,20 @@ import (
 
 	"go.mau.fi/whatsmeow/store/sqlstore"
 	"go.mau.fi/whatsmeow/types"
+	"go.mau.fi/whatsmeow/types/events"
 	waLog "go.mau.fi/whatsmeow/util/log"
 )
 
 func init() { _ = gotenv.Load() }
 
 func main() {
-	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	status := newBotStatus()
 	cfg := config.Load()
+	startWebServer(ctx, status, cfg)
+	status.setStage("connecting database")
 
 	db, err := dbInfra.Connect(ctx, dbInfra.Config{
 		Driver:       "postgres",
@@ -40,6 +46,7 @@ func main() {
 	})
 
 	if err != nil {
+		status.setError(err)
 		log.Fatal(err)
 	}
 
@@ -52,16 +59,30 @@ func main() {
 	defer cancel()
 
 	if err := container.Upgrade(upCtx); err != nil {
+		status.setError(err)
 		log.Fatal("upgrade store: ", err)
 	}
 
+	status.setStage("loading device")
 	d := devices.New(container, cfg, ctx)
 	dev, err := d.GetDefaultDevice(ctx)
 	if err != nil {
+		status.setError(err)
 		panic(err)
 	}
 
 	client := d.NewClient(dev)
+	status.updateClient(client)
+	client.AddEventHandler(func(evt interface{}) {
+		switch evt.(type) {
+		case *events.Connected:
+			status.setStage("running")
+			status.updateClient(client)
+		case *events.Disconnected:
+			status.setStage("disconnected")
+			status.updateClient(client)
+		}
+	})
 
 	client.PrePairCallback = func(jid types.JID, platform, businessName string) bool {
 		fmt.Printf("Pairing request from %s (platform: %s, business: %s)\n", jid, platform, businessName)
@@ -69,11 +90,14 @@ func main() {
 	}
 	if client.Store.ID == nil {
 		// No ID stored, new login
+		status.setStage("waiting for qr login")
 		qrChan, _ := client.GetQRChannel(ctx)
 		err = client.Connect()
 		if err != nil {
+			status.setError(err)
 			panic(err)
 		}
+		status.updateClient(client)
 		// code, err := client.PairPhone(ctx, "", true, whatsmeow.PairClientChrome, "Chrome (Linux)")
 		// if err != nil {
 		// 	panic(err)
@@ -82,6 +106,7 @@ func main() {
 		// fmt.Println("ini code kamu : " + code)
 
 		for evt := range qrChan {
+			status.updateClient(client)
 			if evt.Event == "code" {
 				// Render the QR code here
 				qrterminal.GenerateHalfBlock(evt.Code, qrterminal.L, os.Stdout)
@@ -93,16 +118,21 @@ func main() {
 		}
 	} else {
 		// Already logged in, just connect
+		status.setStage("connecting whatsapp")
 		err = client.Connect()
 		if err != nil {
+			status.setError(err)
 			panic(err)
 		}
+		status.updateClient(client)
 	}
 
-	// Listen to Ctrl+C (you can also do something else that prevents the program from exiting)
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	<-c
+	status.setStage("running")
+	status.updateClient(client)
 
+	<-ctx.Done()
+
+	status.setStage("shutting down")
 	client.Disconnect()
+	status.updateClient(client)
 }

@@ -2,7 +2,7 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-  cmd = "go build -o ./tmp/hara ./cmd/bot/main.go"
+  cmd = "go build -o ./tmp/hara ./cmd/bot"
   bin = "./tmp/hara"
   full_bin = "./tmp/hara"
   include_ext = ["go", "tpl", "tmpl", "html"]
