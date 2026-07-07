@@ -6,3 +6,19 @@ tmp
 pull.sh
 test_*
 *.mp3
+
+# IDE
+.vscode/
+.idea/
+
+# Node
+web/node_modules/
+web/dist/
+
+# Mac
+.DS_Store
+
+# Old binary
+bot
+
+cmd/bot/public/*

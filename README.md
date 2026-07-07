@@ -11,6 +11,7 @@ Kotonehara adalah bot WhatsApp berbasis Go yang dibangun dengan [`whatsmeow`](ht
 - Tools media: sticker, sticker meme, brat, image/video conversion, upload ke URL.
 - Command AI via OpenAI-compatible API.
 - WhatsApp outbound call via [`meowcaller`](https://github.com/purpshell/meowcaller) untuk owner.
+- Dashboard web modern berbasis Svelte dengan login session.
 - Docker/Podman support.
 
 ## Requirements
@@ -109,6 +110,14 @@ go build -o hara ./cmd/bot
 ```
 
 Saat pertama kali dijalankan, bot akan menampilkan QR code di terminal. Scan QR tersebut dari aplikasi WhatsApp.
+
+Frontend web ada di folder `web/` dan hasil build-nya di-embed ke binary Go. Kalau mengubah UI, jalankan:
+
+```bash
+cd web
+npm install
+npm run build
+```
 
 ## Docker / Podman
 

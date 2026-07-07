@@ -4,14 +4,16 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/subtle"
+	"embed"
 	"encoding/base64"
 	"encoding/json"
-	"html/template"
+	"errors"
+	"io/fs"
 	"log"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
+	"path"
 	"strings"
 	"sync"
 	"time"
@@ -22,6 +24,9 @@ import (
 
 const webSessionCookieName = "kotonehara_session"
 
+//go:embed public/*
+var webAssets embed.FS
+
 type botStatus struct {
 	mu        sync.RWMutex
 	StartedAt time.Time `json:"started_at"`
@@ -30,6 +35,7 @@ type botStatus struct {
 	LoggedIn  bool      `json:"logged_in"`
 	JID       string    `json:"jid,omitempty"`
 	LastError string    `json:"last_error,omitempty"`
+	QRCode    string    `json:"qr_code,omitempty"`
 }
 
 type webAuth struct {
@@ -41,96 +47,16 @@ type webAuth struct {
 	sessions map[string]time.Time
 }
 
-type webPageData struct {
-	Status      botStatus
-	Error       string
-	Next        string
-	AuthEnabled bool
+type sessionResponse struct {
+	AuthEnabled   bool   `json:"auth_enabled"`
+	Authenticated bool   `json:"authenticated"`
+	ExpiresAt     string `json:"expires_at,omitempty"`
 }
 
-var (
-	dashboardTemplate = template.Must(template.New("dashboard").Funcs(template.FuncMap{
-		"statusClass": statusClass,
-		"uptime": func(t time.Time) string {
-			return time.Since(t).Round(time.Second).String()
-		},
-	}).Parse(`<!doctype html>
-<html lang="id">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kotonehara</title>
-  <style>
-    :root{color-scheme:light dark}
-    body{font-family:system-ui,sans-serif;max-width:840px;margin:48px auto;padding:0 16px;line-height:1.6}
-    .card{border:1px solid #d0d7de;border-radius:16px;padding:24px;margin-bottom:16px;background:rgba(127,127,127,.06)}
-    code{background:rgba(127,127,127,.14);padding:2px 6px;border-radius:6px}
-    .ok{color:#17803d}.bad{color:#b42318}.muted{opacity:.75}
-    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-    button,a.btn,input{font:inherit}
-    button,.btn{border:0;border-radius:10px;padding:10px 14px;text-decoration:none;display:inline-block;cursor:pointer}
-    .btn-primary{background:#2563eb;color:#fff}
-    .btn-secondary{background:rgba(127,127,127,.14);color:inherit}
-    ul{padding-left:20px}
-  </style>
-</head>
-<body>
-  <div class="card">
-    <div class="row">
-      <h1 style="margin:0">Kotonehara</h1>
-      {{if .AuthEnabled}}<form method="post" action="/logout" style="margin:0"><button class="btn btn-secondary" type="submit">Logout</button></form>{{end}}
-    </div>
-    <p class="muted">WhatsApp bot status page.</p>
-    <ul>
-      <li>Stage: <code>{{.Status.Stage}}</code></li>
-      <li>Connected: <strong class="{{statusClass .Status.Connected}}">{{.Status.Connected}}</strong></li>
-      <li>Logged in: <strong class="{{statusClass .Status.LoggedIn}}">{{.Status.LoggedIn}}</strong></li>
-      <li>JID: <code>{{if .Status.JID}}{{.Status.JID}}{{else}}-{{end}}</code></li>
-      <li>Uptime: <code>{{uptime .Status.StartedAt}}</code></li>
-      {{if .Status.LastError}}<li>Last error: <code>{{.Status.LastError}}</code></li>{{end}}
-    </ul>
-    <div class="row">
-      <a class="btn btn-secondary" href="/status">JSON status</a>
-      <a class="btn btn-secondary" href="/healthz">Health check</a>
-    </div>
-  </div>
-</body>
-</html>`))
-
-	loginTemplate = template.Must(template.New("login").Parse(`<!doctype html>
-<html lang="id">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Login Kotonehara</title>
-  <style>
-    :root{color-scheme:light dark}
-    body{font-family:system-ui,sans-serif;max-width:480px;margin:72px auto;padding:0 16px;line-height:1.6}
-    .card{border:1px solid #d0d7de;border-radius:16px;padding:24px;background:rgba(127,127,127,.06)}
-    label{display:block;margin-top:12px;font-weight:600}
-    input{width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;border:1px solid #d0d7de;font:inherit}
-    button{margin-top:16px;border:0;border-radius:10px;padding:10px 14px;background:#2563eb;color:#fff;font:inherit;cursor:pointer}
-    .error{color:#b42318}
-    .muted{opacity:.75}
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h1 style="margin-top:0">Kotonehara Login</h1>
-    <p class="muted">Masuk dulu untuk melihat dashboard bot.</p>
-    {{if .Error}}<p class="error">{{.Error}}</p>{{end}}
-    <form method="post" action="/login">
-      <input type="hidden" name="next" value="{{.Next}}">
-      <label for="username">Username</label>
-      <input id="username" name="username" autocomplete="username" required>
-      <label for="password">Password</label>
-      <input id="password" name="password" type="password" autocomplete="current-password" required>
-      <button type="submit">Login</button>
-    </form>
-  </div>
-</body>
-</html>`))
-)
+type loginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
 
 func newBotStatus() *botStatus {
 	return &botStatus{
@@ -165,15 +91,16 @@ func (a *webAuth) authenticate(username, password string) bool {
 	return true
 }
 
-func (a *webAuth) createSession() (string, error) {
+func (a *webAuth) createSession() (string, time.Time, error) {
 	token, err := randomToken(32)
 	if err != nil {
-		return "", err
+		return "", time.Time{}, err
 	}
+	expiresAt := time.Now().Add(a.sessionTTL)
 	a.mu.Lock()
-	a.sessions[token] = time.Now().Add(a.sessionTTL)
+	a.sessions[token] = expiresAt
 	a.mu.Unlock()
-	return token, nil
+	return token, expiresAt, nil
 }
 
 func (a *webAuth) revokeSession(token string) {
@@ -185,13 +112,13 @@ func (a *webAuth) revokeSession(token string) {
 	a.mu.Unlock()
 }
 
-func (a *webAuth) isAuthenticated(r *http.Request) bool {
+func (a *webAuth) session(r *http.Request) (time.Time, bool) {
 	if !a.enabled() {
-		return true
+		return time.Time{}, true
 	}
 	cookie, err := r.Cookie(webSessionCookieName)
 	if err != nil {
-		return false
+		return time.Time{}, false
 	}
 
 	now := time.Now()
@@ -200,16 +127,21 @@ func (a *webAuth) isAuthenticated(r *http.Request) bool {
 
 	expiresAt, ok := a.sessions[cookie.Value]
 	if !ok {
-		return false
+		return time.Time{}, false
 	}
 	if now.After(expiresAt) {
 		delete(a.sessions, cookie.Value)
-		return false
+		return time.Time{}, false
 	}
-	return true
+	return expiresAt, true
 }
 
-func (a *webAuth) setSessionCookie(w http.ResponseWriter, token string, secure bool) {
+func (a *webAuth) isAuthenticated(r *http.Request) bool {
+	_, ok := a.session(r)
+	return ok
+}
+
+func (a *webAuth) setSessionCookie(w http.ResponseWriter, token string, secure bool, expiresAt time.Time) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     webSessionCookieName,
 		Value:    token,
@@ -217,8 +149,8 @@ func (a *webAuth) setSessionCookie(w http.ResponseWriter, token string, secure b
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 		Secure:   secure,
-		Expires:  time.Now().Add(a.sessionTTL),
-		MaxAge:   int(a.sessionTTL.Seconds()),
+		Expires:  expiresAt,
+		MaxAge:   int(time.Until(expiresAt).Seconds()),
 	})
 }
 
@@ -238,6 +170,18 @@ func (a *webAuth) clearSessionCookie(w http.ResponseWriter, secure bool) {
 func (s *botStatus) setStage(stage string) {
 	s.mu.Lock()
 	s.Stage = stage
+	s.mu.Unlock()
+}
+
+func (s *botStatus) setQR(code string) {
+	s.mu.Lock()
+	s.QRCode = code
+	s.mu.Unlock()
+}
+
+func (s *botStatus) clearQR() {
+	s.mu.Lock()
+	s.QRCode = ""
 	s.mu.Unlock()
 }
 
@@ -276,12 +220,20 @@ func (s *botStatus) snapshot() botStatus {
 		LoggedIn:  s.LoggedIn,
 		JID:       s.JID,
 		LastError: s.LastError,
+		QRCode:    s.QRCode,
 	}
 }
 
 func startWebServer(ctx context.Context, status *botStatus, cfg config.Config) {
 	port := os.Getenv("PORT")
 	if port == "" {
+		return
+	}
+
+	dist, err := fs.Sub(webAssets, "public")
+	if err != nil {
+		status.setError(err)
+		log.Printf("web assets error: %v", err)
 		return
 	}
 
@@ -293,47 +245,50 @@ func startWebServer(ctx context.Context, status *botStatus, cfg config.Config) {
 		_, _ = w.Write([]byte("ok\n"))
 	})
 
-	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/session", func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(w, http.StatusOK, sessionResponse{
+			AuthEnabled:   auth.enabled(),
+			Authenticated: auth.isAuthenticated(r),
+			ExpiresAt:     authExpiresAt(auth, r),
+		})
+	})
+
+	mux.HandleFunc("/api/login", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			w.Header().Set("Allow", "POST")
+			http.Error(w, "method tidak didukung", http.StatusMethodNotAllowed)
+			return
+		}
 		if !auth.enabled() {
-			http.Error(w, "web login belum dikonfigurasi", http.StatusServiceUnavailable)
+			writeJSON(w, http.StatusServiceUnavailable, map[string]string{"error": "web login belum dikonfigurasi"})
 			return
 		}
 
-		switch r.Method {
-		case http.MethodGet:
-			if auth.isAuthenticated(r) {
-				http.Redirect(w, r, "/", http.StatusSeeOther)
-				return
-			}
-			renderLogin(w, "Login dulu, yaa.", safeNext(r.URL.Query().Get("next")))
-		case http.MethodPost:
-			if err := r.ParseForm(); err != nil {
-				http.Error(w, "form login tidak valid", http.StatusBadRequest)
-				return
-			}
-			next := safeNext(r.FormValue("next"))
-			username := strings.TrimSpace(r.FormValue("username"))
-			password := r.FormValue("password")
-			if !auth.authenticate(username, password) {
-				renderLogin(w, "Username atau password salah.", next)
-				return
-			}
-
-			token, err := auth.createSession()
-			if err != nil {
-				status.setError(err)
-				http.Error(w, "gagal membuat sesi login", http.StatusInternalServerError)
-				return
-			}
-			auth.setSessionCookie(w, token, r.TLS != nil)
-			http.Redirect(w, r, next, http.StatusSeeOther)
-		default:
-			w.Header().Set("Allow", "GET, POST")
-			http.Error(w, "method tidak didukung", http.StatusMethodNotAllowed)
+		var req loginRequest
+		if err := decodeLoginRequest(r, &req); err != nil {
+			http.Error(w, "body login tidak valid", http.StatusBadRequest)
+			return
 		}
+		if !auth.authenticate(strings.TrimSpace(req.Username), req.Password) {
+			writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "username atau password salah"})
+			return
+		}
+
+		token, expiresAt, err := auth.createSession()
+		if err != nil {
+			status.setError(err)
+			http.Error(w, "gagal membuat sesi login", http.StatusInternalServerError)
+			return
+		}
+		auth.setSessionCookie(w, token, r.TLS != nil, expiresAt)
+		writeJSON(w, http.StatusOK, map[string]any{
+			"ok":            true,
+			"authenticated": true,
+			"expires_at":    expiresAt.UTC().Format(time.RFC3339),
+		})
 	})
 
-	mux.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/logout", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			w.Header().Set("Allow", "POST")
 			http.Error(w, "method tidak didukung", http.StatusMethodNotAllowed)
@@ -343,36 +298,39 @@ func startWebServer(ctx context.Context, status *botStatus, cfg config.Config) {
 			auth.revokeSession(cookie.Value)
 		}
 		auth.clearSessionCookie(w, r.TLS != nil)
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
 	})
 
-	mux.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
+	statusHandler := func(w http.ResponseWriter, r *http.Request) {
 		if !auth.isAuthenticated(r) {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(status.snapshot())
+		writeJSON(w, http.StatusOK, status.snapshot())
+	}
+	mux.HandleFunc("/api/status", statusHandler)
+	mux.HandleFunc("/status", statusHandler)
+
+	mux.HandleFunc("/api/qr", func(w http.ResponseWriter, r *http.Request) {
+		if !auth.isAuthenticated(r) {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		snap := status.snapshot()
+		writeJSON(w, http.StatusOK, map[string]any{
+			"qr_code":   snap.QRCode,
+			"stage":     snap.Stage,
+			"logged_in": snap.LoggedIn,
+		})
 	})
 
+	fileServer := http.FileServer(http.FS(dist))
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/" {
+		if strings.HasPrefix(r.URL.Path, "/api/") || r.URL.Path == "/healthz" {
 			http.NotFound(w, r)
 			return
 		}
-		if !auth.isAuthenticated(r) {
-			http.Redirect(w, r, "/login?next="+url.QueryEscape(r.URL.RequestURI()), http.StatusSeeOther)
-			return
-		}
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		data := webPageData{
-			Status:      status.snapshot(),
-			AuthEnabled: auth.enabled(),
-		}
-		if err := dashboardTemplate.Execute(w, data); err != nil {
-			status.setError(err)
-			http.Error(w, "gagal render dashboard", http.StatusInternalServerError)
-		}
+		serveSPA(w, r, dist, fileServer)
 	})
 
 	server := &http.Server{
@@ -390,7 +348,7 @@ func startWebServer(ctx context.Context, status *botStatus, cfg config.Config) {
 
 	go func() {
 		log.Printf("web server listening on :%s", port)
-		if err := server.Serve(ln); err != nil && err != http.ErrServerClosed {
+		if err := server.Serve(ln); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			status.setError(err)
 			log.Printf("web server error: %v", err)
 		}
@@ -404,31 +362,58 @@ func startWebServer(ctx context.Context, status *botStatus, cfg config.Config) {
 	}()
 }
 
-func renderLogin(w http.ResponseWriter, errMsg, next string) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	data := webPageData{
-		Error:       errMsg,
-		Next:        next,
-		AuthEnabled: true,
+func decodeLoginRequest(r *http.Request, req *loginRequest) error {
+	ct := strings.ToLower(r.Header.Get("Content-Type"))
+	if strings.Contains(ct, "application/json") {
+		return json.NewDecoder(r.Body).Decode(req)
 	}
-	if err := loginTemplate.Execute(w, data); err != nil {
-		http.Error(w, "gagal render login", http.StatusInternalServerError)
+	if err := r.ParseForm(); err != nil {
+		return err
 	}
+	req.Username = r.FormValue("username")
+	req.Password = r.FormValue("password")
+	return nil
 }
 
-func safeNext(next string) string {
-	next = strings.TrimSpace(next)
-	if next == "" {
-		return "/"
+func authExpiresAt(auth *webAuth, r *http.Request) string {
+	expiresAt, ok := auth.session(r)
+	if !ok || expiresAt.IsZero() {
+		return ""
 	}
-	if strings.HasPrefix(next, "//") {
-		return "/"
+	return expiresAt.UTC().Format(time.RFC3339)
+}
+
+func serveSPA(w http.ResponseWriter, r *http.Request, dist fs.FS, fileServer http.Handler) {
+	clean := path.Clean(strings.TrimPrefix(r.URL.Path, "/"))
+	if clean == "." || clean == "/" {
+		clean = "index.html"
 	}
-	u, err := url.Parse(next)
-	if err != nil || u.IsAbs() || !strings.HasPrefix(next, "/") {
-		return "/"
+	if strings.HasPrefix(clean, "assets/") {
+		fileServer.ServeHTTP(w, r)
+		return
 	}
-	return next
+	if clean != "index.html" {
+		if _, err := fs.Stat(dist, clean); err != nil {
+			clean = "index.html"
+		} else {
+			fileServer.ServeHTTP(w, r)
+			return
+		}
+	}
+
+	data, err := fs.ReadFile(dist, "index.html")
+	if err != nil {
+		http.Error(w, "index tidak tersedia", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	_, _ = w.Write(data)
+}
+
+func writeJSON(w http.ResponseWriter, statusCode int, payload any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	_ = json.NewEncoder(w).Encode(payload)
 }
 
 func randomToken(n int) (string, error) {
@@ -437,11 +422,4 @@ func randomToken(n int) (string, error) {
 		return "", err
 	}
 	return base64.RawURLEncoding.EncodeToString(buf), nil
-}
-
-func statusClass(ok bool) string {
-	if ok {
-		return "ok"
-	}
-	return "bad"
 }

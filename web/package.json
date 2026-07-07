@@ -1,0 +1,18 @@
+{
+  "name": "kotonehara-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.0",
+    "svelte": "^5.56.4",
+    "vite": "^6.0.0"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4"
+  }
+}

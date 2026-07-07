@@ -112,8 +112,12 @@ func main() {
 				qrterminal.GenerateHalfBlock(evt.Code, qrterminal.L, os.Stdout)
 				fmt.Println("Scan QR ini via WhatsApp.")
 				fmt.Println("QR code:", evt.Code)
+				status.setQR(evt.Code)
 			} else {
 				fmt.Println("Login event:", evt.Event)
+				if evt.Event == "success" {
+					status.clearQR()
+				}
 			}
 		}
 	} else {
