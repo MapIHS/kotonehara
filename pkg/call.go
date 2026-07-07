@@ -304,7 +304,6 @@ func init() {
 		Description: "Telepon target via WhatsApp call. Opsional play file .mp3/.wav/.opus lokal atau audio yang direply",
 		IsPrefix:    true,
 		IsOwner:     true,
-		ShowWait:    true,
 		Exec:        callCmd,
 	})
 }
