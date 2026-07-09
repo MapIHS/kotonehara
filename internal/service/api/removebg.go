@@ -21,7 +21,7 @@ type RemoveBGResult struct {
 	Quality          string `json:"quality"`
 }
 
-func RemoveBG(ctx context.Context, httpClient *http.Client, baseURL string, imageData []byte, filename, quality string) (*RemoveBGResult, error) {
+func (c *Client) RemoveBG(ctx context.Context, imageData []byte, filename, quality string) (*RemoveBGResult, error) {
 	if quality == "" {
 		quality = "fast"
 	}
@@ -65,14 +65,14 @@ func RemoveBG(ctx context.Context, httpClient *http.Client, baseURL string, imag
 		return nil, fmt.Errorf("removebg: close multipart: %w", err)
 	}
 
-	endpoint := baseURL + "/image/remove-bg"
+	endpoint := c.BaseURL + "/image/remove-bg"
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, &buf)
 	if err != nil {
 		return nil, fmt.Errorf("removebg: create request: %w", err)
 	}
 	req.Header.Set("Content-Type", w.FormDataContentType())
 
-	resp, err := httpClient.Do(req)
+	resp, err := c.HTTP.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("removebg: request failed: %w", err)
 	}
