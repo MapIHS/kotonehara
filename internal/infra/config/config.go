@@ -17,6 +17,7 @@ type Config struct {
 	DisableContactImport bool
 	BASEApiURL           string
 	BASES3URL            string
+	RemoveBGURL          string
 	OpenAIBaseURL        string
 	OpenAIAPIKey         string
 	OpenAIModel          string
@@ -46,6 +47,7 @@ func Load() Config {
 	baseurl := strings.TrimSpace(os.Getenv("BASEAPI_URL"))
 
 	bases3url := strings.TrimSpace(os.Getenv("BASES3_URL"))
+	removeBGURL := strings.TrimRight(strings.TrimSpace(os.Getenv("REMOVEBG_URL")), "/")
 	openAIBaseURL := strings.TrimRight(strings.TrimSpace(os.Getenv("OPENAI_BASE_URL")), "/")
 	if openAIBaseURL == "" {
 		openAIBaseURL = "https://api.openai.com/v1"
@@ -68,6 +70,7 @@ func Load() Config {
 		DisableContactImport: disableContactImport,
 		BASEApiURL:           baseurl,
 		BASES3URL:            bases3url,
+		RemoveBGURL:          removeBGURL,
 		OpenAIBaseURL:        openAIBaseURL,
 		OpenAIAPIKey:         openAIAPIKey,
 		OpenAIModel:          openAIModel,
