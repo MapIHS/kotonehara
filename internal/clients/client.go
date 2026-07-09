@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/MapIHS/kotonehara/internal/infra/config"
+	"github.com/MapIHS/kotonehara/internal/service/httpclient"
 	meowcaller "github.com/purpshell/meowcaller"
 	"go.mau.fi/whatsmeow"
 )
@@ -24,20 +25,6 @@ func New(c *whatsmeow.Client, cfg config.Config, callClient *meowcaller.Client) 
 		Calls:  callClient,
 		cfg:    cfg,
 		admins: newAdminCache(cfg.AdminTTL),
-		HTTP:   newHTTPClient(20 * time.Second),
-	}
-}
-
-func newHTTPClient(timeout time.Duration) *http.Client {
-	tr := http.DefaultTransport.(*http.Transport).Clone()
-	tr.MaxIdleConns = 100
-	tr.MaxIdleConnsPerHost = 20
-	tr.IdleConnTimeout = 90 * time.Second
-	tr.ResponseHeaderTimeout = 15 * time.Second
-	tr.ExpectContinueTimeout = time.Second
-
-	return &http.Client{
-		Timeout:   timeout,
-		Transport: tr,
+		HTTP:   httpclient.New("", 20*time.Second).HTTP,
 	}
 }
