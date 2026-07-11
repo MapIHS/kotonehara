@@ -63,5 +63,5 @@ func BuildMenuText(prefix string) string {
 		b.WriteByte('\n')
 	}
 
-	return b.String()
+	return strings.TrimRight(b.String(), "\n")
 }
