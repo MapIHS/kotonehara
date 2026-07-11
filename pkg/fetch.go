@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"io"
 	"mime"
+	"net"
 	"net/http"
+	"net/netip"
 	"net/url"
 	"path"
 	"strconv"
@@ -25,11 +27,75 @@ const (
 	fetchTimeout           = 45 * time.Second
 )
 
+type fetchResolver interface {
+	LookupNetIP(ctx context.Context, network, host string) ([]netip.Addr, error)
+}
+
 func fetchHTTPClient(c *clients.Client) *http.Client {
 	if c != nil && c.HTTP != nil {
 		return c.HTTP
 	}
 	return http.DefaultClient
+}
+
+func safeFetchHTTPClient(base *http.Client, resolver fetchResolver) *http.Client {
+	if base == nil {
+		base = http.DefaultClient
+	}
+
+	client := *base
+	transport := base.Transport
+	if transport == nil {
+		transport = http.DefaultTransport
+	}
+	if baseTransport, ok := transport.(*http.Transport); ok {
+		tr := baseTransport.Clone()
+		originalDialContext := tr.DialContext
+		if originalDialContext == nil {
+			originalDialContext = (&net.Dialer{}).DialContext
+		}
+		tr.Proxy = nil
+		tr.DialContext = pinnedFetchDialContext(resolver, originalDialContext)
+		client.Transport = tr
+	}
+
+	previousCheckRedirect := base.CheckRedirect
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		if err := validateFetchURL(req.Context(), req.URL, resolver); err != nil {
+			return fmt.Errorf("redirect ditolak: %w", err)
+		}
+		if previousCheckRedirect != nil {
+			return previousCheckRedirect(req, via)
+		}
+		if len(via) >= 10 {
+			return fmt.Errorf("terlalu banyak redirect")
+		}
+		return nil
+	}
+	return &client
+}
+
+func pinnedFetchDialContext(resolver fetchResolver, dial func(context.Context, string, string) (net.Conn, error)) func(context.Context, string, string) (net.Conn, error) {
+	return func(ctx context.Context, network, address string) (net.Conn, error) {
+		host, port, err := net.SplitHostPort(address)
+		if err != nil {
+			return nil, fmt.Errorf("alamat tujuan tidak valid: %w", err)
+		}
+		addrs, err := resolveFetchHost(ctx, host, resolver)
+		if err != nil {
+			return nil, err
+		}
+
+		var lastErr error
+		for _, addr := range addrs {
+			conn, dialErr := dial(ctx, network, net.JoinHostPort(addr.String(), port))
+			if dialErr == nil {
+				return conn, nil
+			}
+			lastErr = dialErr
+		}
+		return nil, fmt.Errorf("gagal terhubung ke tujuan tervalidasi: %w", lastErr)
+	}
 }
 
 func newFetchRequest(ctx context.Context, method string, u *url.URL) (*http.Request, error) {
@@ -115,6 +181,94 @@ func parseFetchURL(raw string) (*url.URL, error) {
 	return u, nil
 }
 
+func validateFetchURL(ctx context.Context, u *url.URL, resolver fetchResolver) error {
+	if u == nil || (u.Scheme != "http" && u.Scheme != "https") {
+		return fmt.Errorf("URL tidak valid")
+	}
+	_, err := resolveFetchHost(ctx, u.Hostname(), resolver)
+	return err
+}
+
+func resolveFetchHost(ctx context.Context, rawHost string, resolver fetchResolver) ([]netip.Addr, error) {
+	host := strings.ToLower(strings.TrimSuffix(rawHost, "."))
+	if host == "" {
+		return nil, fmt.Errorf("host kosong")
+	}
+	if isBlockedFetchHostname(host) {
+		return nil, fmt.Errorf("host tidak diizinkan")
+	}
+
+	if addr, err := netip.ParseAddr(host); err == nil {
+		if isBlockedFetchIP(addr) {
+			return nil, fmt.Errorf("alamat IP tidak diizinkan")
+		}
+		return []netip.Addr{addr.Unmap()}, nil
+	}
+	if resolver == nil {
+		return nil, fmt.Errorf("resolver tidak tersedia")
+	}
+
+	addrs, err := resolver.LookupNetIP(ctx, "ip", host)
+	if err != nil {
+		return nil, fmt.Errorf("host tidak dapat di-resolve: %w", err)
+	}
+	if len(addrs) == 0 {
+		return nil, fmt.Errorf("host tidak memiliki alamat IP")
+	}
+	for i, addr := range addrs {
+		addr = addr.Unmap()
+		if isBlockedFetchIP(addr) {
+			return nil, fmt.Errorf("host mengarah ke alamat IP yang tidak diizinkan")
+		}
+		addrs[i] = addr
+	}
+	return addrs, nil
+}
+
+func isBlockedFetchHostname(host string) bool {
+	blocked := []string{
+		"localhost",
+		"metadata",
+		"metadata.internal",
+		"metadata.google.internal",
+		"metadata.goog",
+		"metadata.azure.internal",
+		"metadata.aws.internal",
+		"instance-data",
+		"instance-data.ec2.internal",
+	}
+	for _, suffix := range blocked {
+		if host == suffix || strings.HasSuffix(host, "."+suffix) {
+			return true
+		}
+	}
+	return false
+}
+
+func isBlockedFetchIP(addr netip.Addr) bool {
+	addr = addr.Unmap()
+	if !addr.IsValid() || !addr.IsGlobalUnicast() || addr.IsPrivate() || addr.IsLoopback() ||
+		addr.IsLinkLocalUnicast() || addr.IsLinkLocalMulticast() || addr.IsMulticast() || addr.IsUnspecified() {
+		return true
+	}
+
+	blockedPrefixes := [...]netip.Prefix{
+		netip.MustParsePrefix("100.64.0.0/10"), // shared address space, including Tailscale
+		netip.MustParsePrefix("192.0.0.0/24"),  // IETF protocol assignments
+		netip.MustParsePrefix("198.18.0.0/15"), // benchmark networks
+		netip.MustParsePrefix("240.0.0.0/4"),   // reserved IPv4
+		netip.MustParsePrefix("2001:db8::/32"), // documentation IPv6
+	}
+	for _, prefix := range blockedPrefixes {
+		if prefix.Contains(addr) {
+			return true
+		}
+	}
+
+	// Alibaba Cloud exposes instance metadata on this otherwise public-looking IP.
+	return addr == netip.MustParseAddr("100.100.100.200")
+}
+
 func fetchCmd(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 	_ = cfg
 
@@ -127,8 +281,14 @@ func fetchCmd(ctx context.Context, client *clients.Client, m *message.Message, c
 	fetchCtx, cancel := context.WithTimeout(ctx, fetchTimeout)
 	defer cancel()
 
+	if err := validateFetchURL(fetchCtx, u, net.DefaultResolver); err != nil {
+		m.Reply(ctx, "Tujuan URL tidak diizinkan atau tidak dapat diverifikasi, yaa.")
+		return
+	}
+	httpClient := safeFetchHTTPClient(fetchHTTPClient(client), net.DefaultResolver)
+
 	if req, err := newFetchRequest(fetchCtx, http.MethodHead, u); err == nil {
-		if resp, err := fetchHTTPClient(client).Do(req); err == nil && resp != nil {
+		if resp, err := httpClient.Do(req); err == nil && resp != nil {
 			if resp.StatusCode < http.StatusBadRequest && tooLarge(resp.Header.Get("Content-Length")) {
 				_ = resp.Body.Close()
 				m.Reply(ctx, "Ukuran konten terlalu besar, yaa.")
@@ -144,7 +304,7 @@ func fetchCmd(ctx context.Context, client *clients.Client, m *message.Message, c
 		return
 	}
 
-	resp, err := fetchHTTPClient(client).Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil || resp == nil {
 		m.Reply(ctx, "Gagal mengambil konten, yaa.")
 		return

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	neturl "net/url"
 	"strings"
@@ -62,7 +61,7 @@ func (c *Client) X(ctx context.Context, targetURL string) (*XResult, error) {
 		return nil, fmt.Errorf("X api http %d", resp.StatusCode)
 	}
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := readResponseBody(resp, maxAPIResponseSize)
 	if err != nil {
 		return nil, err
 	}

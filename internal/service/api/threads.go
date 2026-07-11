@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	neturl "net/url"
 	"strings"
@@ -70,7 +69,7 @@ func (c *Client) Threads(ctx context.Context, targetURL string) (*ThreadsDownloa
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := readResponseBody(resp, maxAPIResponseSize)
 	if err != nil {
 		return nil, err
 	}

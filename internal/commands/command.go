@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/MapIHS/kotonehara/internal/clients"
@@ -12,6 +13,10 @@ import (
 )
 
 func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg config.Config) {
+	if ctx == nil || ctx.Err() != nil {
+		return
+	}
+
 	s := strings.TrimSpace(m.Body)
 	if s == "" {
 		return
@@ -103,13 +108,19 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 		userName = m.Sender.User
 	}
 
+	runWithSpinner(ctx, userName, cmd.Name, func() {
+		cmd.Exec(ctx, c, m, cfg)
+	})
+}
+
+func runWithSpinner(ctx context.Context, userName, commandName string, run func()) {
 	spinner := []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
 	done := make(chan struct{})
 	finished := make(chan struct{})
 
 	go func() {
+		defer close(finished)
 		i := 0
-		printed := false
 		timer := time.NewTimer(250 * time.Millisecond)
 		defer timer.Stop()
 		var ticker *time.Ticker
@@ -123,27 +134,29 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 		for {
 			select {
 			case <-done:
-				fmt.Printf("\r\033[K\033[1;32m[✓]\033[0m \033[1;36m%s\033[0m use command \033[1;32m%s\033[0m\n", userName, cmd.Name)
-				close(finished)
+				fmt.Printf("\r\033[K\033[1;32m[✓]\033[0m \033[1;36m%s\033[0m use command \033[1;32m%s\033[0m\n", userName, commandName)
+				return
+			case <-ctx.Done():
 				return
 			case <-timer.C:
-				printed = true
-				fmt.Printf("\r\033[K\033[1;35m[%s]\033[0m \033[1;36m%s\033[0m use command \033[1;32m%s\033[0m", spinner[i%len(spinner)], userName, cmd.Name)
+				fmt.Printf("\r\033[K\033[1;35m[%s]\033[0m \033[1;36m%s\033[0m use command \033[1;32m%s\033[0m", spinner[i%len(spinner)], userName, commandName)
 				i++
 				ticker = time.NewTicker(250 * time.Millisecond)
 				tick = ticker.C
 			case <-tick:
-				if printed {
-					fmt.Printf("\r\033[K\033[1;35m[%s]\033[0m \033[1;36m%s\033[0m use command \033[1;32m%s\033[0m", spinner[i%len(spinner)], userName, cmd.Name)
-					i++
-				}
+				fmt.Printf("\r\033[K\033[1;35m[%s]\033[0m \033[1;36m%s\033[0m use command \033[1;32m%s\033[0m", spinner[i%len(spinner)], userName, commandName)
+				i++
 			}
 		}
 	}()
 
-	cmd.Exec(ctx, c, m, cfg)
-	close(done)
-	<-finished
+	var stopOnce sync.Once
+	stop := func() {
+		stopOnce.Do(func() { close(done) })
+		<-finished
+	}
+	defer stop()
+	run()
 }
 
 func fillAdminStatus(ctx context.Context, c *clients.Client, m *message.Message) {

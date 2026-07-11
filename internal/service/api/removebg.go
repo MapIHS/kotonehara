@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
@@ -78,7 +77,7 @@ func (c *Client) RemoveBG(ctx context.Context, imageData []byte, filename, quali
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := readResponseBody(resp, maxAPIResponseSize)
 	if err != nil {
 		return nil, fmt.Errorf("removebg: read response: %w", err)
 	}

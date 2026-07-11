@@ -2,6 +2,7 @@ package devices
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/MapIHS/kotonehara/internal/infra/config"
@@ -17,6 +18,13 @@ type Devices struct {
 	timeout   time.Duration
 	ctx       context.Context
 	cfg       config.Config
+
+	lifecycleMu sync.Mutex
+	stopping    bool
+	active      sync.WaitGroup
+	eventSem    chan struct{}
+	stopOnce    sync.Once
+	drained     chan struct{}
 }
 
 type Device struct {

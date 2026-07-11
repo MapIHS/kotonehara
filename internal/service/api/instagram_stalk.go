@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	neturl "net/url"
 	"strconv"
@@ -178,7 +177,7 @@ func (c *Client) InstagramStalk(ctx context.Context, username string, options In
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := readResponseBody(resp, maxAPIResponseSize)
 	if err != nil {
 		return nil, err
 	}

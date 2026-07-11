@@ -2,9 +2,7 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	neturl "net/url"
 )
@@ -59,7 +57,7 @@ func (c *Client) YoutubeInfo(ctx context.Context, targetURL string) (*videoInfo,
 	}
 
 	var out APIResponse[videoInfo]
-	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+	if err := decodeAPIResponse(resp, &out); err != nil {
 		return nil, err
 	}
 	return &out.Data, nil
@@ -98,7 +96,7 @@ func (c *Client) YoutubeDownload(ctx context.Context, targetURL string, quality 
 		return nil, fmt.Errorf("youtube api http %d", resp.StatusCode)
 	}
 
-	data, err := io.ReadAll(resp.Body)
+	data, err := readResponseBody(resp, maxMediaSize)
 	if err != nil {
 		return nil, err
 	}

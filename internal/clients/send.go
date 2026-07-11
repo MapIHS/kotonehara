@@ -2,6 +2,7 @@ package clients
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,6 +14,10 @@ import (
 	"go.mau.fi/whatsmeow/types"
 	"google.golang.org/protobuf/proto"
 )
+
+const maxFetchedMediaSize = 256 << 20
+
+var errFetchedMediaTooLarge = errors.New("media melebihi batas")
 
 func (c *Client) SendText(ctx context.Context, to types.JID, txt string, opts *waE2E.ContextInfo, extra ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error) {
 	return c.WA.SendMessage(ctx, to, &waE2E.Message{
@@ -65,7 +70,7 @@ func (c *Client) FetchBytes(u string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := readFetchedMedia(resp)
 	if err != nil {
 		return nil, err
 	}
@@ -85,6 +90,21 @@ func (c *Client) FetchBytes(u string) ([]byte, error) {
 		return nil, fmt.Errorf("media kosong dari %s", u)
 	}
 
+	return body, nil
+}
+
+func readFetchedMedia(resp *http.Response) ([]byte, error) {
+	if resp.ContentLength > maxFetchedMediaSize {
+		return nil, fmt.Errorf("%w %d byte", errFetchedMediaTooLarge, maxFetchedMediaSize)
+	}
+
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxFetchedMediaSize+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(body) > maxFetchedMediaSize {
+		return nil, fmt.Errorf("%w %d byte", errFetchedMediaTooLarge, maxFetchedMediaSize)
+	}
 	return body, nil
 }
 

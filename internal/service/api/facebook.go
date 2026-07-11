@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	neturl "net/url"
@@ -49,7 +48,7 @@ func (c *Client) Facebook(ctx context.Context, targetURL string) (*facebookResul
 	}
 
 	var out APIResponse[facebookResult]
-	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+	if err := decodeAPIResponse(resp, &out); err != nil {
 		return nil, err
 	}
 	return &out.Data, nil

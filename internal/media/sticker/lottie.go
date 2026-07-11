@@ -17,7 +17,12 @@ import (
 	waE2E "go.mau.fi/whatsmeow/proto/waE2E"
 )
 
-var errUnsupportedLottie = errors.New("format lottie/was belum dikenali")
+const maxLottieDecompressedSize int64 = 32 << 20
+
+var (
+	errUnsupportedLottie = errors.New("format lottie/was belum dikenali")
+	errLottieTooLarge    = errors.New("hasil dekompresi lottie melebihi batas")
+)
 
 func BuildLottieSticker(data []byte, author string) ([]byte, error) {
 	if len(data) == 0 {
@@ -72,12 +77,14 @@ func rewriteLottieZip(data []byte, author string) ([]byte, bool, error) {
 	var out bytes.Buffer
 	zw := zip.NewWriter(&out)
 	rewritten := false
+	var decompressedSize int64
 	for _, file := range zr.File {
-		raw, err := readZipFile(file)
+		raw, err := readZipFile(file, maxLottieDecompressedSize-decompressedSize)
 		if err != nil {
 			_ = zw.Close()
 			return nil, true, err
 		}
+		decompressedSize += int64(len(raw))
 
 		if isJSONFile(file.Name) {
 			if next, ok, err := rewriteJSONBytes(raw, author); err != nil {
@@ -119,7 +126,7 @@ func rewriteGzipJSON(data []byte, author string) ([]byte, bool, error) {
 	if err != nil {
 		return nil, true, err
 	}
-	raw, err := io.ReadAll(gr)
+	raw, err := readLottieData(gr, maxLottieDecompressedSize)
 	closeErr := gr.Close()
 	if err != nil {
 		return nil, true, err
@@ -149,7 +156,7 @@ func rewriteZlibJSON(data []byte, author string) ([]byte, bool, error) {
 	if err != nil {
 		return nil, false, nil
 	}
-	raw, err := io.ReadAll(zr)
+	raw, err := readLottieData(zr, maxLottieDecompressedSize)
 	closeErr := zr.Close()
 	if err != nil {
 		return nil, true, err
@@ -220,13 +227,31 @@ func applyStickerMetadata(obj map[string]any, author string) {
 	}
 }
 
-func readZipFile(file *zip.File) ([]byte, error) {
+func readZipFile(file *zip.File, limit int64) ([]byte, error) {
+	if limit < 0 || file.UncompressedSize64 > uint64(limit) {
+		return nil, fmt.Errorf("%w %d byte", errLottieTooLarge, maxLottieDecompressedSize)
+	}
+
 	rc, err := file.Open()
 	if err != nil {
 		return nil, err
 	}
 	defer rc.Close()
-	return io.ReadAll(rc)
+	return readLottieData(rc, limit)
+}
+
+func readLottieData(r io.Reader, limit int64) ([]byte, error) {
+	if limit < 0 {
+		return nil, fmt.Errorf("%w %d byte", errLottieTooLarge, maxLottieDecompressedSize)
+	}
+	data, err := io.ReadAll(io.LimitReader(r, limit+1))
+	if err != nil {
+		return nil, err
+	}
+	if int64(len(data)) > limit {
+		return nil, fmt.Errorf("%w %d byte", errLottieTooLarge, maxLottieDecompressedSize)
+	}
+	return data, nil
 }
 
 func isJSONFile(name string) bool {

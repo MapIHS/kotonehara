@@ -3,11 +3,16 @@ package s3
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
 )
+
+const maxUploadResponseSize = 1 << 20
+
+var errUploadResponseTooLarge = errors.New("response body melebihi batas")
 
 type Response struct {
 	Key         string `json:"key"`
@@ -42,7 +47,7 @@ func (c *Client) Upload(filename string, file []byte) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
-	respBody, err := io.ReadAll(resp.Body)
+	respBody, err := readUploadResponse(resp)
 	if err != nil {
 		return "", fmt.Errorf("failed to read response body: %w", err)
 	}
@@ -63,4 +68,19 @@ func (c *Client) Upload(filename string, file []byte) (string, error) {
 		return "", fmt.Errorf("upload failed: response key kosong")
 	}
 	return fmt.Sprintf("%s/file/%s", c.BaseURL, result.Data.Key), nil
+}
+
+func readUploadResponse(resp *http.Response) ([]byte, error) {
+	if resp.ContentLength > maxUploadResponseSize {
+		return nil, fmt.Errorf("%w %d byte", errUploadResponseTooLarge, maxUploadResponseSize)
+	}
+
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxUploadResponseSize+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(body) > maxUploadResponseSize {
+		return nil, fmt.Errorf("%w %d byte", errUploadResponseTooLarge, maxUploadResponseSize)
+	}
+	return body, nil
 }

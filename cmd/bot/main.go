@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -29,7 +30,9 @@ import (
 func init() { _ = gotenv.Load() }
 
 func main() {
-	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	cfg := config.Load()
 
 	maxOpenConns, maxIdleConns := 20, 10
@@ -76,64 +79,107 @@ func main() {
 		return true
 	}
 	if client.Store.ID == nil {
-		// No ID stored, new login
+		loginCtx, cancelLogin := context.WithTimeout(ctx, 5*time.Minute)
+		defer cancelLogin()
+
+		qrChan, qrErr := client.GetQRChannel(loginCtx)
+		if qrErr != nil {
+			log.Fatal("buat channel login: ", qrErr)
+		}
+		if err = client.Connect(); err != nil {
+			log.Fatal("connect WhatsApp: ", err)
+		}
+
 		if cfg.LoginMethod == "pairing" {
 			if cfg.PairingPhoneNumber == "" {
 				log.Fatal("LOGIN_METHOD=pairing butuh PAIRING_PHONE_NUMBER (nomor internasional tanpa '+', contoh 6281234567890)")
 			}
-
-			qrChan, _ := client.GetQRChannel(ctx)
-			if err = client.Connect(); err != nil {
-				panic(err)
-			}
-
-			// Tunggu event pertama dari channel QR untuk memastikan koneksi websocket
-			// sudah siap sebelum meminta kode pairing.
-			first, ok := <-qrChan
-			if ok && first.Event == "code" {
-				code, err := client.PairPhone(ctx, cfg.PairingPhoneNumber, true, whatsmeow.PairClientChrome, "Chrome (Linux)")
-				if err != nil {
-					panic(err)
-				}
-				fmt.Println("Masukkan kode ini di HP: WhatsApp > Perangkat Tertaut > Tautkan dengan nomor telepon.")
-				fmt.Println("Kode pairing:", code)
-			}
-
-			for evt := range qrChan {
-				if evt.Event != "code" {
-					fmt.Println("Login event:", evt.Event)
-				}
-			}
+			err = runPairingLogin(loginCtx, client, qrChan, cfg.PairingPhoneNumber)
 		} else {
-			qrChan, _ := client.GetQRChannel(ctx)
-			err = client.Connect()
-			if err != nil {
-				panic(err)
-			}
-
-			for evt := range qrChan {
-				if evt.Event == "code" {
-					// Render the QR code here
-					qrterminal.GenerateHalfBlock(evt.Code, qrterminal.L, os.Stdout)
-					fmt.Println("Scan QR ini via WhatsApp.")
-					fmt.Println("QR code:", evt.Code)
-				} else {
-					fmt.Println("Login event:", evt.Event)
-				}
-			}
+			err = runQRLogin(loginCtx, qrChan)
 		}
-	} else {
-		// Already logged in, just connect
-		err = client.Connect()
-		if err != nil {
-			panic(err)
+		if err != nil && ctx.Err() == nil {
+			log.Fatal("login WhatsApp: ", err)
 		}
+	} else if err = client.Connect(); err != nil {
+		log.Fatal("connect WhatsApp: ", err)
 	}
 
-	// Listen to Ctrl+C (you can also do something else that prevents the program from exiting)
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	<-c
+	<-ctx.Done()
 
+	shutdownCtx, cancelShutdown := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancelShutdown()
+	if err := d.Shutdown(shutdownCtx); err != nil {
+		log.Printf("graceful shutdown command: %v", err)
+	}
 	client.Disconnect()
+}
+
+func runPairingLogin(ctx context.Context, client *whatsmeow.Client, qrChan <-chan whatsmeow.QRChannelItem, phoneNumber string) error {
+	pairRequested := false
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case evt, ok := <-qrChan:
+			if !ok {
+				return fmt.Errorf("channel login tertutup sebelum pairing berhasil")
+			}
+			switch evt.Event {
+			case whatsmeow.QRChannelSuccess.Event:
+				return nil
+			case whatsmeow.QRChannelTimeout.Event:
+				return fmt.Errorf("kode pairing kedaluwarsa")
+			case whatsmeow.QRChannelEventError:
+				return fmt.Errorf("pairing ditolak: %w", evt.Error)
+			case whatsmeow.QRChannelEventCode:
+				if pairRequested {
+					continue
+				}
+			default:
+				if strings.HasPrefix(evt.Event, "err-") {
+					return fmt.Errorf("pairing gagal: %s", evt.Event)
+				}
+				fmt.Println("Login event:", evt.Event)
+				continue
+			}
+
+			code, err := client.PairPhone(ctx, phoneNumber, true, whatsmeow.PairClientChrome, "Chrome (Linux)")
+			if err != nil {
+				return fmt.Errorf("minta kode pairing: %w", err)
+			}
+			pairRequested = true
+			fmt.Println("Masukkan kode ini di HP: WhatsApp > Perangkat Tertaut > Tautkan dengan nomor telepon.")
+			fmt.Println("Kode pairing:", code)
+		}
+	}
+}
+
+func runQRLogin(ctx context.Context, qrChan <-chan whatsmeow.QRChannelItem) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case evt, ok := <-qrChan:
+			if !ok {
+				return fmt.Errorf("channel login tertutup sebelum QR berhasil dipindai")
+			}
+			switch evt.Event {
+			case whatsmeow.QRChannelSuccess.Event:
+				return nil
+			case whatsmeow.QRChannelTimeout.Event:
+				return fmt.Errorf("QR login kedaluwarsa")
+			case whatsmeow.QRChannelEventError:
+				return fmt.Errorf("QR login ditolak: %w", evt.Error)
+			case whatsmeow.QRChannelEventCode:
+				qrterminal.GenerateHalfBlock(evt.Code, qrterminal.L, os.Stdout)
+				fmt.Println("Scan QR ini via WhatsApp.")
+			default:
+				if strings.HasPrefix(evt.Event, "err-") {
+					return fmt.Errorf("QR login gagal: %s", evt.Event)
+				}
+				fmt.Println("Login event:", evt.Event)
+			}
+		}
+	}
 }

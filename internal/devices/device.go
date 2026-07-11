@@ -20,13 +20,84 @@ import (
 )
 
 func New(c *sqlstore.Container, cfg config.Config, ctx context.Context) *Devices {
-	return &Devices{
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	commands.SetCooldown(cfg.Cooldown)
+
+	d := &Devices{
 		container: c,
 		log:       waLog.Stdout("devices", "INFO", true),
 		timeout:   10 * time.Second,
 		ctx:       ctx,
 		cfg:       cfg,
+		eventSem:  make(chan struct{}, 20),
+		drained:   make(chan struct{}),
 	}
+	go func() {
+		select {
+		case <-ctx.Done():
+			d.beginShutdown()
+		case <-d.drained:
+		}
+	}()
+	return d
+}
+
+// Shutdown stops accepting command events and waits for active commands to finish.
+// The wait is bounded by ctx, while active commands continue using the root context.
+func (d *Devices) Shutdown(ctx context.Context) error {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	d.beginShutdown()
+	select {
+	case <-d.drained:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+func (d *Devices) beginShutdown() {
+	d.stopOnce.Do(func() {
+		d.lifecycleMu.Lock()
+		d.stopping = true
+		d.lifecycleMu.Unlock()
+		go func() {
+			d.active.Wait()
+			close(d.drained)
+		}()
+	})
+}
+
+func (d *Devices) tryStartCommand(run func()) bool {
+	if run == nil {
+		return false
+	}
+
+	d.lifecycleMu.Lock()
+	if d.stopping || d.ctx.Err() != nil {
+		d.lifecycleMu.Unlock()
+		return false
+	}
+	select {
+	case d.eventSem <- struct{}{}:
+		d.active.Add(1)
+	default:
+		d.lifecycleMu.Unlock()
+		return false
+	}
+	d.lifecycleMu.Unlock()
+
+	go func() {
+		defer func() {
+			<-d.eventSem
+			d.active.Done()
+		}()
+		run()
+	}()
+	return true
 }
 
 func (d *Devices) GetDefaultDevice(ctx context.Context) (*store.Device, error) {
@@ -66,7 +137,6 @@ func (d *Devices) NewClient(dev *store.Device) *whatsmeow.Client {
 func (d *Devices) registerEventHandler(client *whatsmeow.Client, callClient *meowcaller.Client) func(evt interface{}) {
 	c := clients.New(client, d.cfg, callClient)
 	m := message.NewParser(c, d.cfg)
-	sem := make(chan struct{}, 20)
 	return func(evt interface{}) {
 		switch v := evt.(type) {
 		case *events.Message:
@@ -74,17 +144,15 @@ func (d *Devices) registerEventHandler(client *whatsmeow.Client, callClient *meo
 				return
 			}
 
-			sem <- struct{}{}
-			go func() {
+			d.tryStartCommand(func() {
 				defer func() {
 					if r := recover(); r != nil {
 						d.log.Errorf("command panic: %v", r)
 					}
-					<-sem
 				}()
 				parse := m.Parse(d.ctx, v)
 				commands.CommandExec(d.ctx, c, parse, d.cfg)
-			}()
+			})
 
 		case *events.Connected:
 			if d.cfg.DisableContactImport {
