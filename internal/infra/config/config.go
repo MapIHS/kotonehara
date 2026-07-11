@@ -10,6 +10,9 @@ import (
 type Config struct {
 	AppEnv               string
 	Prefix               string
+	LoginMethod          string
+	PairingPhoneNumber   string
+	DBDriver             string
 	DBURL                string
 	Owners               []string
 	Cooldown             time.Duration
@@ -36,6 +39,10 @@ func Load() Config {
 		prefix = "."
 	}
 
+	loginMethod := normalizeLoginMethod(os.Getenv("LOGIN_METHOD"))
+	pairingPhoneNumber := sanitizePhoneNumber(os.Getenv("PAIRING_PHONE_NUMBER"))
+
+	dbDriver := normalizeDBDriver(os.Getenv("DB_DRIVER"))
 	dbURL := strings.TrimSpace(os.Getenv("DATABASE_URL"))
 
 	owners := parseCSV(os.Getenv("OWNER"))
@@ -63,6 +70,9 @@ func Load() Config {
 	return Config{
 		AppEnv:               env,
 		Prefix:               prefix,
+		LoginMethod:          loginMethod,
+		PairingPhoneNumber:   pairingPhoneNumber,
+		DBDriver:             dbDriver,
 		DBURL:                dbURL,
 		Owners:               owners,
 		Cooldown:             cd,
@@ -77,6 +87,52 @@ func Load() Config {
 		OpenAISystemPrompt:   openAISystemPrompt,
 		OpenAITimeout:        openAITimeout,
 	}
+}
+
+// normalizeDBDriver maps common aliases to the drivers actually wired up in
+// cmd/bot ("postgres" via lib/pq, "sqlite" via modernc.org/sqlite). Defaults to
+// "postgres" for an empty or unrecognized value.
+func normalizeDBDriver(s string) string {
+	s = strings.ToLower(strings.TrimSpace(s))
+	switch {
+	case s == "":
+		return "postgres"
+	case strings.HasPrefix(s, "postgres") || s == "pg" || s == "pgx":
+		return "postgres"
+	case strings.HasPrefix(s, "sqlite") || s == "lite":
+		return "sqlite"
+	default:
+		return "postgres"
+	}
+}
+
+// normalizeLoginMethod maps common aliases to the two login flows supported by
+// cmd/bot: "qr" (scan a QR code, default) or "pairing" (enter a code on the
+// phone). Defaults to "qr" for an empty or unrecognized value.
+func normalizeLoginMethod(s string) string {
+	s = strings.ToLower(strings.TrimSpace(s))
+	switch {
+	case s == "":
+		return "qr"
+	case strings.HasPrefix(s, "pair") || s == "phone" || s == "code":
+		return "pairing"
+	case strings.HasPrefix(s, "qr"):
+		return "qr"
+	default:
+		return "qr"
+	}
+}
+
+// sanitizePhoneNumber strips everything but digits, so users can supply the
+// number with or without "+", spaces, or dashes.
+func sanitizePhoneNumber(s string) string {
+	var b strings.Builder
+	for _, r := range s {
+		if r >= '0' && r <= '9' {
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
 }
 
 func parseCSV(s string) []string {

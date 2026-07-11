@@ -18,7 +18,9 @@ import (
 	_ "github.com/MapIHS/kotonehara/pkg"
 
 	_ "github.com/lib/pq"
+	_ "modernc.org/sqlite"
 
+	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/store/sqlstore"
 	"go.mau.fi/whatsmeow/types"
 	waLog "go.mau.fi/whatsmeow/util/log"
@@ -30,11 +32,17 @@ func main() {
 	ctx := context.Background()
 	cfg := config.Load()
 
+	maxOpenConns, maxIdleConns := 20, 10
+	if cfg.DBDriver == "sqlite" {
+		// SQLite serializes writes; a single connection avoids "database is locked" errors.
+		maxOpenConns, maxIdleConns = 1, 1
+	}
+
 	db, err := dbInfra.Connect(ctx, dbInfra.Config{
-		Driver:       "postgres",
+		Driver:       cfg.DBDriver,
 		URL:          cfg.DBURL,
-		MaxOpenConns: 20,
-		MaxIdleConns: 10,
+		MaxOpenConns: maxOpenConns,
+		MaxIdleConns: maxIdleConns,
 		ConnMaxIdle:  5 * time.Minute,
 		ConnMaxLife:  30 * time.Minute,
 	})
@@ -46,7 +54,7 @@ func main() {
 	defer db.Close()
 
 	dbLog := waLog.Stdout("Database", "INFO", true)
-	container := sqlstore.NewWithDB(db.DB, "postgres", dbLog)
+	container := sqlstore.NewWithDB(db.DB, cfg.DBDriver, dbLog)
 
 	upCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
@@ -69,26 +77,49 @@ func main() {
 	}
 	if client.Store.ID == nil {
 		// No ID stored, new login
-		qrChan, _ := client.GetQRChannel(ctx)
-		err = client.Connect()
-		if err != nil {
-			panic(err)
-		}
-		// code, err := client.PairPhone(ctx, "", true, whatsmeow.PairClientChrome, "Chrome (Linux)")
-		// if err != nil {
-		// 	panic(err)
-		// }
+		if cfg.LoginMethod == "pairing" {
+			if cfg.PairingPhoneNumber == "" {
+				log.Fatal("LOGIN_METHOD=pairing butuh PAIRING_PHONE_NUMBER (nomor internasional tanpa '+', contoh 6281234567890)")
+			}
 
-		// fmt.Println("ini code kamu : " + code)
+			qrChan, _ := client.GetQRChannel(ctx)
+			if err = client.Connect(); err != nil {
+				panic(err)
+			}
 
-		for evt := range qrChan {
-			if evt.Event == "code" {
-				// Render the QR code here
-				qrterminal.GenerateHalfBlock(evt.Code, qrterminal.L, os.Stdout)
-				fmt.Println("Scan QR ini via WhatsApp.")
-				fmt.Println("QR code:", evt.Code)
-			} else {
-				fmt.Println("Login event:", evt.Event)
+			// Tunggu event pertama dari channel QR untuk memastikan koneksi websocket
+			// sudah siap sebelum meminta kode pairing.
+			first, ok := <-qrChan
+			if ok && first.Event == "code" {
+				code, err := client.PairPhone(ctx, cfg.PairingPhoneNumber, true, whatsmeow.PairClientChrome, "Chrome (Linux)")
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println("Masukkan kode ini di HP: WhatsApp > Perangkat Tertaut > Tautkan dengan nomor telepon.")
+				fmt.Println("Kode pairing:", code)
+			}
+
+			for evt := range qrChan {
+				if evt.Event != "code" {
+					fmt.Println("Login event:", evt.Event)
+				}
+			}
+		} else {
+			qrChan, _ := client.GetQRChannel(ctx)
+			err = client.Connect()
+			if err != nil {
+				panic(err)
+			}
+
+			for evt := range qrChan {
+				if evt.Event == "code" {
+					// Render the QR code here
+					qrterminal.GenerateHalfBlock(evt.Code, qrterminal.L, os.Stdout)
+					fmt.Println("Scan QR ini via WhatsApp.")
+					fmt.Println("QR code:", evt.Code)
+				} else {
+					fmt.Println("Login event:", evt.Event)
+				}
 			}
 		}
 	} else {

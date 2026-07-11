@@ -6,7 +6,7 @@ Kotonehara adalah bot WhatsApp berbasis Go yang dibangun dengan [`whatsmeow`](ht
 
 - Bot WhatsApp multi-command dengan prefix yang dapat dikonfigurasi.
 - Login WhatsApp via QR code.
-- Penyimpanan session/device menggunakan PostgreSQL.
+- Penyimpanan session/device menggunakan PostgreSQL atau SQLite (pilih via `DB_DRIVER`).
 - Downloader untuk Instagram, TikTok, Facebook, X/Twitter, YouTube, Threads, dan Rednote/Xiaohongshu melalui API eksternal.
 - Tools media: sticker, sticker meme, brat, image/video conversion, upload ke URL.
 - Command AI via OpenAI-compatible API.
@@ -18,7 +18,7 @@ Kotonehara adalah bot WhatsApp berbasis Go yang dibangun dengan [`whatsmeow`](ht
 Untuk menjalankan langsung di host:
 
 - Go sesuai versi di `go.mod`.
-- PostgreSQL.
+- PostgreSQL atau SQLite (pilih salah satu, lihat `DB_DRIVER`).
 - Git.
 - `webp` / `webpmux` untuk fitur sticker.
 - `ffmpeg` dan ImageMagick direkomendasikan untuk fitur media tertentu.
@@ -47,7 +47,10 @@ Variabel penting:
 
 | Variable | Keterangan | Default |
 | --- | --- | --- |
-| `DATABASE_URL` | URL PostgreSQL untuk WhatsApp session store. | wajib diisi |
+| `LOGIN_METHOD` | Metode login WhatsApp: `qr` atau `pairing`. | `qr` |
+| `PAIRING_PHONE_NUMBER` | Nomor telepon internasional (tanpa `+`) untuk `LOGIN_METHOD=pairing`. | kosong |
+| `DB_DRIVER` | Driver database: `postgres` atau `sqlite`. | `postgres` |
+| `DATABASE_URL` | Connection string database untuk WhatsApp session store. | wajib diisi |
 | `OWNER` | Daftar owner JID, pisahkan dengan koma jika lebih dari satu. | kosong |
 | `PREFIX` | Prefix command, contoh `.`. | `.` |
 | `COOLDOWN` | Cooldown command, contoh `3s` atau `3`. Set `0` untuk nonaktif. | `3s` |
@@ -64,7 +67,13 @@ Variabel penting:
 Contoh minimal:
 
 ```env
+# PostgreSQL (default)
+DB_DRIVER=postgres
 DATABASE_URL=postgres://user:password@localhost:5432/kotonehara?sslmode=disable
+
+# Atau SQLite (tanpa perlu server database terpisah)
+# DB_DRIVER=sqlite
+# DATABASE_URL=file:kotonehara.db?_pragma=foreign_keys(1)&_pragma=busy_timeout(5000)
 OWNER=0123456789@lid
 PREFIX=.
 COOLDOWN=3s
@@ -103,6 +112,15 @@ go build -o hara ./cmd/bot/main.go
 ```
 
 Saat pertama kali dijalankan, bot akan menampilkan QR code di terminal. Scan QR tersebut dari aplikasi WhatsApp.
+
+Atau, kalau tidak ingin scan QR, gunakan metode pairing dengan kode:
+
+```env
+LOGIN_METHOD=pairing
+PAIRING_PHONE_NUMBER=6281234567890
+```
+
+Bot akan menampilkan kode pairing di terminal. Masukkan kode tersebut di HP: WhatsApp > Perangkat Tertaut > Tautkan dengan nomor telepon.
 
 ## Docker / Podman
 
@@ -165,7 +183,7 @@ internal/clients/        Wrapper whatsmeow untuk kirim pesan/media dan operasi g
 internal/commands/       Registry command, cooldown, menu, dan executor
 internal/devices/        Device WhatsApp dan event handler
 internal/infra/config/   Loader konfigurasi environment
-internal/infra/db/       Koneksi PostgreSQL
+internal/infra/db/       Koneksi database (PostgreSQL atau SQLite)
 internal/media/          Sticker, meme, brat, dan efek gambar
 internal/message/        Parser pesan WhatsApp
 internal/service/        Client API eksternal, OpenAI, S3, dan HTTP helper
