@@ -49,3 +49,33 @@ jobs:
 
       - name: Build Docker image
         run: docker build --tag kotonehara:ci .
+
+  deploy:
+    name: Build and deploy container (Heroku)
+    needs: [go, docker]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    env:
+      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install Heroku CLI
+        run: curl https://cli-assets.heroku.com/install.sh | sh
+
+      - name: Log in to Heroku Container Registry
+        run: echo "$HEROKU_API_KEY" | docker login --username=_ --password-stdin registry.heroku.com
+
+      - name: Build Docker image
+        run: docker build --tag registry.heroku.com/$HEROKU_APP_NAME/worker .
+
+      - name: Push Docker image to Heroku
+        run: docker push registry.heroku.com/$HEROKU_APP_NAME/worker
+
+      - name: Release Docker image on Heroku
+        run: heroku container:release worker --app "$HEROKU_APP_NAME"
+
