@@ -29,10 +29,10 @@ jobs:
         run: echo "$HEROKU_API_KEY" | docker login --username=_ --password-stdin registry.heroku.com
 
       - name: Build Docker image
-        run: docker build --tag registry.heroku.com/$HEROKU_APP_NAME/web .
+        run: docker build --tag registry.heroku.com/$HEROKU_APP_NAME/worker .
 
       - name: Push Docker image to Heroku
-        run: docker push registry.heroku.com/$HEROKU_APP_NAME/web
+        run: docker push registry.heroku.com/$HEROKU_APP_NAME/worker
 
       - name: Release Docker image on Heroku
-        run: heroku container:release web --app "$HEROKU_APP_NAME"
+        run: heroku container:release worker --app "$HEROKU_APP_NAME"
