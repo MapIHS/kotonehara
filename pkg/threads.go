@@ -16,8 +16,8 @@ import (
 
 func threads(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 	args := strings.Fields(m.Query)
-	if len(args) == 0 {
-		m.Reply(ctx, "Link Threads-nya belum ada.")
+	if len(args) == 0 || !message.IsValidURL(args[0]) {
+		m.Reply(ctx, "Link Threads tidak valid. Pastikan kamu mengirimkan link yang benar.")
 		return
 	}
 

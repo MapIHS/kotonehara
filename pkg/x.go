@@ -158,8 +158,8 @@ func init() {
 		IsPrefix: true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			args := strings.Fields(m.Query)
-			if len(args) == 0 {
-				m.Reply(ctx, "Link X/Twitter-nya belum ada.")
+			if len(args) == 0 || !message.IsValidURL(args[0]) {
+				m.Reply(ctx, "Link X/Twitter tidak valid. Pastikan kamu mengirimkan link yang benar.")
 				return
 			}
 

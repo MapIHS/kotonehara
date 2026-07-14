@@ -21,6 +21,10 @@ func init() {
 		IsPrefix: true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			args := strings.Fields(m.Query)
+			if len(args) == 0 || !message.IsValidURL(args[0]) {
+				m.Reply(ctx, "Link tidak valid. Pastikan kamu mengirimkan link yang benar.")
+				return
+			}
 
 			m.Reply(ctx, "Tunggu Sebentar ya.")
 

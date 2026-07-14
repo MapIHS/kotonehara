@@ -1,6 +1,7 @@
 package message
 
 import (
+	"net/url"
 	"strings"
 
 	"go.mau.fi/whatsmeow"
@@ -22,6 +23,11 @@ func ExtractBody(mess *events.Message) string {
 		return s
 	}
 	return ""
+}
+
+func IsValidURL(str string) bool {
+	u, err := url.ParseRequestURI(str)
+	return err == nil && u.Scheme != "" && u.Host != ""
 }
 
 func splitCommand(body string) (cmd, query string) {

@@ -15,6 +15,10 @@ import (
 
 func ytv(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 	args := strings.Fields(m.Query)
+	if len(args) == 0 || !message.IsValidURL(args[0]) {
+		m.Reply(ctx, "Link YouTube tidak valid. Pastikan kamu mengirimkan link yang benar.")
+		return
+	}
 
 	m.Reply(ctx, "Tunggu Sebentar ya.")
 
@@ -60,6 +64,10 @@ func ytv(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 
 func yta(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 	args := strings.Fields(m.Query)
+	if len(args) == 0 || !message.IsValidURL(args[0]) {
+		m.Reply(ctx, "Link YouTube tidak valid. Pastikan kamu mengirimkan link yang benar.")
+		return
+	}
 
 	m.Reply(ctx, "Tunggu Sebentar ya.")
 
