@@ -2,6 +2,7 @@ package brat
 
 import (
 	"bytes"
+	_ "embed"
 	"fmt"
 	"image"
 	"image/color"
@@ -9,11 +10,36 @@ import (
 	"image/png"
 	"math"
 	"strings"
+	"sync"
 
-	"github.com/MapIHS/kotonehara/internal/media/meme"
+	xdraw "golang.org/x/image/draw"
 	"golang.org/x/image/font"
+	"golang.org/x/image/font/opentype"
 	"golang.org/x/image/math/fixed"
 )
+
+//go:embed fonts/Arial.ttf
+var arialFontTTF []byte
+
+var (
+	arialFontOnce sync.Once
+	arialFont     *opentype.Font
+	arialFontErr  error
+)
+
+func fontFace(size float64) (font.Face, error) {
+	arialFontOnce.Do(func() {
+		arialFont, arialFontErr = opentype.Parse(arialFontTTF)
+	})
+	if arialFontErr != nil {
+		return nil, arialFontErr
+	}
+	return opentype.NewFace(arialFont, &opentype.FaceOptions{
+		Size:    size,
+		DPI:     72,
+		Hinting: font.HintingFull,
+	})
+}
 
 const canvasSize = 512
 
@@ -42,8 +68,17 @@ func Render(opts Options) ([]byte, error) {
 
 	drawBratText(img, layout)
 
+	// Add the signature "brat" blur by downscaling and upscaling
+	blurFactor := 3
+	smallCanvasSize := canvasSize / blurFactor
+	small := image.NewRGBA(image.Rect(0, 0, smallCanvasSize, smallCanvasSize))
+	xdraw.BiLinear.Scale(small, small.Bounds(), img, img.Bounds(), xdraw.Src, nil)
+	
+	blurred := image.NewRGBA(img.Bounds())
+	xdraw.BiLinear.Scale(blurred, blurred.Bounds(), small, small.Bounds(), xdraw.Src, nil)
+
 	var out bytes.Buffer
-	if err := png.Encode(&out, img); err != nil {
+	if err := png.Encode(&out, blurred); err != nil {
 		return nil, err
 	}
 	return out.Bytes(), nil
@@ -57,8 +92,8 @@ type textLayout struct {
 
 func fitText(text string, maxWidth, maxHeight int) (textLayout, error) {
 	var last textLayout
-	for size := 90; size >= 18; size-- {
-		face, err := meme.FontFace(float64(size))
+	for size := 200; size >= 18; size-- {
+		face, err := fontFace(float64(size))
 		if err != nil {
 			return textLayout{}, err
 		}
@@ -83,13 +118,15 @@ func drawBratText(img *image.RGBA, layout textLayout) {
 	ascent := metrics.Ascent.Ceil()
 	y := (canvasSize-totalHeight)/2 + ascent
 
+	widest := widestLine(layout.face, layout.lines)
+	blockX := (canvasSize - widest) / 2
+	if blockX < 0 {
+		blockX = 0
+	}
+
 	src := image.NewUniform(textColor)
 	for _, line := range layout.lines {
-		w := font.MeasureString(layout.face, line).Ceil()
-		x := (canvasSize - w) / 2
-		if x < 0 {
-			x = 0
-		}
+		x := blockX
 		d := font.Drawer{
 			Dst:  img,
 			Src:  src,
