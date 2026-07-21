@@ -1,0 +1,16 @@
+[
+  {
+    "name": "provider-utama",
+    "base_url": "https://api.openai.com/v1",
+    "api_key": "sk-isi-api-key",
+    "model": "gpt-4.1-mini",
+    "enabled": true
+  },
+  {
+    "name": "provider-cadangan",
+    "base_url": "https://api.groq.com/openai/v1",
+    "api_key": "gsk-isi-api-key",
+    "model": ["openai/gpt-oss-120b", "groq/compound"],
+    "enabled": true
+  }
+]

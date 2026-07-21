@@ -7,3 +7,4 @@ pull.sh
 test_*
 *.mp3
 main
+configs/providers.json

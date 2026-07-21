@@ -16,7 +16,7 @@ func init() {
 		Tags:     "main",
 		IsPrefix: true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
-			client.SendText(ctx, m.From, "https://github.com/MapIHS/kotonehara\n\nPake ajh, jangan lupa kasih stars", m.ID)
+			client.SendText(ctx, m.From, "https://github.com/MapIHS/kotonehara\nhttps://github.com/sanxlab/hararest\nhttps://github.com/MapIHS/removebg-be\n\nPake ajh, jangan lupa kasih stars", m.ID)
 		},
 	})
 }

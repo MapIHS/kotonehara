@@ -1,6 +1,8 @@
 package config
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -24,8 +26,20 @@ type Config struct {
 	OpenAIBaseURL        string
 	OpenAIAPIKey         string
 	OpenAIModel          string
+	OpenAIProviders      []OpenAIProvider
+	OpenAIProvidersError string
 	OpenAISystemPrompt   string
 	OpenAITimeout        time.Duration
+}
+
+// OpenAIProvider describes one OpenAI-compatible upstream. Models can contain
+// more than one model; each is included in the router rotation.
+type OpenAIProvider struct {
+	Name    string
+	BaseURL string
+	APIKey  string
+	Models  []string
+	Enabled bool
 }
 
 func Load() Config {
@@ -61,6 +75,7 @@ func Load() Config {
 	}
 	openAIAPIKey := strings.TrimSpace(os.Getenv("OPENAI_API_KEY"))
 	openAIModel := strings.TrimSpace(os.Getenv("OPENAI_MODEL"))
+	openAIProviders, openAIProvidersErr := loadOpenAIProviders()
 	openAISystemPrompt := strings.TrimSpace(os.Getenv("OPENAI_SYSTEM_PROMPT"))
 	if openAISystemPrompt == "" {
 		openAISystemPrompt = "Kamu adalah Kotonehara, asisten WhatsApp yang membantu dengan jawaban jelas, ringkas, dan ramah dalam Bahasa Indonesia."
@@ -84,9 +99,83 @@ func Load() Config {
 		OpenAIBaseURL:        openAIBaseURL,
 		OpenAIAPIKey:         openAIAPIKey,
 		OpenAIModel:          openAIModel,
+		OpenAIProviders:      openAIProviders,
+		OpenAIProvidersError: openAIProvidersErr,
 		OpenAISystemPrompt:   openAISystemPrompt,
 		OpenAITimeout:        openAITimeout,
 	}
+}
+
+// loadOpenAIProviders accepts either OPENAI_PROVIDERS (a JSON array) or
+// OPENAI_PROVIDERS_FILE (a path to a JSON file). The format mirrors AiRouter:
+// [{"name":"...","base_url":"...","api_key":"...","model":"...","enabled":true}].
+// "model" may also be an array to rotate models on the same upstream.
+func loadOpenAIProviders() ([]OpenAIProvider, string) {
+	raw := strings.TrimSpace(os.Getenv("OPENAI_PROVIDERS"))
+	if raw == "" {
+		file := strings.TrimSpace(os.Getenv("OPENAI_PROVIDERS_FILE"))
+		if file == "" {
+			return nil, ""
+		}
+		data, err := os.ReadFile(file)
+		if err != nil {
+			return nil, fmt.Sprintf("tidak dapat membaca OPENAI_PROVIDERS_FILE: %v", err)
+		}
+		raw = string(data)
+	}
+
+	var items []struct {
+		Name    string          `json:"name"`
+		BaseURL string          `json:"base_url"`
+		APIKey  string          `json:"api_key"`
+		Model   json.RawMessage `json:"model"`
+		Enabled *bool           `json:"enabled"`
+	}
+	if err := json.Unmarshal([]byte(raw), &items); err != nil {
+		return nil, fmt.Sprintf("OPENAI_PROVIDERS harus berupa JSON array: %v", err)
+	}
+
+	providers := make([]OpenAIProvider, 0, len(items))
+	for i, item := range items {
+		models, err := parseProviderModels(item.Model)
+		if err != nil {
+			return nil, fmt.Sprintf("provider AI #%d: %v", i+1, err)
+		}
+		provider := OpenAIProvider{
+			Name:    strings.TrimSpace(item.Name),
+			BaseURL: strings.TrimRight(strings.TrimSpace(item.BaseURL), "/"),
+			APIKey:  strings.TrimSpace(item.APIKey),
+			Models:  models,
+			Enabled: item.Enabled != nil && *item.Enabled,
+		}
+		if provider.Name == "" || provider.BaseURL == "" || provider.APIKey == "" || len(provider.Models) == 0 {
+			return nil, fmt.Sprintf("provider AI #%d wajib memiliki name, base_url, api_key, model, dan enabled", i+1)
+		}
+		providers = append(providers, provider)
+	}
+	return providers, ""
+}
+
+func parseProviderModels(raw json.RawMessage) ([]string, error) {
+	var one string
+	if json.Unmarshal(raw, &one) == nil {
+		if one = strings.TrimSpace(one); one != "" {
+			return []string{one}, nil
+		}
+	}
+	var many []string
+	if json.Unmarshal(raw, &many) == nil {
+		out := make([]string, 0, len(many))
+		for _, model := range many {
+			if model = strings.TrimSpace(model); model != "" {
+				out = append(out, model)
+			}
+		}
+		if len(out) > 0 {
+			return out, nil
+		}
+	}
+	return nil, fmt.Errorf("model harus berupa string atau array string yang tidak kosong")
 }
 
 // normalizeDBDriver maps common aliases to the drivers actually wired up in

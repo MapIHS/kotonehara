@@ -61,6 +61,8 @@ Variabel penting:
 | `OPENAI_BASE_URL` | Base URL API OpenAI-compatible. | `https://api.openai.com/v1` |
 | `OPENAI_API_KEY` | API key untuk command AI. | kosong |
 | `OPENAI_MODEL` | Model AI yang digunakan. | kosong |
+| `OPENAI_PROVIDERS` | JSON array provider untuk rotasi/failover AI. | kosong |
+| `OPENAI_PROVIDERS_FILE` | Path file JSON provider, alternatif `OPENAI_PROVIDERS`. | kosong |
 | `OPENAI_TIMEOUT` | Timeout request AI. | `90s` |
 | `OPENAI_SYSTEM_PROMPT` | System prompt untuk command AI. | prompt Bahasa Indonesia bawaan |
 
@@ -87,6 +89,16 @@ OPENAI_MODEL=
 OPENAI_TIMEOUT=90s
 OPENAI_SYSTEM_PROMPT=Kamu adalah Kotonehara, asisten WhatsApp yang membantu dengan jawaban jelas, ringkas, dan ramah dalam Bahasa Indonesia.
 ```
+
+### Rotasi provider AI
+
+Untuk membagi request AI dan berpindah otomatis saat upstream timeout/jaringan, HTTP `429`, atau `5xx`, buat file provider (misalnya `configs/providers.json`) lalu arahkan environment berikut:
+
+```env
+OPENAI_PROVIDERS_FILE=configs/providers.json
+```
+
+Lihat `configs/providers.json.example` untuk formatnya. Provider aktif dirotasi round-robin; `model` dapat berupa satu string atau array model. Jika konfigurasi rotasi tidak diisi, bot tetap memakai `OPENAI_BASE_URL`, `OPENAI_API_KEY`, dan `OPENAI_MODEL` seperti sebelumnya.
 
 > Jangan commit `.env` atau secret/API key ke repository.
 

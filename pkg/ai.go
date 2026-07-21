@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/MapIHS/kotonehara/internal/clients"
 	"github.com/MapIHS/kotonehara/internal/commands"
@@ -14,14 +16,20 @@ import (
 
 const maxAIReplySize = 65536
 
+var aiRouters sync.Map // map[string]*openai.Router; one router per loaded configuration
+
 func aiCmd(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 	_ = client
 
-	if cfg.OpenAIAPIKey == "" {
+	if cfg.OpenAIProvidersError != "" {
+		m.Reply(ctx, "Konfigurasi rotasi AI tidak valid: "+cfg.OpenAIProvidersError)
+		return
+	}
+	if len(cfg.OpenAIProviders) == 0 && cfg.OpenAIAPIKey == "" {
 		m.Reply(ctx, "OPENAI_API_KEY belum diatur di env, yaa.")
 		return
 	}
-	if cfg.OpenAIModel == "" {
+	if len(cfg.OpenAIProviders) == 0 && cfg.OpenAIModel == "" {
 		m.Reply(ctx, "OPENAI_MODEL belum diatur di env, yaa.")
 		return
 	}
@@ -32,7 +40,20 @@ func aiCmd(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 		prompt = fmt.Sprintf("Konteks pesan yang direply:\n%s\n\nPertanyaan/perintah:\n%s", quoted, prompt)
 	}
 
-	ai := openai.New(cfg.OpenAIBaseURL, cfg.OpenAIAPIKey, cfg.OpenAIModel, cfg.OpenAITimeout)
+	providers := make([]openai.Provider, 0, len(cfg.OpenAIProviders))
+	for _, provider := range cfg.OpenAIProviders {
+		if !provider.Enabled {
+			continue
+		}
+		for _, model := range provider.Models {
+			providers = append(providers, openai.Provider{Name: provider.Name, BaseURL: provider.BaseURL, APIKey: provider.APIKey, Model: model})
+		}
+	}
+	if len(providers) == 0 {
+		providers = append(providers, openai.Provider{BaseURL: cfg.OpenAIBaseURL, APIKey: cfg.OpenAIAPIKey, Model: cfg.OpenAIModel})
+	}
+
+	ai := aiRouterFor(providers, cfg.OpenAITimeout)
 	answer, err := ai.ChatCompletion(ctx, []openai.Message{
 		{Role: "system", Content: cfg.OpenAISystemPrompt},
 		{Role: "user", Content: prompt},
@@ -46,6 +67,21 @@ func aiCmd(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 		answer = answer[:maxAIReplySize-5] + "\n\n..."
 	}
 	m.Reply(ctx, answer)
+}
+
+func aiRouterFor(providers []openai.Provider, timeout time.Duration) *openai.Router {
+	var key strings.Builder
+	for _, provider := range providers {
+		// Delimiters make the key unambiguous while keeping API keys out of logs.
+		fmt.Fprintf(&key, "%q|%q|%q|%q;", provider.Name, provider.BaseURL, provider.APIKey, provider.Model)
+	}
+	key.WriteString(timeout.String())
+	if router, ok := aiRouters.Load(key.String()); ok {
+		return router.(*openai.Router)
+	}
+	router := openai.NewRouter(providers, timeout)
+	actual, _ := aiRouters.LoadOrStore(key.String(), router)
+	return actual.(*openai.Router)
 }
 
 func aiQuotedText(m *message.Message) string {

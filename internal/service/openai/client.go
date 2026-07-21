@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/MapIHS/kotonehara/internal/service/httpclient"
@@ -20,6 +23,22 @@ type Client struct {
 	APIKey  string
 	Model   string
 	HTTP    *http.Client
+}
+
+// Provider is one upstream and model in a router rotation.
+type Provider struct {
+	Name    string
+	BaseURL string
+	APIKey  string
+	Model   string
+}
+
+// Router chooses providers round-robin and retries another provider only for
+// transient failures (network errors, timeout, 429, and 5xx responses).
+type Router struct {
+	providers []Provider
+	timeout   time.Duration
+	next      atomic.Uint64
 }
 
 type Message struct {
@@ -52,6 +71,62 @@ func New(baseURL, apiKey, model string, timeout time.Duration) *Client {
 		Model:   strings.TrimSpace(model),
 		HTTP:    httpclient.New("", timeout).HTTP,
 	}
+}
+
+func NewRouter(providers []Provider, timeout time.Duration) *Router {
+	active := make([]Provider, 0, len(providers))
+	for _, provider := range providers {
+		provider.BaseURL = strings.TrimRight(strings.TrimSpace(provider.BaseURL), "/")
+		provider.APIKey = strings.TrimSpace(provider.APIKey)
+		provider.Model = strings.TrimSpace(provider.Model)
+		if provider.BaseURL != "" && provider.APIKey != "" && provider.Model != "" {
+			active = append(active, provider)
+		}
+	}
+	if timeout <= 0 {
+		timeout = 90 * time.Second
+	}
+	return &Router{providers: active, timeout: timeout}
+}
+
+func (r *Router) ChatCompletion(ctx context.Context, messages []Message) (string, error) {
+	if r == nil || len(r.providers) == 0 {
+		return "", fmt.Errorf("tidak ada provider AI aktif")
+	}
+
+	start := int((r.next.Add(1) - 1) % uint64(len(r.providers)))
+	var lastErr error
+	for offset := range r.providers {
+		provider := r.providers[(start+offset)%len(r.providers)]
+		answer, err := New(provider.BaseURL, provider.APIKey, provider.Model, r.timeout).ChatCompletion(ctx, messages)
+		if err == nil {
+			return answer, nil
+		}
+		if ctx.Err() != nil {
+			return "", ctx.Err()
+		}
+		if !shouldFailover(err) {
+			return "", fmt.Errorf("provider %s: %w", providerName(provider), err)
+		}
+		lastErr = fmt.Errorf("provider %s: %w", providerName(provider), err)
+	}
+	return "", fmt.Errorf("semua provider AI tidak tersedia: %w", lastErr)
+}
+
+func providerName(provider Provider) string {
+	if provider.Name != "" {
+		return provider.Name
+	}
+	return provider.BaseURL
+}
+
+func shouldFailover(err error) bool {
+	var statusErr *httpStatusError
+	if errors.As(err, &statusErr) {
+		return statusErr.StatusCode == http.StatusTooManyRequests || statusErr.StatusCode >= http.StatusInternalServerError
+	}
+	var netErr net.Error
+	return errors.As(err, &netErr)
 }
 
 func (c *Client) ChatCompletion(ctx context.Context, messages []Message) (string, error) {
@@ -164,6 +239,18 @@ func decodeOpenAIContent(raw json.RawMessage) string {
 	return strings.TrimSpace(string(raw))
 }
 
+type httpStatusError struct {
+	StatusCode int
+	Message    string
+}
+
+func (e *httpStatusError) Error() string {
+	if e.Message == "" {
+		return fmt.Sprintf("openai api http %d", e.StatusCode)
+	}
+	return fmt.Sprintf("openai api http %d: %s", e.StatusCode, e.Message)
+}
+
 func openAIHTTPStatusError(statusCode int, body []byte) error {
 	message := ""
 
@@ -186,9 +273,9 @@ func openAIHTTPStatusError(statusCode int, body []byte) error {
 	}
 
 	if message == "" {
-		return fmt.Errorf("openai api http %d", statusCode)
+		return &httpStatusError{StatusCode: statusCode}
 	}
-	return fmt.Errorf("openai api http %d: %s", statusCode, message)
+	return &httpStatusError{StatusCode: statusCode, Message: message}
 }
 
 func decodeOpenAIError(raw json.RawMessage) string {
