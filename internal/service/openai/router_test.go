@@ -11,11 +11,20 @@ import (
 	"time"
 )
 
-func TestRouterFailsOverOnRateLimit(t *testing.T) {
+func TestRouterFailsOverOnRetryableHTTPStatus(t *testing.T) {
+	for _, status := range []int{http.StatusRequestEntityTooLarge, http.StatusTooManyRequests} {
+		t.Run(http.StatusText(status), func(t *testing.T) {
+			testRouterFailover(t, status)
+		})
+	}
+}
+
+func testRouterFailover(t *testing.T, status int) {
+	t.Helper()
 	var firstCalls, secondCalls int
 	first := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		firstCalls++
-		http.Error(w, `{"error":{"message":"rate limited"}}`, http.StatusTooManyRequests)
+		http.Error(w, `{"error":{"message":"upstream rejected request"}}`, status)
 	}))
 	defer first.Close()
 	second := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

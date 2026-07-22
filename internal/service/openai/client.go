@@ -34,7 +34,7 @@ type Provider struct {
 }
 
 // Router chooses providers round-robin and retries another provider only for
-// transient failures (network errors, timeout, 429, and 5xx responses).
+// transient failures (network errors, timeout, 413, 429, and 5xx responses).
 type Router struct {
 	providers []Provider
 	timeout   time.Duration
@@ -123,7 +123,9 @@ func providerName(provider Provider) string {
 func shouldFailover(err error) bool {
 	var statusErr *httpStatusError
 	if errors.As(err, &statusErr) {
-		return statusErr.StatusCode == http.StatusTooManyRequests || statusErr.StatusCode >= http.StatusInternalServerError
+		return statusErr.StatusCode == http.StatusRequestEntityTooLarge ||
+			statusErr.StatusCode == http.StatusTooManyRequests ||
+			statusErr.StatusCode >= http.StatusInternalServerError
 	}
 	var netErr net.Error
 	return errors.As(err, &netErr)
