@@ -80,7 +80,7 @@ func init() {
 				m.Reply(ctx, "Video belum bisa diproses, yaa.")
 				return
 			}
-			if _, err := client.SendVideo(ctx, m.From, vidData, isGif, "", m.ID); err != nil {
+			if _, err := client.SendVideo(ctx, m.From, vidData, isGif, getCaption(m), m.ID); err != nil {
 				m.Reply(ctx, "Videonya belum bisa dikirim, yaa.")
 				return
 			}

@@ -7,6 +7,7 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	"image/png"
+	"strings"
 
 	"github.com/MapIHS/kotonehara/internal/clients"
 	"github.com/MapIHS/kotonehara/internal/commands"
@@ -45,10 +46,23 @@ func init() {
 				return
 			}
 
-			if _, err := client.SendImage(ctx, m.From, buf.Bytes(), "", m.ID); err != nil {
+			if _, err := client.SendImage(ctx, m.From, buf.Bytes(), getCaption(m), m.ID); err != nil {
 				m.Reply(ctx, "Gambarnya belum bisa dikirim, yaa.")
 				return
 			}
 		},
 	})
+}
+
+func getCaption(m *message.Message) string {
+	if m == nil || m.QuotedMsg == nil {
+		return ""
+	}
+	if caption := m.QuotedMsg.GetImageMessage().GetCaption(); caption != "" {
+		return strings.TrimSpace(caption)
+	}
+	if caption := m.QuotedMsg.GetVideoMessage().GetCaption(); caption != "" {
+		return strings.TrimSpace(caption)
+	}
+	return ""
 }
