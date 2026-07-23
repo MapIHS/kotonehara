@@ -111,53 +111,66 @@ func cekSystem(ctx context.Context, client *clients.Client, m *message.Message, 
 }
 
 func cekAPI(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
-	endpoints := []struct {
-		Name string
-		URL  string
-	}{
-		{"BASE Api URL", cfg.BASEApiURL},
-		{"BASES3 URL", cfg.BASES3URL},
+	endpoints := []apiEndpoint{
+		{Name: "BASE API", URL: cfg.BASEApiURL},
+		{Name: "BASE S3", URL: cfg.BASES3URL},
+		{Name: "RemoveBG", URL: cfg.RemoveBGURL},
+	}
+	if cfg.OpenAIProvidersError != "" {
+		endpoints = append(endpoints, apiEndpoint{Name: "AI Router Config", ConfigError: cfg.OpenAIProvidersError})
+	} else if len(cfg.OpenAIProviders) > 0 {
+		for _, provider := range cfg.OpenAIProviders {
+			if !provider.Enabled {
+				continue
+			}
+			endpoints = append(endpoints, apiEndpoint{
+				Name: fmt.Sprintf("AI: %s (%d model)", provider.Name, len(provider.Models)),
+				URL:  provider.BaseURL,
+			})
+		}
+	} else {
+		endpoints = append(endpoints, apiEndpoint{Name: "AI: OpenAI-compatible", URL: cfg.OpenAIBaseURL})
 	}
 
 	httpClient := httpclient.New("", 5*time.Second).HTTP
-
-	var results []string
-	results = append(results, "*乂 API CONNECTIVITY CHECK*")
-	results = append(results, "")
-
-	for _, ep := range endpoints {
-		if ep.URL == "" {
-			results = append(results, fmt.Sprintf("• *%s:* [⚠️ Not Configured]", ep.URL))
-			continue
-		}
-
-		target := strings.TrimRight(ep.URL, "/")
-
-		req, err := http.NewRequestWithContext(ctx, http.MethodHead, target, nil)
-		if err != nil {
-
-			req, err = http.NewRequestWithContext(ctx, http.MethodGet, target, nil)
-			if err != nil {
-				results = append(results, fmt.Sprintf("• *%s:* [🔴 Invalid URL]", ep.URL))
-				continue
-			}
-		}
-
-		start := time.Now()
-		resp, err := httpClient.Do(req)
-		elapsed := time.Since(start).Milliseconds()
-
-		if err != nil {
-			results = append(results, fmt.Sprintf("• *%s:* [🔴 Offline - Timeout/Err]", ep.URL))
-		} else {
-			resp.Body.Close()
-			if resp.StatusCode >= 200 && resp.StatusCode < 500 {
-				results = append(results, fmt.Sprintf("• *%s:* [🟢 Online] (%dms)", ep.URL, elapsed))
-			} else {
-				results = append(results, fmt.Sprintf("• *%s:* [🟡 Warning: HTTP %d] (%dms)", ep.URL, resp.StatusCode, elapsed))
-			}
-		}
+	results := []string{"*乂 API CONNECTIVITY CHECK*", ""}
+	for _, endpoint := range endpoints {
+		results = append(results, checkAPIEndpoint(ctx, httpClient, endpoint))
 	}
 
 	m.Reply(ctx, strings.Join(results, "\n"))
+}
+
+type apiEndpoint struct {
+	Name        string
+	URL         string
+	ConfigError string
+}
+
+func checkAPIEndpoint(ctx context.Context, httpClient *http.Client, endpoint apiEndpoint) string {
+	if endpoint.ConfigError != "" {
+		return fmt.Sprintf("• *%s:* [🔴 Konfigurasi tidak valid]", endpoint.Name)
+	}
+	if endpoint.URL == "" {
+		return fmt.Sprintf("• *%s:* [⚠️ Belum dikonfigurasi]", endpoint.Name)
+	}
+
+	target := strings.TrimRight(endpoint.URL, "/")
+	req, err := http.NewRequestWithContext(ctx, http.MethodHead, target, nil)
+	if err != nil {
+		return fmt.Sprintf("• *%s:* [🔴 URL tidak valid]", endpoint.Name)
+	}
+
+	start := time.Now()
+	resp, err := httpClient.Do(req)
+	elapsed := time.Since(start).Milliseconds()
+	if err != nil {
+		return fmt.Sprintf("• *%s:* [🔴 Tidak terjangkau]", endpoint.Name)
+	}
+	resp.Body.Close()
+
+	if resp.StatusCode < http.StatusInternalServerError {
+		return fmt.Sprintf("• *%s:* [🟢 Terjangkau] (%dms)", endpoint.Name, elapsed)
+	}
+	return fmt.Sprintf("• *%s:* [🟡 HTTP %d] (%dms)", endpoint.Name, resp.StatusCode, elapsed)
 }
