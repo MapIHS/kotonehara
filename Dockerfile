@@ -17,6 +17,7 @@ FROM debian:bookworm-slim
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y ca-certificates \
+    neofetch \
     webp \
     ffmpeg \
     imagemagick \

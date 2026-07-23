@@ -1,5 +1,6 @@
 *.db
 bin/*
+bin
 .env
 hara
 tmp

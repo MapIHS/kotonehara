@@ -174,6 +174,7 @@ func runQRLogin(ctx context.Context, qrChan <-chan whatsmeow.QRChannelItem) erro
 			case whatsmeow.QRChannelEventCode:
 				qrterminal.GenerateHalfBlock(evt.Code, qrterminal.L, os.Stdout)
 				fmt.Println("Scan QR ini via WhatsApp.")
+				fmt.Println(evt.Code)
 			default:
 				if strings.HasPrefix(evt.Event, "err-") {
 					return fmt.Errorf("QR login gagal: %s", evt.Event)
