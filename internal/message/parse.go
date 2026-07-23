@@ -36,7 +36,6 @@ func extractQuoteContext(mess *events.Message) *waE2E.ContextInfo {
 
 	if ext := mess.Message.GetExtendedTextMessage(); ext != nil {
 		if ctx := ext.GetContextInfo(); ctx != nil {
-			info.MentionedJID = ctx.MentionedJID
 			info.IsForwarded = ctx.IsForwarded
 			info.ForwardingScore = ctx.ForwardingScore
 		}
