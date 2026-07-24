@@ -20,7 +20,7 @@ var reg = &registry{
 }
 
 func Register(cmd *Command) {
-	if cmd == nil || strings.TrimSpace(cmd.Name) == "" {
+	if cmd == nil || cmd.Disable || strings.TrimSpace(cmd.Name) == "" {
 		return
 	}
 

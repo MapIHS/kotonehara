@@ -13,6 +13,7 @@ type Command struct {
 	As          []string
 	Description string
 	Tags        string
+	Disable     bool
 	IsPrefix    bool
 	IsOwner     bool
 	IsMedia     bool
