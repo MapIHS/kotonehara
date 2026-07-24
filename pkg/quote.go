@@ -307,9 +307,6 @@ func resolveContactName(ctx context.Context, client *clients.Client, jid types.J
 	return jidToDisplayName(jid)
 }
 
-// jidToDisplayName extracts a human-readable name from a JID.
-// For regular JIDs (user@s.whatsapp.net), returns the phone number.
-// For LID JIDs (user:device@lid), returns just the user part formatted nicely.
 func jidToDisplayName(jid types.JID) string {
 	if jid.IsEmpty() {
 		return "Unknown"
@@ -320,26 +317,18 @@ func jidToDisplayName(jid types.JID) string {
 		return "Unknown"
 	}
 
-	// Strip device suffix for LID JIDs (e.g. "12345:0" → "12345")
 	if idx := strings.Index(user, ":"); idx > 0 {
 		user = user[:idx]
-	}
-
-	// For regular phone numbers, format nicely with a + prefix
-	if jid.Server == "s.whatsapp.net" && len(user) >= 7 {
-		return "+" + user
 	}
 
 	return user
 }
 
-// hashJID produces a deterministic positive integer from a JID string for use
-// as the Quote API "user ID". Same JID always gets the same colour in the API.
 func hashJID(s string) int {
-	var h uint32 = 2166136261 // FNV-1a offset basis
+	var h uint32 = 2166136261
 	for i := 0; i < len(s); i++ {
 		h ^= uint32(s[i])
-		h *= 16777619 // FNV-1a prime
+		h *= 16777619
 	}
-	return int(h & 0x7fffffff) // Ensure positive int
+	return int(h & 0x7fffffff)
 }
