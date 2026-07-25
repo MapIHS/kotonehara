@@ -112,10 +112,25 @@ func cekSystem(ctx context.Context, client *clients.Client, m *message.Message, 
 
 func cekAPI(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 	endpoints := []apiEndpoint{
-		{Name: "BASE API", URL: cfg.BASEApiURL},
-		{Name: "BASE S3", URL: cfg.BASES3URL},
-		{Name: "RemoveBG", URL: cfg.RemoveBGURL},
-		{Name: "Quote API", URL: cfg.QuoteAPIURL},
+		{Name: "BASE API", URL: cfg.BASEApiURL, ShowURL: true},
+		{Name: "BASE S3", URL: cfg.BASES3URL, ShowURL: true},
+		{Name: "RemoveBG", URL: cfg.RemoveBGURL, ShowURL: true},
+		{Name: "Quote API", URL: cfg.QuoteAPIURL, ShowURL: true},
+	}
+	if cfg.OpenAIProvidersError != "" {
+		endpoints = append(endpoints, apiEndpoint{Name: "AI Router Config", ConfigError: cfg.OpenAIProvidersError})
+	} else if len(cfg.OpenAIProviders) > 0 {
+		for _, provider := range cfg.OpenAIProviders {
+			if !provider.Enabled {
+				continue
+			}
+			endpoints = append(endpoints, apiEndpoint{
+				Name: fmt.Sprintf("AI: %s (%d model)", provider.Name, len(provider.Models)),
+				URL:  provider.BaseURL,
+			})
+		}
+	} else {
+		endpoints = append(endpoints, apiEndpoint{Name: "AI: OpenAI-compatible", URL: cfg.OpenAIBaseURL})
 	}
 
 	httpClient := httpclient.New("", 5*time.Second).HTTP
@@ -130,33 +145,38 @@ func cekAPI(ctx context.Context, client *clients.Client, m *message.Message, cfg
 type apiEndpoint struct {
 	Name        string
 	URL         string
+	ShowURL     bool
 	ConfigError string
 }
 
 func checkAPIEndpoint(ctx context.Context, httpClient *http.Client, endpoint apiEndpoint) string {
+	label := endpoint.Name
+	if endpoint.ShowURL && endpoint.URL != "" {
+		label = endpoint.URL
+	}
 	if endpoint.ConfigError != "" {
-		return fmt.Sprintf("• *%s:* [🔴 Konfigurasi tidak valid]", endpoint.URL)
+		return fmt.Sprintf("• *%s:* [🔴 Konfigurasi tidak valid]", endpoint.Name)
 	}
 	if endpoint.URL == "" {
-		return fmt.Sprintf("• *%s:* [⚠️ Belum dikonfigurasi]", endpoint.Name)
+		return fmt.Sprintf("• *%s:* [⚠️ Belum dikonfigurasi]", label)
 	}
 
 	target := strings.TrimRight(endpoint.URL, "/")
 	req, err := http.NewRequestWithContext(ctx, http.MethodHead, target, nil)
 	if err != nil {
-		return fmt.Sprintf("• *%s:* [🔴 URL tidak valid]", endpoint.URL)
+		return fmt.Sprintf("• *%s:* [🔴 URL tidak valid]", label)
 	}
 
 	start := time.Now()
 	resp, err := httpClient.Do(req)
 	elapsed := time.Since(start).Milliseconds()
 	if err != nil {
-		return fmt.Sprintf("• *%s:* [🔴 Tidak terjangkau]", endpoint.URL)
+		return fmt.Sprintf("• *%s:* [🔴 Tidak terjangkau]", label)
 	}
 	resp.Body.Close()
 
 	if resp.StatusCode < http.StatusInternalServerError {
-		return fmt.Sprintf("• *%s:* [🟢 Terjangkau] (%dms)", endpoint.URL, elapsed)
+		return fmt.Sprintf("• *%s:* [🟢 Terjangkau] (%dms)", label, elapsed)
 	}
-	return fmt.Sprintf("• *%s:* [🟡 HTTP %d] (%dms)", endpoint.Name, resp.StatusCode, elapsed)
+	return fmt.Sprintf("• *%s:* [🟡 HTTP %d] (%dms)", label, resp.StatusCode, elapsed)
 }

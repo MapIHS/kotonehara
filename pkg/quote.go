@@ -236,7 +236,7 @@ func quoteCmd(ctx context.Context, client *clients.Client, m *message.Message, c
 	}
 
 	// Convert to sticker
-	stcBytes, err := sticker.BuildSticker(opCtx, imgBytes, "Kotonehara", false, false)
+	stcBytes, err := sticker.BuildSticker(opCtx, imgBytes, m.PushName, false, false)
 	if err != nil {
 		m.Reply(ctx, "Gagal membuat stiker.")
 		return

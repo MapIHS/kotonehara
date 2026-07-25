@@ -9,6 +9,7 @@ Kotonehara adalah bot WhatsApp berbasis Go yang dibangun dengan [`whatsmeow`](ht
 - Penyimpanan session/device menggunakan PostgreSQL atau SQLite (pilih via `DB_DRIVER`).
 - Downloader untuk Instagram, TikTok, Facebook, X/Twitter, YouTube, Threads, dan Rednote/Xiaohongshu melalui API eksternal.
 - Tools media: sticker, sticker meme, brat, image/video conversion, upload ke URL.
+- Sticker quote dan fake quote melalui Quote API.
 - Command AI via OpenAI-compatible API.
 - WhatsApp outbound call via [`meowcaller`](https://github.com/purpshell/meowcaller) untuk owner.
 - Docker/Podman support.
@@ -58,6 +59,8 @@ Variabel penting:
 | `DISABLE_CONTACT_IMPORT` | Nonaktifkan import kontak WhatsApp. | `true` |
 | `BASEAPI_URL` | Base URL API eksternal untuk downloader. | kosong |
 | `BASES3_URL` | Base URL service upload file. | kosong |
+| `REMOVEBG_URL` | Endpoint API untuk command `removebg`. | kosong |
+| `QUOTE_API_URL` | Endpoint generator gambar untuk command `.qc` dan `.fqc`. | kosong |
 | `OPENAI_BASE_URL` | Base URL API OpenAI-compatible. | `https://api.openai.com/v1` |
 | `OPENAI_API_KEY` | API key untuk command AI. | kosong |
 | `OPENAI_MODEL` | Model AI yang digunakan. | kosong |
@@ -82,6 +85,8 @@ COOLDOWN=3s
 ADMIN_TTL=45s
 BASEAPI_URL=
 BASES3_URL=https://s3.example.com
+REMOVEBG_URL=
+QUOTE_API_URL=
 
 OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_API_KEY=
