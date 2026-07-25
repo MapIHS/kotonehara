@@ -27,7 +27,7 @@ func init() {
 	commands.Register(&commands.Command{
 		Name:        "qc",
 		As:          []string{"quote"},
-		Tags:        "sticker",
+		Tags:        "convert",
 		Description: "Buat stiker quote dari pesan",
 		IsPrefix:    true,
 		ShowWait:    true,
