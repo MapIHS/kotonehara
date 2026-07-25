@@ -115,21 +115,7 @@ func cekAPI(ctx context.Context, client *clients.Client, m *message.Message, cfg
 		{Name: "BASE API", URL: cfg.BASEApiURL},
 		{Name: "BASE S3", URL: cfg.BASES3URL},
 		{Name: "RemoveBG", URL: cfg.RemoveBGURL},
-	}
-	if cfg.OpenAIProvidersError != "" {
-		endpoints = append(endpoints, apiEndpoint{Name: "AI Router Config", ConfigError: cfg.OpenAIProvidersError})
-	} else if len(cfg.OpenAIProviders) > 0 {
-		for _, provider := range cfg.OpenAIProviders {
-			if !provider.Enabled {
-				continue
-			}
-			endpoints = append(endpoints, apiEndpoint{
-				Name: fmt.Sprintf("AI: %s (%d model)", provider.Name, len(provider.Models)),
-				URL:  provider.BaseURL,
-			})
-		}
-	} else {
-		endpoints = append(endpoints, apiEndpoint{Name: "AI: OpenAI-compatible", URL: cfg.OpenAIBaseURL})
+		{Name: "Quote API", URL: cfg.QuoteAPIURL},
 	}
 
 	httpClient := httpclient.New("", 5*time.Second).HTTP
@@ -149,7 +135,7 @@ type apiEndpoint struct {
 
 func checkAPIEndpoint(ctx context.Context, httpClient *http.Client, endpoint apiEndpoint) string {
 	if endpoint.ConfigError != "" {
-		return fmt.Sprintf("• *%s:* [🔴 Konfigurasi tidak valid]", endpoint.Name)
+		return fmt.Sprintf("• *%s:* [🔴 Konfigurasi tidak valid]", endpoint.URL)
 	}
 	if endpoint.URL == "" {
 		return fmt.Sprintf("• *%s:* [⚠️ Belum dikonfigurasi]", endpoint.Name)
@@ -158,19 +144,19 @@ func checkAPIEndpoint(ctx context.Context, httpClient *http.Client, endpoint api
 	target := strings.TrimRight(endpoint.URL, "/")
 	req, err := http.NewRequestWithContext(ctx, http.MethodHead, target, nil)
 	if err != nil {
-		return fmt.Sprintf("• *%s:* [🔴 URL tidak valid]", endpoint.Name)
+		return fmt.Sprintf("• *%s:* [🔴 URL tidak valid]", endpoint.URL)
 	}
 
 	start := time.Now()
 	resp, err := httpClient.Do(req)
 	elapsed := time.Since(start).Milliseconds()
 	if err != nil {
-		return fmt.Sprintf("• *%s:* [🔴 Tidak terjangkau]", endpoint.Name)
+		return fmt.Sprintf("• *%s:* [🔴 Tidak terjangkau]", endpoint.URL)
 	}
 	resp.Body.Close()
 
 	if resp.StatusCode < http.StatusInternalServerError {
-		return fmt.Sprintf("• *%s:* [🟢 Terjangkau] (%dms)", endpoint.Name, elapsed)
+		return fmt.Sprintf("• *%s:* [🟢 Terjangkau] (%dms)", endpoint.URL, elapsed)
 	}
 	return fmt.Sprintf("• *%s:* [🟡 HTTP %d] (%dms)", endpoint.Name, resp.StatusCode, elapsed)
 }
