@@ -95,7 +95,10 @@ func Render(opts Options) ([]byte, error) {
 func renderWithMagick(lines []string, fontSize int) ([]byte, error) {
 	magickBin := "magick"
 	if _, err := exec.LookPath(magickBin); err != nil {
-		return nil, err
+		magickBin = "convert"
+		if _, err := exec.LookPath(magickBin); err != nil {
+			return nil, err
+		}
 	}
 
 	text := strings.Join(lines, "\n")
