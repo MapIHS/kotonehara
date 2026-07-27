@@ -4,11 +4,13 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	"html"
 	"image"
 	"image/color"
 	"image/draw"
 	"image/png"
 	"math"
+	"os/exec"
 	"strings"
 	"sync"
 
@@ -53,18 +55,24 @@ type Options struct {
 }
 
 func Render(opts Options) ([]byte, error) {
-	text := strings.TrimSpace(opts.Text)
+	text := strings.ToLower(strings.TrimSpace(opts.Text))
 	if text == "" {
 		return nil, fmt.Errorf("teks kosong")
 	}
 
-	img := image.NewRGBA(image.Rect(0, 0, canvasSize, canvasSize))
-	draw.Draw(img, img.Bounds(), image.NewUniform(backgroundColor), image.Point{}, draw.Src)
-
-	layout, err := fitText(text, 460, 419)
+	layout, fontSize, err := fitText(text, 460, 419)
 	if err != nil {
 		return nil, err
 	}
+
+	// Try using ImageMagick (Pango) to render emojis properly.
+	// If ImageMagick is missing or fails, fallback to native Go rendering (no emoji support).
+	if out, err := renderWithMagick(layout.lines, fontSize); err == nil && len(out) > 0 {
+		return out, nil
+	}
+
+	img := image.NewRGBA(image.Rect(0, 0, canvasSize, canvasSize))
+	draw.Draw(img, img.Bounds(), image.NewUniform(backgroundColor), image.Point{}, draw.Src)
 
 	drawBratText(img, layout)
 
@@ -84,32 +92,57 @@ func Render(opts Options) ([]byte, error) {
 	return out.Bytes(), nil
 }
 
+func renderWithMagick(lines []string, fontSize int) ([]byte, error) {
+	magickBin := "magick"
+	if _, err := exec.LookPath(magickBin); err != nil {
+		return nil, err
+	}
+
+	text := strings.Join(lines, "\n")
+	escaped := html.EscapeString(text)
+	// Explicitly declare emoji fallback fonts so Pango doesn't drop them
+	pangoMarkup := fmt.Sprintf("<span font='Arial, Noto Color Emoji, Apple Color Emoji, Segoe UI Emoji %d'>%s</span>", fontSize, escaped)
+
+	cmd := exec.Command(magickBin,
+		"-density", "72",
+		"-size", "512x512", "canvas:white",
+		"(", "-background", "white", "-fill", "#171717", "+size", "pango:"+pangoMarkup, "-resize", "460x419>", ")",
+		"-gravity", "center", "-composite",
+		"-filter", "Triangle", "-resize", "170x170!", "-resize", "512x512!",
+		"png:-",
+	)
+
+	return cmd.Output()
+}
+
 type textLayout struct {
 	lines      []string
 	face       font.Face
 	lineHeight int
 }
 
-func fitText(text string, maxWidth, maxHeight int) (textLayout, error) {
+func fitText(text string, maxWidth, maxHeight int) (textLayout, int, error) {
 	var last textLayout
+	var lastSize int
 	for size := 200; size >= 18; size-- {
 		face, err := fontFace(float64(size))
 		if err != nil {
-			return textLayout{}, err
+			return textLayout{}, 0, err
 		}
 		lines := wrapText(face, text, maxWidth)
 		lineHeight := max(1, int(math.Round(float64(face.Metrics().Height.Ceil())*0.88)))
 		if len(lines) > 0 {
 			last = textLayout{lines: lines, face: face, lineHeight: lineHeight}
+			lastSize = size
 		}
 		if len(lines) > 0 && lineHeight*len(lines) <= maxHeight && widestLine(face, lines) <= maxWidth {
-			return last, nil
+			return last, lastSize, nil
 		}
 	}
 	if len(last.lines) == 0 {
-		return textLayout{}, fmt.Errorf("teks kosong")
+		return textLayout{}, 0, fmt.Errorf("teks kosong")
 	}
-	return last, nil
+	return last, lastSize, nil
 }
 
 func drawBratText(img *image.RGBA, layout textLayout) {
