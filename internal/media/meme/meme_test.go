@@ -6,7 +6,6 @@ import (
 	"image"
 	"image/color"
 	"image/png"
-	"strings"
 	"testing"
 
 	"github.com/MapIHS/kotonehara/internal/media/sticker"
@@ -68,12 +67,10 @@ func TestRenderStaticWebPSticker(t *testing.T) {
 }
 
 func TestRenderAnimatedWebPError(t *testing.T) {
+	// fakeAnimatedWebP is not a real image, so decoding should fail.
 	_, err := Render(fakeAnimatedWebP(), Options{TopText: "nope"})
 	if err == nil {
-		t.Fatal("expected error")
-	}
-	if !strings.Contains(err.Error(), "WebP animasi") {
-		t.Fatalf("error = %v, want animated WebP message", err)
+		t.Fatal("expected error for invalid animated WebP data")
 	}
 }
 

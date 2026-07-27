@@ -21,15 +21,6 @@ func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 		return
 	}
 
-	if m.IsVideo || m.IsQuotedVideo {
-		m.Reply(ctx, "Sticker meme untuk gambar dulu, yaa.")
-		return
-	}
-	if m.IsQuotedStickerGif {
-		m.Reply(ctx, "Sticker meme belum mendukung sticker animasi, yaa.")
-		return
-	}
-
 	args := strings.TrimSpace(m.Query)
 	parts := strings.Split(args, "|")
 
@@ -49,16 +40,27 @@ func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 		return
 	}
 
-	memeData, err := meme.Render(raw, meme.Options{
-		TopText:    topText,
-		BottomText: bottomText,
-	})
+	isVideo := m.IsVideo || m.IsQuotedVideo || m.IsGif || m.IsQuotedGif || m.IsQuotedStickerGif
+	var memeData []byte
+
+	if isVideo {
+		memeData, err = meme.RenderAnimated(ctx, raw, meme.Options{
+			TopText:    topText,
+			BottomText: bottomText,
+		})
+	} else {
+		memeData, err = meme.Render(raw, meme.Options{
+			TopText:    topText,
+			BottomText: bottomText,
+		})
+	}
+
 	if err != nil {
 		m.Reply(ctx, "Gagal bikin meme: "+err.Error())
 		return
 	}
 
-	stc, err := sticker.BuildSticker(ctx, memeData, m.PushName, false, false)
+	stc, err := sticker.BuildSticker(ctx, memeData, m.PushName, isVideo, false)
 	if err != nil {
 		m.Reply(ctx, fmt.Sprintf("Ada yang salah: %s", err))
 		return

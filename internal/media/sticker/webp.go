@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"image"
 	idraw "image/draw"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	webpenc "github.com/chai2010/webp"
 	xdraw "golang.org/x/image/draw"
@@ -37,7 +39,7 @@ func toWebP512(b []byte) ([]byte, error) {
 	h := int(float64(bh) * scale)
 	x := (sz - w) / 2
 	y := (sz - h) / 2
-	xdraw.ApproxBiLinear.Scale(dst, image.Rect(x, y, x+w, y+h), img, img.Bounds(), xdraw.Over, nil)
+	xdraw.CatmullRom.Scale(dst, image.Rect(x, y, x+w, y+h), img, img.Bounds(), xdraw.Over, nil)
 	var out bytes.Buffer
 	if err := webpenc.Encode(&out, dst, &webpenc.Options{Quality: 80}); err != nil {
 		return nil, err
@@ -69,16 +71,17 @@ func videoToWebP(ctx context.Context, data []byte) ([]byte, error) {
 		"-hide_banner",
 		"-loglevel", "error",
 		"-y",
+		"-hwaccel", "auto",
 		"-t", "10",
 		"-i", inFile,
 		"-an",
 		"-sn",
 		"-dn",
 		"-vcodec", "libwebp",
-		"-vf", "fps=15,crop=w='min(in_w\\,in_h)':h='min(in_w\\,in_h)',scale=512:512",
+		"-vf", "fps=15,scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:-1:-1:color=0x00000000@0,setsar=1",
 		"-lossless", "0",
 		"-q:v", "45",
-		"-compression_level", "3",
+		"-compression_level", "4",
 		"-loop", "0",
 		"-preset", "default",
 		"-vsync", "0",
@@ -89,7 +92,11 @@ func videoToWebP(ctx context.Context, data []byte) ([]byte, error) {
 			return nil, ctx.Err()
 		}
 		if len(out) > 0 {
-			return nil, errors.New(string(bytes.TrimSpace(out)))
+			msg := string(bytes.TrimSpace(out))
+			if strings.Contains(msg, "no decoder found") || strings.Contains(msg, "Decoder") {
+				return nil, fmt.Errorf("codec video tidak didukung oleh ffmpeg (install ffmpeg lengkap dari RPM Fusion): %s", msg)
+			}
+			return nil, errors.New(msg)
 		}
 		return nil, err
 	}

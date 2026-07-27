@@ -84,10 +84,6 @@ func Render(data []byte, opts Options) ([]byte, error) {
 
 func decodeSourceImage(data []byte) (image.Image, error) {
 	if isWebP(data) {
-		if isAnimatedWebP(data) {
-			return nil, fmt.Errorf("WebP animasi belum didukung untuk sticker meme")
-		}
-
 		img, err := xwebp.Decode(bytes.NewReader(data))
 		if err == nil {
 			return img, nil
