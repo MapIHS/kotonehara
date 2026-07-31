@@ -1,11 +1,7 @@
 package handlers
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
-	"net/http"
 	"strings"
 	"time"
 
@@ -13,7 +9,7 @@ import (
 	"github.com/MapIHS/kotonehara/internal/commands"
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"github.com/MapIHS/kotonehara/internal/message"
-	"github.com/MapIHS/kotonehara/internal/service/httpclient"
+	"github.com/MapIHS/kotonehara/internal/service/api"
 )
 
 func init() {
@@ -45,42 +41,14 @@ func init() {
 				return
 			}
 
-			ocrURL := strings.TrimRight(cfg.BASEApiURL, "/") + "/api/ocr"
-
-			req, err := http.NewRequestWithContext(opCtx, http.MethodPost, ocrURL, bytes.NewReader(raw))
+			apiClient := api.New(cfg.BASEApiURL, 60*time.Second)
+			text, err := apiClient.ExtractOCR(opCtx, raw)
 			if err != nil {
-				m.Reply(ctx, "Gagal membuat request ke OCR API.")
+				m.Reply(ctx, "Gagal menghubungi OCR API: "+err.Error())
 				return
 			}
 
-			req.Header.Set("Content-Type", "image/jpeg")
-
-			hc := httpclient.New("", 60*time.Second)
-			resp, err := hc.HTTP.Do(req)
-			if err != nil {
-				m.Reply(ctx, "Gagal menghubungi OCR API.")
-				return
-			}
-			defer resp.Body.Close()
-
-			if resp.StatusCode != http.StatusOK {
-				m.Reply(ctx, fmt.Sprintf("OCR API error dengan status: %d", resp.StatusCode))
-				return
-			}
-
-			var result struct {
-				Success bool `json:"success"`
-				Data    struct {
-					Text string `json:"text"`
-				} `json:"data"`
-			}
-
-			if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-				m.Reply(ctx, "Gagal membaca respons dari OCR API.")
-				return
-			}
-
-			text := strings.TrimSpace(result.Data.Text)
+			text = strings.TrimSpace(text)
 			if text == "" {
 				m.Reply(ctx, "Tidak ada teks yang terdeteksi di gambar tersebut.")
 				return
