@@ -16,7 +16,7 @@ import (
 	"github.com/mdp/qrterminal"
 	"github.com/subosito/gotenv"
 
-	_ "github.com/MapIHS/kotonehara/pkg"
+	_ "github.com/MapIHS/kotonehara/internal/handlers"
 
 	_ "github.com/lib/pq"
 	_ "modernc.org/sqlite"
@@ -69,7 +69,7 @@ func main() {
 	d := devices.New(container, cfg, ctx)
 	dev, err := d.GetDefaultDevice(ctx)
 	if err != nil {
-		panic(err)
+		log.Fatal("get default device: ", err)
 	}
 
 	client := d.NewClient(dev)

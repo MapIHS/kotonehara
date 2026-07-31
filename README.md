@@ -199,20 +199,20 @@ cmd/bot/                 Entry point aplikasi
 internal/clients/        Wrapper whatsmeow untuk kirim pesan/media dan operasi grup
 internal/commands/       Registry command, cooldown, menu, dan executor
 internal/devices/        Device WhatsApp dan event handler
+internal/handlers/       Implementasi command bot
 internal/infra/config/   Loader konfigurasi environment
 internal/infra/db/       Koneksi database (PostgreSQL atau SQLite)
 internal/media/          Sticker, meme, brat, dan efek gambar
 internal/message/        Parser pesan WhatsApp
 internal/service/        Client API eksternal, OpenAI, S3, dan HTTP helper
-pkg/                     Implementasi command bot
 ```
 
 ## Menambah command baru
 
-Command biasanya dibuat di package `pkg` dan didaftarkan lewat `commands.Register` di fungsi `init()`:
+Command biasanya dibuat di package `internal/handlers` dan didaftarkan lewat `commands.Register` di fungsi `init()`:
 
 ```go
-package pkg
+package handlers
 
 import (
     "context"
@@ -236,7 +236,7 @@ func init() {
 }
 ```
 
-`cmd/bot/main.go` sudah mengimpor `pkg` secara blank import, sehingga command baru di `pkg` otomatis terdaftar saat aplikasi berjalan.
+`cmd/bot/main.go` sudah mengimpor `internal/handlers` secara blank import, sehingga command baru di `internal/handlers` otomatis terdaftar saat aplikasi berjalan.
 
 ## License
 

@@ -1,7 +1,8 @@
-package pkg
+package handlers
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -14,8 +15,8 @@ import (
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:     "instagram",
-		As:       []string{"ig", "igdl"},
+		Name:     "tiktok",
+		As:       []string{"tt"},
 		Tags:     "downloader",
 		IsQuery:  true,
 		IsPrefix: true,
@@ -30,33 +31,20 @@ func init() {
 
 			ap := api.New(cfg.BASEApiURL, 60*time.Second)
 
-			res, err := ap.Instagram(ctx, args[0])
+			res, err := ap.Tiktok(ctx, args[0])
 			if err != nil {
 				m.Reply(ctx, "Gagal.")
 				return
 			}
 
-			totalMedia := len(res.Photos) + len(res.Videos)
-
-			if totalMedia > 0 {
-				for _, p := range res.Videos {
-					buff, err := client.FetchBytes(p.URL)
-					if err != nil {
-						continue
-					}
-
-					client.SendVideo(ctx, m.From, buff, false, "", m.ID)
-				}
-
-				for _, p := range res.Photos {
-					buff, err := client.FetchBytes(p.URL)
-					if err != nil {
-						continue
-					}
-
-					client.SendImage(ctx, m.From, buff, "", m.ID)
-				}
+			buff, err := client.FetchBytes(*res.Video)
+			if err != nil {
+				m.Reply(ctx, "Maaf Terjadi kesalahan, yaa.")
+				return
 			}
+
+			caption := fmt.Sprintf("*Title* :%s", res.Title)
+			client.SendVideo(ctx, m.From, buff, false, caption, m.ID)
 
 		},
 	})

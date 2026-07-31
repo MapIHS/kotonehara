@@ -23,6 +23,9 @@ RUN apt-get update && apt-get install -y ca-certificates \
     imagemagick \
     fonts-noto-color-emoji \
     fonts-liberation \
+    tesseract-ocr \
+    tesseract-ocr-ind \
+    tesseract-ocr-eng \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/hara /app/hara
