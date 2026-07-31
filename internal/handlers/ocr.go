@@ -3,8 +3,9 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
-	"os/exec"
+	"net/http"
 	"strings"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/MapIHS/kotonehara/internal/commands"
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"github.com/MapIHS/kotonehara/internal/message"
+	"github.com/MapIHS/kotonehara/internal/service/httpclient"
 )
 
 func init() {
@@ -19,11 +21,16 @@ func init() {
 		Name:        "ocr",
 		As:          []string{"baca", "teks"},
 		Tags:        "tools",
-		Description: "Membaca teks dari gambar (Optical Character Recognition)",
+		Description: "Membaca teks dari gambar menggunakan Hararest API",
 		IsPrefix:    true,
 		IsMedia:     true,
 		ShowWait:    true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
+			if cfg.BASEApiURL == "" {
+				m.Reply(ctx, "Fitur OCR belum dikonfigurasi (BASEAPI_URL kosong).")
+				return
+			}
+
 			if m.Media == nil || m.IsVideo || m.IsQuotedVideo || m.IsGif || m.IsQuotedGif {
 				m.Reply(ctx, "Kirim atau balas gambar (bukan video/dokumen) dengan perintah ini untuk mengekstrak teksnya.")
 				return
@@ -38,30 +45,48 @@ func init() {
 				return
 			}
 
-			if _, err := exec.LookPath("tesseract"); err != nil {
-				m.Reply(ctx, "Fitur OCR belum tersedia di server (tesseract tidak ditemukan).")
+			ocrURL := strings.TrimRight(cfg.BASEApiURL, "/") + "/api/ocr"
+
+			req, err := http.NewRequestWithContext(opCtx, http.MethodPost, ocrURL, bytes.NewReader(raw))
+			if err != nil {
+				m.Reply(ctx, "Gagal membuat request ke OCR API.")
 				return
 			}
 
-			// tesseract reads from stdin when input is "-" or "stdin" (varies by version, "stdin" works in v4+)
-			cmd := exec.CommandContext(opCtx, "tesseract", "stdin", "stdout", "-l", "ind+eng")
-			cmd.Stdin = bytes.NewReader(raw)
-			
-			var out bytes.Buffer
-			cmd.Stdout = &out
+			req.Header.Set("Content-Type", "image/jpeg")
 
-			if err := cmd.Run(); err != nil {
-				m.Reply(ctx, fmt.Sprintf("Gagal mengekstrak teks dari gambar: %s", err))
+			hc := httpclient.New("", 60*time.Second)
+			resp, err := hc.HTTP.Do(req)
+			if err != nil {
+				m.Reply(ctx, "Gagal menghubungi OCR API.")
+				return
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				m.Reply(ctx, fmt.Sprintf("OCR API error dengan status: %d", resp.StatusCode))
 				return
 			}
 
-			result := strings.TrimSpace(out.String())
-			if result == "" {
+			var result struct {
+				Success bool `json:"success"`
+				Data    struct {
+					Text string `json:"text"`
+				} `json:"data"`
+			}
+
+			if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+				m.Reply(ctx, "Gagal membaca respons dari OCR API.")
+				return
+			}
+
+			text := strings.TrimSpace(result.Data.Text)
+			if text == "" {
 				m.Reply(ctx, "Tidak ada teks yang terdeteksi di gambar tersebut.")
 				return
 			}
 
-			m.Reply(ctx, result)
+			m.Reply(ctx, text)
 		},
 	})
 }
