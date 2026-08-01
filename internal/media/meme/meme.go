@@ -125,7 +125,7 @@ func scaleForMeme(src image.Image, minDim, maxDim int) *image.RGBA {
 	outW := max(1, int(math.Round(float64(w)*scale)))
 	outH := max(1, int(math.Round(float64(h)*scale)))
 	dst := image.NewRGBA(image.Rect(0, 0, outW, outH))
-	draw.Draw(dst, dst.Bounds(), image.Black, image.Point{}, draw.Src)
+	draw.Draw(dst, dst.Bounds(), image.Transparent, image.Point{}, draw.Src)
 	xdraw.CatmullRom.Scale(dst, dst.Bounds(), src, b, xdraw.Over, nil)
 	return dst
 }
