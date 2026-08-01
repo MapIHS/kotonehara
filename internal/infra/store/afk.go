@@ -1,79 +1,131 @@
 package store
 
 import (
-	"encoding/json"
-	"os"
-	"path/filepath"
-	"sync"
+	"log"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type AFKState struct {
-	IsAFK   bool      `json:"is_afk"`
-	Reason  string    `json:"reason"`
-	Time    time.Time `json:"time"`
+	JID    string    `db:"jid"`
+	Reason string    `db:"reason"`
+	Time   time.Time `db:"created_at"`
 }
 
-var (
-	afkStore = make(map[string]AFKState)
-	afkMu    sync.RWMutex
-	storeDir = "data"
-	afkFile  = "afk_store.json"
-)
+var db *sqlx.DB
 
-func init() {
-	LoadAFKStore()
+func InitDB(database *sqlx.DB) {
+	db = database
+	createTable()
 }
 
-func GetAFKPath() string {
-	return filepath.Join(storeDir, afkFile)
-}
-
-func LoadAFKStore() {
-	afkMu.Lock()
-	defer afkMu.Unlock()
-	if err := os.MkdirAll(storeDir, 0755); err != nil {
-		return
-	}
-	b, err := os.ReadFile(GetAFKPath())
-	if err == nil {
-		_ = json.Unmarshal(b, &afkStore)
-	}
-}
-
-func SaveAFKStore() {
-	b, err := json.Marshal(afkStore)
-	if err == nil {
-		_ = os.WriteFile(GetAFKPath(), b, 0644)
+func createTable() {
+	query := `
+	CREATE TABLE IF NOT EXISTS afk_users (
+		jid VARCHAR(255) PRIMARY KEY,
+		reason TEXT,
+		created_at TIMESTAMP
+	);
+	`
+	_, err := db.Exec(query)
+	if err != nil {
+		log.Printf("Gagal membuat tabel afk_users: %v", err)
 	}
 }
 
 func SetAFK(jid string, reason string) {
-	afkMu.Lock()
-	defer afkMu.Unlock()
-	afkStore[jid] = AFKState{
-		IsAFK:  true,
-		Reason: reason,
-		Time:   time.Now(),
+	if db == nil {
+		return
 	}
-	SaveAFKStore()
+	
+	// PostgreSQL uses $1, SQLite uses ?
+	// To be safe and compatible with sqlx across multiple drivers, we can use NamedExec, or just DB-specific dialect if necessary.
+	// We'll use NamedExec.
+	query := `
+	INSERT INTO afk_users (jid, reason, created_at)
+	VALUES (:jid, :reason, :created_at)
+	ON CONFLICT (jid) DO UPDATE SET
+		reason = EXCLUDED.reason,
+		created_at = EXCLUDED.created_at;
+	`
+	// Note: SQLite supports ON CONFLICT since 3.24.0. For standard compatibility:
+	if db.DriverName() == "postgres" {
+		query = `
+		INSERT INTO afk_users (jid, reason, created_at)
+		VALUES (:jid, :reason, :created_at)
+		ON CONFLICT (jid) DO UPDATE SET
+			reason = EXCLUDED.reason,
+			created_at = EXCLUDED.created_at;
+		`
+	} else if db.DriverName() == "sqlite" || db.DriverName() == "sqlite3" {
+		query = `
+		INSERT INTO afk_users (jid, reason, created_at)
+		VALUES (:jid, :reason, :created_at)
+		ON CONFLICT(jid) DO UPDATE SET
+			reason=excluded.reason,
+			created_at=excluded.created_at;
+		`
+	} else {
+		// Fallback for simple INSERT OR REPLACE if it's sqlite without ON CONFLICT (older versions)
+		// But modernc.org/sqlite supports it.
+		query = `
+		INSERT OR REPLACE INTO afk_users (jid, reason, created_at)
+		VALUES (:jid, :reason, :created_at);
+		`
+		if db.DriverName() == "postgres" {
+			query = `
+			INSERT INTO afk_users (jid, reason, created_at)
+			VALUES (:jid, :reason, :created_at)
+			ON CONFLICT (jid) DO UPDATE SET
+				reason = EXCLUDED.reason,
+				created_at = EXCLUDED.created_at;
+			`
+		}
+	}
+
+	_, err := db.NamedExec(query, map[string]interface{}{
+		"jid":        jid,
+		"reason":     reason,
+		"created_at": time.Now(),
+	})
+	if err != nil {
+		log.Printf("Gagal set AFK: %v", err)
+	}
 }
 
 func ClearAFK(jid string) (AFKState, bool) {
-	afkMu.Lock()
-	defer afkMu.Unlock()
-	state, exists := afkStore[jid]
-	if exists && state.IsAFK {
-		delete(afkStore, jid)
-		SaveAFKStore()
-		return state, true
+	if db == nil {
+		return AFKState{}, false
 	}
-	return AFKState{}, false
+
+	state, ok := GetAFK(jid)
+	if !ok {
+		return AFKState{}, false
+	}
+
+	// Use Rebind for driver-agnostic query (?)
+	query := db.Rebind(`DELETE FROM afk_users WHERE jid = ?`)
+	_, err := db.Exec(query, jid)
+	if err != nil {
+		log.Printf("Gagal clear AFK: %v", err)
+		return AFKState{}, false
+	}
+
+	return state, true
 }
 
 func GetAFK(jid string) (AFKState, bool) {
-	afkMu.RLock()
-	defer afkMu.RUnlock()
-	state, exists := afkStore[jid]
-	return state, exists && state.IsAFK
+	var state AFKState
+	if db == nil {
+		return state, false
+	}
+
+	query := db.Rebind(`SELECT jid, reason, created_at FROM afk_users WHERE jid = ? LIMIT 1`)
+	err := db.Get(&state, query, jid)
+	if err != nil {
+		return state, false
+	}
+
+	return state, true
 }

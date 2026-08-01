@@ -32,7 +32,8 @@ COPY --from=builder /app/configs /app/configs
 COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscaled /app/tailscaled
 COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscale /app/tailscale
 
-RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale
+RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale /app/data
+VOLUME ["/app/data"]
 COPY tailscale.sh /app/tailscale.sh
 RUN chmod +x /app/tailscale.sh
 

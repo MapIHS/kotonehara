@@ -13,6 +13,7 @@ import (
 	"github.com/MapIHS/kotonehara/internal/devices"
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	dbInfra "github.com/MapIHS/kotonehara/internal/infra/db"
+	"github.com/MapIHS/kotonehara/internal/infra/store"
 	"github.com/mdp/qrterminal"
 	"github.com/subosito/gotenv"
 
@@ -55,6 +56,7 @@ func main() {
 	}
 
 	defer db.Close()
+	store.InitDB(db)
 
 	dbLog := waLog.Stdout("Database", "INFO", true)
 	container := sqlstore.NewWithDB(db.DB, cfg.DBDriver, dbLog)
