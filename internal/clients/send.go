@@ -56,6 +56,10 @@ func (c *Client) SendSticker(ctx context.Context, to types.JID, data []byte, isL
 }
 
 func (c *Client) FetchBytes(u string) ([]byte, error) {
+	return c.FetchBytesWithHeaders(u, nil)
+}
+
+func (c *Client) FetchBytesWithHeaders(u string, headers map[string]string) ([]byte, error) {
 	req, err := http.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, err
@@ -63,6 +67,9 @@ func (c *Client) FetchBytes(u string) ([]byte, error) {
 
 	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; kotonehara/1.0; +https://github.com/MapIHS/kotonehara)")
 	req.Header.Set("Accept", "*/*")
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
 
 	resp, err := c.HTTP.Do(req)
 	if err != nil {

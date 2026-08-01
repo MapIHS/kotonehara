@@ -10,7 +10,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN go build -o hara cmd/bot/main.go
+RUN CGO_ENABLED=1 go build -trimpath -ldflags="-s -w" -o hara cmd/bot/main.go
 
 # build final
 FROM debian:bookworm-slim
