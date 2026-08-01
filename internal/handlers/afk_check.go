@@ -20,17 +20,19 @@ func CheckAFK(ctx context.Context, c *clients.Client, m *message.Message) {
 	senderJid := m.Sender.ToNonAD().String()
 
 	// 1. If sender is AFK, remove their AFK status
-	// We ignore commands like .afk because they are setting it.
-	// Actually, if they type .afk, the command will set it AFTER this check.
 	if !strings.HasPrefix(strings.TrimSpace(m.Body), ".afk") && !strings.HasPrefix(strings.TrimSpace(m.Body), "afk") {
 		if afk, cleared := store.ClearAFK(senderJid); cleared {
 			duration := formatDuration(time.Since(afk.Time))
-			m.Reply(ctx, fmt.Sprintf("👋 Welcome back! Status AFK kamu telah dihapus.\nKamu AFK selama %s.", duration))
+			if m.ID != nil {
+				m.ID.MentionedJID = append(m.ID.MentionedJID, senderJid)
+			}
+			m.Reply(ctx, fmt.Sprintf("👋 Welcome back @%s! Status AFK kamu telah dihapus.\nKamu AFK selama %s.", strings.Split(senderJid, "@")[0], duration))
 		}
 	}
 
 	// 2. Check if the message mentions any AFK users
 	var mentionedAFKs []string
+	var taggedJIDs []string
 	
 	if m.ContextInfo != nil {
 		// Check explicitly mentioned JIDs
@@ -38,6 +40,7 @@ func CheckAFK(ctx context.Context, c *clients.Client, m *message.Message) {
 			if afk, ok := store.GetAFK(jid); ok {
 				duration := formatDuration(time.Since(afk.Time))
 				mentionedAFKs = append(mentionedAFKs, fmt.Sprintf("• @%s sedang AFK: %s (sejak %s lalu)", strings.Split(jid, "@")[0], afk.Reason, duration))
+				taggedJIDs = append(taggedJIDs, jid)
 			}
 		}
 
@@ -56,6 +59,7 @@ func CheckAFK(ctx context.Context, c *clients.Client, m *message.Message) {
 					if !alreadyMentioned {
 						duration := formatDuration(time.Since(afk.Time))
 						mentionedAFKs = append(mentionedAFKs, fmt.Sprintf("• @%s sedang AFK: %s (sejak %s lalu)", strings.Split(quotedJid, "@")[0], afk.Reason, duration))
+						taggedJIDs = append(taggedJIDs, quotedJid)
 					}
 				}
 			}
@@ -64,6 +68,9 @@ func CheckAFK(ctx context.Context, c *clients.Client, m *message.Message) {
 
 	if len(mentionedAFKs) > 0 {
 		replyText := "Sstt, orangnya lagi nggak ada!\n\n" + strings.Join(mentionedAFKs, "\n")
+		if m.ID != nil {
+			m.ID.MentionedJID = taggedJIDs
+		}
 		m.Reply(ctx, replyText)
 	}
 }
