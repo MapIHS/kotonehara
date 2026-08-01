@@ -8,6 +8,7 @@ import (
 
 	"github.com/MapIHS/kotonehara/internal/clients"
 	"github.com/MapIHS/kotonehara/internal/commands"
+	"github.com/MapIHS/kotonehara/internal/handlers"
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"github.com/MapIHS/kotonehara/internal/message"
 	meowcaller "github.com/purpshell/meowcaller"
@@ -140,17 +141,22 @@ func (d *Devices) registerEventHandler(client *whatsmeow.Client, callClient *meo
 	return func(evt interface{}) {
 		switch v := evt.(type) {
 		case *events.Message:
-			if !commands.CanHandle(message.ExtractBody(v), d.cfg) {
-				return
-			}
-
+			parse := m.Parse(d.ctx, v)
+			
 			d.tryStartCommand(func() {
 				defer func() {
 					if r := recover(); r != nil {
 						d.log.Errorf("command panic: %v", r)
 					}
 				}()
-				parse := m.Parse(d.ctx, v)
+
+				// Check AFK status first
+				handlers.CheckAFK(d.ctx, c, parse)
+
+				if !commands.CanHandle(parse.Body, d.cfg) {
+					return
+				}
+
 				commands.CommandExec(d.ctx, c, parse, d.cfg)
 			})
 
