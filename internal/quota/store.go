@@ -26,21 +26,52 @@ type UsageInfo struct {
 }
 
 type store struct {
-	db *sqlx.DB
+	db     *sqlx.DB
+	isPG   bool
 }
 
 func newStore(db *sqlx.DB) *store {
-	return &store{db: db}
+	driver := db.DriverName()
+	return &store{
+		db:   db,
+		isPG: driver == "postgres" || driver == "pgx",
+	}
+}
+
+// ph returns the correct placeholder for the given index (1-based).
+// PostgreSQL uses $1, $2, etc. SQLite uses ?.
+func (s *store) ph(n int) string {
+	if s.isPG {
+		return fmt.Sprintf("$%d", n)
+	}
+	return "?"
+}
+
+// nowExpr returns the SQL expression for "current timestamp".
+func (s *store) nowExpr() string {
+	if s.isPG {
+		return "NOW()"
+	}
+	return "DATETIME('now')"
+}
+
+// todayWIBExpr returns the SQL expression for "today's date in WIB".
+func (s *store) todayWIBExpr() string {
+	if s.isPG {
+		return "(NOW() AT TIME ZONE 'Asia/Jakarta')::DATE::TEXT"
+	}
+	return "DATE('now', '+7 hours')"
 }
 
 // IsPremium checks whether a JID has an active premium subscription.
 func (s *store) IsPremium(ctx context.Context, jid string) (bool, error) {
 	var count int
-	err := s.db.QueryRowContext(ctx,
+	q := fmt.Sprintf(
 		`SELECT COUNT(*) FROM premium_users
-		 WHERE jid = $1 AND (expires_at IS NULL OR expires_at > NOW())`,
-		jid,
-	).Scan(&count)
+		 WHERE jid = %s AND (expires_at IS NULL OR expires_at > %s)`,
+		s.ph(1), s.nowExpr(),
+	)
+	err := s.db.QueryRowContext(ctx, q, jid).Scan(&count)
 	if err != nil {
 		return false, fmt.Errorf("check premium: %w", err)
 	}
@@ -50,24 +81,41 @@ func (s *store) IsPremium(ctx context.Context, jid string) (bool, error) {
 // IncrementAndGet atomically increments the daily usage counter for a JID
 // using a lazy-reset UPSERT. Returns the new count after increment.
 func (s *store) IncrementAndGet(ctx context.Context, jid string) (int, error) {
-	// Convert UTC to WIB (Asia/Jakarta) for date comparison
-	var count int
-	err := s.db.QueryRowContext(ctx,
+	today := s.todayWIBExpr()
+	now := s.nowExpr()
+
+	// PostgreSQL requires table-qualified columns in ON CONFLICT DO UPDATE
+	usageCol := "usage_count"
+	resetCol := "reset_date"
+	if s.isPG {
+		usageCol = "user_daily_usage.usage_count"
+		resetCol = "user_daily_usage.reset_date"
+	}
+
+	q := fmt.Sprintf(
 		`INSERT INTO user_daily_usage (jid, usage_count, reset_date, updated_at)
-		 VALUES ($1, 1, (NOW() AT TIME ZONE 'Asia/Jakarta')::DATE::TEXT, NOW())
+		 VALUES (%s, 1, %s, %s)
 		 ON CONFLICT(jid) DO UPDATE SET
 		   usage_count = CASE
-		     WHEN user_daily_usage.reset_date < (NOW() AT TIME ZONE 'Asia/Jakarta')::DATE::TEXT THEN 1
-		     ELSE user_daily_usage.usage_count + 1
+		     WHEN %s < %s THEN 1
+		     ELSE %s + 1
 		   END,
 		   reset_date = CASE
-		     WHEN user_daily_usage.reset_date < (NOW() AT TIME ZONE 'Asia/Jakarta')::DATE::TEXT THEN (NOW() AT TIME ZONE 'Asia/Jakarta')::DATE::TEXT
-		     ELSE user_daily_usage.reset_date
+		     WHEN %s < %s THEN %s
+		     ELSE %s
 		   END,
-		   updated_at = NOW()
+		   updated_at = %s
 		 RETURNING usage_count`,
-		jid,
-	).Scan(&count)
+		s.ph(1), today, now,
+		resetCol, today,
+		usageCol,
+		resetCol, today, today,
+		resetCol,
+		now,
+	)
+
+	var count int
+	err := s.db.QueryRowContext(ctx, q, jid).Scan(&count)
 	if err != nil {
 		return 0, fmt.Errorf("increment usage: %w", err)
 	}
@@ -78,10 +126,11 @@ func (s *store) IncrementAndGet(ctx context.Context, jid string) (int, error) {
 func (s *store) GetUsage(ctx context.Context, jid string) (int, string, error) {
 	var count int
 	var resetDate string
-	err := s.db.QueryRowContext(ctx,
-		`SELECT usage_count, reset_date FROM user_daily_usage WHERE jid = $1`,
-		jid,
-	).Scan(&count, &resetDate)
+	q := fmt.Sprintf(
+		`SELECT usage_count, reset_date FROM user_daily_usage WHERE jid = %s`,
+		s.ph(1),
+	)
+	err := s.db.QueryRowContext(ctx, q, jid).Scan(&count, &resetDate)
 	if err == sql.ErrNoRows {
 		return 0, "", nil
 	}
@@ -104,14 +153,16 @@ func (s *store) AddPremium(ctx context.Context, jid, addedBy string, days int) e
 		expiresAt = &t
 	}
 
-	_, err := s.db.ExecContext(ctx,
+	q := fmt.Sprintf(
 		`INSERT INTO premium_users (jid, added_by, expires_at)
-		 VALUES ($1, $2, $3)
+		 VALUES (%s, %s, %s)
 		 ON CONFLICT(jid) DO UPDATE SET
 		   added_by = excluded.added_by,
 		   expires_at = excluded.expires_at`,
-		jid, addedBy, expiresAt,
+		s.ph(1), s.ph(2), s.ph(3),
 	)
+
+	_, err := s.db.ExecContext(ctx, q, jid, addedBy, expiresAt)
 	if err != nil {
 		return fmt.Errorf("add premium: %w", err)
 	}
@@ -120,9 +171,8 @@ func (s *store) AddPremium(ctx context.Context, jid, addedBy string, days int) e
 
 // RemovePremium removes a JID from premium.
 func (s *store) RemovePremium(ctx context.Context, jid string) error {
-	_, err := s.db.ExecContext(ctx,
-		`DELETE FROM premium_users WHERE jid = $1`, jid,
-	)
+	q := fmt.Sprintf(`DELETE FROM premium_users WHERE jid = %s`, s.ph(1))
+	_, err := s.db.ExecContext(ctx, q, jid)
 	if err != nil {
 		return fmt.Errorf("remove premium: %w", err)
 	}
@@ -132,12 +182,14 @@ func (s *store) RemovePremium(ctx context.Context, jid string) error {
 // ListPremium returns all active premium users.
 func (s *store) ListPremium(ctx context.Context) ([]PremiumUser, error) {
 	var users []PremiumUser
-	err := s.db.SelectContext(ctx, &users,
+	q := fmt.Sprintf(
 		`SELECT jid, added_by, expires_at, created_at
 		 FROM premium_users
-		 WHERE expires_at IS NULL OR expires_at > NOW()
+		 WHERE expires_at IS NULL OR expires_at > %s
 		 ORDER BY created_at DESC`,
+		s.nowExpr(),
 	)
+	err := s.db.SelectContext(ctx, &users, q)
 	if err != nil {
 		return nil, fmt.Errorf("list premium: %w", err)
 	}
