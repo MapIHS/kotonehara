@@ -11,14 +11,14 @@ var migrations = []string{
 	`CREATE TABLE IF NOT EXISTS premium_users (
 		jid        TEXT PRIMARY KEY,
 		added_by   TEXT NOT NULL,
-		expires_at DATETIME,
-		created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+		expires_at TIMESTAMPTZ,
+		created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 	)`,
 	`CREATE TABLE IF NOT EXISTS user_daily_usage (
 		jid         TEXT PRIMARY KEY,
 		usage_count INTEGER NOT NULL DEFAULT 0,
 		reset_date  TEXT NOT NULL,
-		updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+		updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 	)`,
 }
 
