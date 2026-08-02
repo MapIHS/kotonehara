@@ -17,6 +17,7 @@ func init() {
 		Tags:        "main",
 		Description: "Menampilkan QRIS untuk donasi",
 		IsPrefix:    true,
+		SkipQuota:   true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			caption := "Terima kasih atas dukunganmu! 🎉\n\nKamu bisa scan QRIS di atas menggunakan e-wallet atau m-banking favoritmu (GoPay, OVO, Dana, ShopeePay, BCA, dll).\nBerapapun nominalnya sangat berarti untuk kelangsungan bot ini."
 			

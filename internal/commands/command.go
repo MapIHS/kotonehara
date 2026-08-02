@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 	"time"
@@ -11,6 +12,15 @@ import (
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"github.com/MapIHS/kotonehara/internal/message"
 )
+
+// quotaCheck is set from cmd/bot/main.go to avoid circular imports.
+// Returns (allowed, blockMessage, error).
+var quotaCheck func(ctx context.Context, jid string) (bool, string, error)
+
+// SetQuotaCheck sets the quota check function for command execution.
+func SetQuotaCheck(fn func(ctx context.Context, jid string) (bool, string, error)) {
+	quotaCheck = fn
+}
 
 func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg config.Config) {
 	if ctx == nil || ctx.Err() != nil {
@@ -60,6 +70,18 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 	}
 	if !cmd.IsPrefix && msgPrefix != "" {
 		return
+	}
+
+	// Quota check: skip for commands marked SkipQuota or owner-only commands
+	if !cmd.SkipQuota && !cmd.IsOwner && quotaCheck != nil {
+		allowed, blockMsg, err := quotaCheck(ctx, m.Sender.String())
+		if err != nil {
+			log.Printf("quota check error: %v", err)
+			// fail open: allow command if quota system errors
+		} else if !allowed {
+			_, _ = m.Reply(ctx, blockMsg)
+			return
+		}
 	}
 
 	if cmd.After != nil {

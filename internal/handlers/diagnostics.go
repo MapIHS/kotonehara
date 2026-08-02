@@ -23,7 +23,8 @@ func init() {
 		Name:     "ceksystem",
 		As:       []string{"system", "sys"},
 		Tags:     "diagnostics",
-		IsPrefix: true,
+		IsPrefix:    true,
+		SkipQuota:   true,
 		Exec:     cekSystem,
 	})
 
@@ -31,7 +32,8 @@ func init() {
 		Name:     "cekapi",
 		As:       []string{"api", "apistatus"},
 		Tags:     "diagnostics",
-		IsPrefix: true,
+		IsPrefix:    true,
+		SkipQuota:   true,
 		Exec:     cekAPI,
 	})
 }

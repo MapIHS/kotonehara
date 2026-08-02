@@ -31,6 +31,7 @@ type Config struct {
 	OpenAIProvidersError string
 	OpenAISystemPrompt   string
 	OpenAITimeout        time.Duration
+	FreeDailyLimit       int
 }
 
 // OpenAIProvider describes one OpenAI-compatible upstream. Models can contain
@@ -84,6 +85,13 @@ func Load() Config {
 	}
 	openAITimeout := parseDurationOrSeconds(os.Getenv("OPENAI_TIMEOUT"), 90*time.Second)
 
+	freeDailyLimit := 10
+	if v := strings.TrimSpace(os.Getenv("FREE_DAILY_LIMIT")); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n >= 0 {
+			freeDailyLimit = n
+		}
+	}
+
 	return Config{
 		AppEnv:               env,
 		Prefix:               prefix,
@@ -106,6 +114,7 @@ func Load() Config {
 		OpenAIProvidersError: openAIProvidersErr,
 		OpenAISystemPrompt:   openAISystemPrompt,
 		OpenAITimeout:        openAITimeout,
+		FreeDailyLimit:       freeDailyLimit,
 	}
 }
 

@@ -20,6 +20,7 @@ func init() {
 		Tags:        "tools",
 		Description: "Ubah nomor WhatsApp ke LID yang tersimpan",
 		IsPrefix:    true,
+		SkipQuota:   true,
 		IsQuery:     true,
 		Exec:        toLID,
 	})

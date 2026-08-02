@@ -16,7 +16,8 @@ func init() {
 		Name:     "delete",
 		As:       []string{"delete", "del", "d"},
 		Tags:     "admin",
-		IsPrefix: true,
+		IsPrefix:    true,
+		SkipQuota:   true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			if m.IsBot {
 				return

@@ -136,7 +136,8 @@ func init() {
 		Name:     "tourl",
 		As:       []string{"url", "upload"},
 		Tags:     "tools",
-		IsPrefix: true,
+		IsPrefix:    true,
+		SkipQuota:   true,
 		Exec:     toURLCmd,
 	})
 }

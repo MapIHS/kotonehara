@@ -25,7 +25,8 @@ func init() {
 	commands.Register(&commands.Command{
 		Name:     "clearchat",
 		Tags:     "owner",
-		IsPrefix: true,
+		IsPrefix:    true,
+		SkipQuota:   true,
 		IsOwner:  true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			if m.IsBot {

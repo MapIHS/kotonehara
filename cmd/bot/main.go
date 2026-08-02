@@ -10,10 +10,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/MapIHS/kotonehara/internal/commands"
 	"github.com/MapIHS/kotonehara/internal/devices"
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	dbInfra "github.com/MapIHS/kotonehara/internal/infra/db"
 	"github.com/MapIHS/kotonehara/internal/infra/store"
+	"github.com/MapIHS/kotonehara/internal/quota"
 	"github.com/mdp/qrterminal"
 	"github.com/subosito/gotenv"
 
@@ -67,6 +69,14 @@ func main() {
 	if err := container.Upgrade(upCtx); err != nil {
 		log.Fatal("upgrade store: ", err)
 	}
+
+	// Initialize quota system
+	if err := quota.Migrate(upCtx, db); err != nil {
+		log.Fatal("quota migrate: ", err)
+	}
+	quota.Init(db, cfg.FreeDailyLimit, cfg.Owners)
+	commands.SetQuotaCheck(quota.Global().CheckCommand)
+	log.Printf("quota: free daily limit = %d", cfg.FreeDailyLimit)
 
 	d := devices.New(container, cfg, ctx)
 	dev, err := d.GetDefaultDevice(ctx)

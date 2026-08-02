@@ -14,7 +14,8 @@ func init() {
 	commands.Register(&commands.Command{
 		Name:     "menu",
 		Tags:     "main",
-		IsPrefix: true,
+		IsPrefix:    true,
+		SkipQuota:   true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			text := fmt.Sprintf("Hello %s, Berikut List Command Yang Tersedia\n\n", m.PushName)
 			text += commands.BuildMenuText(cfg.Prefix)

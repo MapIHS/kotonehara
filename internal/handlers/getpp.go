@@ -17,7 +17,8 @@ func init() {
 		Name:     "getpp",
 		Tags:     "main",
 		As:       []string{"getpp", "getprofilepicture"},
-		IsPrefix: true,
+		IsPrefix:    true,
+		SkipQuota:   true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			var targetJID types.JID
 

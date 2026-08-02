@@ -33,7 +33,8 @@ func init() {
 		Name:     "sc",
 		As:       []string{"sourcecode"},
 		Tags:     "main",
-		IsPrefix: true,
+		IsPrefix:    true,
+		SkipQuota:   true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			thumbnail, width, height := sourceCodePreviewThumbnail(client)
 			preview := sourceCodePreviewMessage(thumbnail, m.ID)

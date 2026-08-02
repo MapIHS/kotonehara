@@ -23,6 +23,7 @@ type Command struct {
 	IsBotAdmin  bool
 	ShowWait    bool
 	IsPrivate   bool
+	SkipQuota   bool
 	After       func(ctx context.Context, client *clients.Client, m *message.Message)
 	Exec        func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config)
 }

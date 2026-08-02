@@ -13,7 +13,8 @@ func init() {
 	commands.Register(&commands.Command{
 		Name:     "test",
 		Tags:     "main",
-		IsPrefix: true,
+		IsPrefix:    true,
+		SkipQuota:   true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			client.SendText(ctx, m.From, "Halo", m.ID)
 		},

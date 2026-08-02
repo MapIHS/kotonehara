@@ -18,6 +18,7 @@ func init() {
 		Tags:        "tools",
 		Description: "Set status AFK (Away From Keyboard)",
 		IsPrefix:    true,
+		SkipQuota:   true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			reason := strings.TrimSpace(m.Query)
 			if reason == "" {
