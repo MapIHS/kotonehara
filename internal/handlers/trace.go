@@ -25,7 +25,7 @@ func init() {
 	commands.Register(&commands.Command{
 		Name:        "trace",
 		As:          []string{"whatanime", "wait"},
-		Tags:        "tools",
+		Tags:        "search",
 		Description: "Mencari judul anime dari screenshot adegan",
 		IsPrefix:    true,
 		IsMedia:     true,

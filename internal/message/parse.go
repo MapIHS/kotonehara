@@ -91,16 +91,7 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 
 	body := ExtractBody(mess)
 	cmd, query := splitCommand(body)
-	var quotedMsg *waE2E.Message
-	var quotedInfo *waE2E.ContextInfo
-	ext := mess.Message.GetExtendedTextMessage()
-	if ext != nil {
-		quotedInfo = ext.GetContextInfo()
-		if quotedInfo != nil {
-			quotedMsg = quotedInfo.GetQuotedMessage()
-		}
-	}
-
+	quotedMsg := pickQuoted(mess)
 	media := pickMedia(quotedMsg, mess)
 
 	isImage := mess.Message.GetImageMessage() != nil
