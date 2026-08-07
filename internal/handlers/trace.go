@@ -45,7 +45,7 @@ func init() {
 				return
 			}
 
-			apiClient := api.New(cfg.BASEApiURL, 60*time.Second)
+			apiClient := api.Shared(cfg.BASEApiURL, 60*time.Second)
 			traceRes, err := apiClient.SearchTraceMoe(opCtx, raw)
 			if err != nil {
 				m.Reply(ctx, "Gagal mencari di trace.moe: "+err.Error())

@@ -40,7 +40,7 @@ func init() {
 
 			m.Reply(ctx, "Tunggu Sebentar ya.")
 
-			ap := api.New(cfg.BASEApiURL, 60*time.Second)
+			ap := api.Shared(cfg.BASEApiURL, 60*time.Second)
 
 			res, err := ap.Rednote(ctx, targetURL)
 			if err != nil {

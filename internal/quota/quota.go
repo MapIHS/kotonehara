@@ -4,9 +4,26 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 )
+
+// normalizeJID strips the device suffix from a WhatsApp JID so that
+// "628xxx:0@s.whatsapp.net" becomes "628xxx@s.whatsapp.net".
+// This ensures consistent JID storage and lookup.
+func normalizeJID(jid string) string {
+	at := strings.IndexByte(jid, '@')
+	if at < 0 {
+		return jid
+	}
+	user := jid[:at]
+	server := jid[at:]
+	if colon := strings.IndexByte(user, ':'); colon >= 0 {
+		user = user[:colon]
+	}
+	return user + server
+}
 
 // CheckResult holds the result of a quota check.
 type CheckResult struct {
@@ -29,7 +46,7 @@ var globalChecker *Checker
 func Init(db *sqlx.DB, freeLimit int, owners []string) {
 	m := make(map[string]bool, len(owners))
 	for _, o := range owners {
-		m[o] = true
+		m[normalizeJID(o)] = true
 	}
 	globalChecker = &Checker{
 		store:     newStore(db),
@@ -47,6 +64,8 @@ func Global() *Checker {
 // Returns (allowed bool, blockMessage string, err error).
 // This signature is designed to be used with commands.SetQuotaCheck.
 func (c *Checker) CheckCommand(ctx context.Context, jid string) (bool, string, error) {
+	jid = normalizeJID(jid)
+
 	// 1. Owner bypass
 	if c.ownerJIDs[jid] {
 		return true, "", nil
@@ -86,6 +105,8 @@ func (c *Checker) CheckCommand(ctx context.Context, jid string) (bool, string, e
 
 // GetUsageInfo returns the current usage info for a JID (used by .quota command).
 func (c *Checker) GetUsageInfo(ctx context.Context, jid string) (*UsageInfo, error) {
+	jid = normalizeJID(jid)
+
 	// Owner
 	if c.ownerJIDs[jid] {
 		return &UsageInfo{MaxLimit: -1, IsPremium: true}, nil
@@ -115,6 +136,7 @@ func (c *Checker) GetUsageInfo(ctx context.Context, jid string) (*UsageInfo, err
 
 // IsPremium checks if a JID is premium (delegates to store).
 func (c *Checker) IsPremium(ctx context.Context, jid string) (bool, error) {
+	jid = normalizeJID(jid)
 	if c.ownerJIDs[jid] {
 		return true, nil
 	}
@@ -123,12 +145,12 @@ func (c *Checker) IsPremium(ctx context.Context, jid string) (bool, error) {
 
 // AddPremium adds a premium user (delegates to store).
 func (c *Checker) AddPremium(ctx context.Context, jid, addedBy string, days int) error {
-	return c.store.AddPremium(ctx, jid, addedBy, days)
+	return c.store.AddPremium(ctx, normalizeJID(jid), normalizeJID(addedBy), days)
 }
 
 // RemovePremium removes a premium user (delegates to store).
 func (c *Checker) RemovePremium(ctx context.Context, jid string) error {
-	return c.store.RemovePremium(ctx, jid)
+	return c.store.RemovePremium(ctx, normalizeJID(jid))
 }
 
 // ListPremium lists all active premium users (delegates to store).

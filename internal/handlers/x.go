@@ -19,9 +19,10 @@ import (
 	"github.com/MapIHS/kotonehara/internal/service/api"
 )
 
+var reDigits = regexp.MustCompile(`\d+`)
+
 func parseQuality(quality string) int {
-	re := regexp.MustCompile(`\d+`)
-	matches := re.FindAllString(quality, -1)
+	matches := reDigits.FindAllString(quality, -1)
 	if len(matches) == 0 {
 		return 0
 	}
@@ -165,7 +166,7 @@ func init() {
 
 			m.Reply(ctx, "Tunggu Sebentar ya.")
 
-			ap := api.New(cfg.BASEApiURL, 60*time.Second)
+			ap := api.Shared(cfg.BASEApiURL, 60*time.Second)
 
 			res, err := ap.X(ctx, args[0])
 			if err != nil {

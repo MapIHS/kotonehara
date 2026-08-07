@@ -22,7 +22,7 @@ type XResult struct {
 	Status        string             `json:"status,omitempty"`
 	Message       string             `json:"message,omitempty"`
 	InputURL      string             `json:"input_url,omitempty"`
-	DownloaderURL string             `json:"downloader_url,omitempty"`
+	SearchURL     string             `json:"search_url,omitempty"`
 	MediaLinks    []TwitterMediaLink `json:"media_links,omitempty"`
 }
 

@@ -138,6 +138,7 @@ func (d *Devices) NewClient(dev *store.Device) *whatsmeow.Client {
 func (d *Devices) registerEventHandler(client *whatsmeow.Client, callClient *meowcaller.Client) func(evt interface{}) {
 	c := clients.New(client, d.cfg, callClient)
 	m := message.NewParser(c, d.cfg)
+	m.ResolveJID = c.SenderPhone
 	return func(evt interface{}) {
 		switch v := evt.(type) {
 		case *events.Message:

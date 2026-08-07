@@ -7,15 +7,21 @@ import (
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"go.mau.fi/whatsmeow"
 	waE2E "go.mau.fi/whatsmeow/proto/waE2E"
+	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
 	waLog "go.mau.fi/whatsmeow/util/log"
 	"google.golang.org/protobuf/proto"
 )
 
+// JIDResolver resolves a JID (possibly a LID) to a canonical phone-number
+// JID string. Used to match sender identity against owner list, etc.
+type JIDResolver func(ctx context.Context, jid types.JID) string
+
 type Parser struct {
-	Client WAClient
-	log    waLog.Logger
-	cfg    config.Config
+	Client      WAClient
+	ResolveJID  JIDResolver
+	log         waLog.Logger
+	cfg         config.Config
 }
 
 func NewParser(c WAClient, cfg config.Config) *Parser {
@@ -79,7 +85,13 @@ func quoteContextInfo(mess *events.Message) *waE2E.ContextInfo {
 }
 
 func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
-	sender := mess.Info.Sender.String()
+	// Resolve sender to canonical phone-number string for owner matching.
+	var sender string
+	if p.ResolveJID != nil {
+		sender = p.ResolveJID(ctx, mess.Info.Sender)
+	} else {
+		sender = mess.Info.Sender.String()
+	}
 	isOwner := false
 
 	for _, own := range p.cfg.Owners {

@@ -35,7 +35,7 @@ func init() {
 			opCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 			defer cancel()
 
-			apiClient := api.New(cfg.BASEApiURL, 30*time.Second)
+			apiClient := api.Shared(cfg.BASEApiURL, 30*time.Second)
 			res, err := apiClient.SearchBrave(opCtx, m.Query)
 			if err != nil {
 				m.Reply(ctx, "Gagal menghubungi Brave Search API: "+err.Error())

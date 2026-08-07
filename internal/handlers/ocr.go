@@ -41,7 +41,7 @@ func init() {
 				return
 			}
 
-			apiClient := api.New(cfg.BASEApiURL, 60*time.Second)
+			apiClient := api.Shared(cfg.BASEApiURL, 60*time.Second)
 			text, err := apiClient.ExtractOCR(opCtx, raw)
 			if err != nil {
 				m.Reply(ctx, "Gagal menghubungi OCR API: "+err.Error())

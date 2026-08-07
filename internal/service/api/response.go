@@ -1,7 +1,6 @@
 package api
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -36,5 +35,5 @@ func decodeAPIResponse(resp *http.Response, dst any) error {
 	if err != nil {
 		return err
 	}
-	return json.NewDecoder(bytes.NewReader(body)).Decode(dst)
+	return json.Unmarshal(body, dst)
 }

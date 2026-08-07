@@ -27,7 +27,7 @@ func init() {
 
 			m.Reply(ctx, "Tunggu Sebentar ya.")
 
-			ap := api.New(cfg.BASEApiURL, 60*time.Second)
+			ap := api.Shared(cfg.BASEApiURL, 60*time.Second)
 			res, err := ap.Pixiv(ctx, m.Query)
 			if err != nil || res == nil {
 				m.Reply(ctx, "Gagal mendapatkan data Pixiv. Pastikan ID atau URL valid.")
@@ -86,7 +86,7 @@ func init() {
 
 			m.Reply(ctx, "Tunggu Sebentar ya.")
 
-			ap := api.New(cfg.BASEApiURL, 60*time.Second)
+			ap := api.Shared(cfg.BASEApiURL, 60*time.Second)
 			res, err := ap.PixivSearch(ctx, m.Query)
 			if err != nil || res == nil || len(res.Results) == 0 {
 				m.Reply(ctx, "Tidak menemukan hasil atau terjadi kesalahan saat mencari di Pixiv.")

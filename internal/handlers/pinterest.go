@@ -27,7 +27,7 @@ func init() {
 
 			m.Reply(ctx, "Tunggu Sebentar ya.")
 
-			ap := api.New(cfg.BASEApiURL, 60*time.Second)
+			ap := api.Shared(cfg.BASEApiURL, 60*time.Second)
 			res, err := ap.Pinterest(ctx, m.Query)
 			if err != nil || res == nil {
 				m.Reply(ctx, "Gagal mengunduh media dari Pinterest. Pastikan link valid dan coba lagi.")
@@ -64,7 +64,7 @@ func init() {
 
 			m.Reply(ctx, "Tunggu Sebentar ya.")
 
-			ap := api.New(cfg.BASEApiURL, 60*time.Second)
+			ap := api.Shared(cfg.BASEApiURL, 60*time.Second)
 			res, err := ap.PinterestSearch(ctx, m.Query)
 			if err != nil || res == nil || len(res.Results) == 0 {
 				m.Reply(ctx, "Tidak menemukan hasil atau terjadi kesalahan.")

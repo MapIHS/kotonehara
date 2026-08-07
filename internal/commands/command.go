@@ -74,7 +74,9 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 
 	// Quota check: skip for commands marked SkipQuota or owner-only commands
 	if !cmd.SkipQuota && !cmd.IsOwner && quotaCheck != nil {
-		allowed, blockMsg, err := quotaCheck(ctx, m.Sender.String())
+		// Resolve LID → phone number for consistent DB lookups.
+		senderPN := c.SenderPhone(ctx, m.Sender)
+		allowed, blockMsg, err := quotaCheck(ctx, senderPN)
 		if err != nil {
 			log.Printf("quota check error: %v", err)
 			// fail open: allow command if quota system errors

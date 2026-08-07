@@ -23,7 +23,7 @@ func threads(ctx context.Context, client *clients.Client, m *message.Message, cf
 
 	m.Reply(ctx, "Tunggu Sebentar ya.")
 
-	ap := api.New(cfg.BASEApiURL, 90*time.Second)
+	ap := api.Shared(cfg.BASEApiURL, 90*time.Second)
 	res, err := ap.Threads(ctx, args[0])
 	if err != nil {
 		m.Reply(ctx, "Gagal: "+err.Error())

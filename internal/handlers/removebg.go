@@ -42,7 +42,7 @@ func init() {
 				return
 			}
 
-			apiClient := api.New(cfg.RemoveBGURL, 60*time.Second)
+			apiClient := api.Shared(cfg.RemoveBGURL, 60*time.Second)
 			result, err := apiClient.RemoveBG(opCtx, raw, "image.png", quality)
 			if err != nil {
 				m.Reply(ctx, fmt.Sprintf("Gagal menghapus background: %s", err))
