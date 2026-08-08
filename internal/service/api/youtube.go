@@ -102,3 +102,53 @@ func (c *Client) YoutubeDownload(ctx context.Context, targetURL string, quality 
 	}
 	return data, nil
 }
+
+type searchChannel struct {
+	Name string `json:"name"`
+	ID   string `json:"id"`
+}
+
+type YoutubeSearchResult struct {
+	ID        string        `json:"id"`
+	Title     string        `json:"title"`
+	Thumbnail string        `json:"thumbnail"`
+	Duration  float64       `json:"duration"`
+	Views     int           `json:"views"`
+	Channel   searchChannel `json:"channel"`
+	URL       string        `json:"url"`
+}
+
+func (c *Client) YoutubeSearch(ctx context.Context, query string, limit int) ([]YoutubeSearchResult, error) {
+	u, err := neturl.Parse(c.BaseURL)
+	if err != nil {
+		return nil, err
+	}
+	u.Path = "/api/youtube/search"
+
+	q := u.Query()
+	q.Set("q", query)
+	q.Set("limit", fmt.Sprintf("%d", limit))
+	u.RawQuery = q.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := c.HTTP.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("youtube search api http %d", resp.StatusCode)
+	}
+
+	var out APIResponse[[]YoutubeSearchResult]
+	if err := decodeAPIResponse(resp, &out); err != nil {
+		return nil, err
+	}
+	return out.Data, nil
+}
