@@ -85,17 +85,28 @@ func quoteContextInfo(mess *events.Message) *waE2E.ContextInfo {
 }
 
 func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
-	// Resolve sender to canonical phone-number string for owner matching.
 	var sender string
+	rawSender := mess.Info.Sender.String()
+	rawSenderUser := mess.Info.Sender.User
+	senderUser := rawSenderUser
+
 	if p.ResolveJID != nil {
 		sender = p.ResolveJID(ctx, mess.Info.Sender)
+		if parts := strings.Split(sender, "@"); len(parts) > 0 {
+			senderUser = parts[0]
+		}
 	} else {
-		sender = mess.Info.Sender.String()
+		sender = rawSender
 	}
 	isOwner := false
 
 	for _, own := range p.cfg.Owners {
-		if strings.EqualFold(own, sender) {
+		ownUser := strings.Split(own, "@")[0]
+		
+		if strings.EqualFold(own, sender) || 
+		   strings.EqualFold(own, rawSender) || 
+		   strings.EqualFold(ownUser, senderUser) || 
+		   strings.EqualFold(ownUser, rawSenderUser) {
 			isOwner = true
 			break
 		}
