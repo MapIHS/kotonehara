@@ -50,9 +50,14 @@ func nhentaiExt(t string) string {
 }
 
 func nhentaiGallery(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
+	if cfg.BASEApiURL == "" {
+		m.Reply(ctx, "Fitur ini belum dikonfigurasi (BASEAPI_URL kosong).")
+		return
+	}
+
 	code := strings.Fields(m.Query)[0]
 
-	ap := api.Shared("https://nhentai.net", 15*time.Second)
+	ap := api.Shared(cfg.BASEApiURL, 15*time.Second)
 	gallery, err := ap.NhentaiGallery(ctx, code)
 	if err != nil {
 		m.Reply(ctx, "❌ Gagal mengambil gallery: "+err.Error())
@@ -91,7 +96,12 @@ func nhentaiGallery(ctx context.Context, client *clients.Client, m *message.Mess
 }
 
 func nhentaiSearch(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
-	ap := api.Shared("https://nhentai.net", 15*time.Second)
+	if cfg.BASEApiURL == "" {
+		m.Reply(ctx, "Fitur ini belum dikonfigurasi (BASEAPI_URL kosong).")
+		return
+	}
+
+	ap := api.Shared(cfg.BASEApiURL, 15*time.Second)
 	results, err := ap.NhentaiSearch(ctx, m.Query)
 	if err != nil {
 		m.Reply(ctx, "❌ Gagal melakukan pencarian: "+err.Error())

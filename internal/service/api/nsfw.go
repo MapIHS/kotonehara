@@ -4,9 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 )
+
+// ---------------------------------------------------------------------------
+// Waifu.im (proxied via hararest)
+// ---------------------------------------------------------------------------
 
 type WaifuImImage struct {
 	URL    string `json:"url"`
@@ -19,8 +24,9 @@ type WaifuImResponse struct {
 	Images []WaifuImImage `json:"images"`
 }
 
+// WaifuIm fetches an image from Waifu.im via the hararest NSFW proxy.
 func (c *Client) WaifuIm(ctx context.Context, tag string, nsfw bool) (*WaifuImImage, error) {
-	reqURL := fmt.Sprintf("https://api.waifu.im/search?included_tags=%s&is_nsfw=%t", url.QueryEscape(tag), nsfw)
+	reqURL := fmt.Sprintf("%s/api/nsfw/waifu?tag=%s&nsfw=%t", c.BaseURL, url.QueryEscape(tag), nsfw)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, err
@@ -33,26 +39,33 @@ func (c *Client) WaifuIm(ctx context.Context, tag string, nsfw bool) (*WaifuImIm
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return nil, apiHTTPStatusError("waifu.im", resp.StatusCode, body)
 	}
 
-	var res WaifuImResponse
-	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+	// hararest returns { status: "success", data: { images: [...] } }
+	var payload APIResponse[WaifuImResponse]
+	if err := decodeAPIResponse(resp, &payload); err != nil {
 		return nil, err
 	}
-	if len(res.Images) == 0 {
+	if len(payload.Data.Images) == 0 {
 		return nil, fmt.Errorf("no images found")
 	}
-	return &res.Images[0], nil
+	return &payload.Data.Images[0], nil
 }
+
+// ---------------------------------------------------------------------------
+// PurrBot (proxied via hararest)
+// ---------------------------------------------------------------------------
 
 type PurrBotResponse struct {
 	Error bool   `json:"error"`
 	Link  string `json:"link"`
 }
 
+// PurrBot fetches an NSFW gif from PurrBot via the hararest NSFW proxy.
 func (c *Client) PurrBot(ctx context.Context, category string) (string, error) {
-	reqURL := fmt.Sprintf("https://purrbot.site/api/img/nsfw/%s/gif", url.PathEscape(category))
+	reqURL := fmt.Sprintf("%s/api/nsfw/purrbot/%s", c.BaseURL, url.PathEscape(category))
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {
 		return "", err
@@ -65,18 +78,24 @@ func (c *Client) PurrBot(ctx context.Context, category string) (string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return "", apiHTTPStatusError("purrbot", resp.StatusCode, body)
 	}
 
-	var res PurrBotResponse
-	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+	// hararest returns { status: "success", data: { error: false, link: "..." } }
+	var payload APIResponse[PurrBotResponse]
+	if err := decodeAPIResponse(resp, &payload); err != nil {
 		return "", err
 	}
-	if res.Error {
+	if payload.Data.Error {
 		return "", fmt.Errorf("API returned error")
 	}
-	return res.Link, nil
+	return payload.Data.Link, nil
 }
+
+// ---------------------------------------------------------------------------
+// Rule34 (proxied via hararest)
+// ---------------------------------------------------------------------------
 
 type Rule34Post struct {
 	FileURL    string `json:"file_url"`
@@ -88,8 +107,9 @@ type Rule34Post struct {
 	Height     int    `json:"height"`
 }
 
+// Rule34 fetches posts from Rule34 via the hararest NSFW proxy.
 func (c *Client) Rule34(ctx context.Context, tags string, limit int) ([]Rule34Post, error) {
-	reqURL := fmt.Sprintf("https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=%d&tags=%s", limit, url.QueryEscape(tags))
+	reqURL := fmt.Sprintf("%s/api/nsfw/rule34?tags=%s&limit=%d", c.BaseURL, url.QueryEscape(tags), limit)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, err
@@ -102,15 +122,21 @@ func (c *Client) Rule34(ctx context.Context, tags string, limit int) ([]Rule34Po
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return nil, apiHTTPStatusError("rule34", resp.StatusCode, body)
 	}
 
-	var res []Rule34Post
-	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+	// hararest returns { status: "success", data: [...posts] }
+	var payload APIResponse[[]Rule34Post]
+	if err := decodeAPIResponse(resp, &payload); err != nil {
 		return nil, err
 	}
-	return res, nil
+	return payload.Data, nil
 }
+
+// ---------------------------------------------------------------------------
+// Danbooru (proxied via hararest)
+// ---------------------------------------------------------------------------
 
 type DanbooruPost struct {
 	ID         int    `json:"id"`
@@ -122,13 +148,13 @@ type DanbooruPost struct {
 	Score      int    `json:"score"`
 }
 
+// Danbooru fetches posts from Danbooru via the hararest NSFW proxy.
 func (c *Client) Danbooru(ctx context.Context, tags string, limit int) ([]DanbooruPost, error) {
-	reqURL := fmt.Sprintf("https://danbooru.donmai.us/posts.json?limit=%d&tags=%s+rating:explicit", limit, url.QueryEscape(tags))
+	reqURL := fmt.Sprintf("%s/api/nsfw/danbooru?tags=%s&limit=%d", c.BaseURL, url.QueryEscape(tags), limit)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", "Mozilla/5.0")
 
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
@@ -137,15 +163,21 @@ func (c *Client) Danbooru(ctx context.Context, tags string, limit int) ([]Danboo
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return nil, apiHTTPStatusError("danbooru", resp.StatusCode, body)
 	}
 
-	var res []DanbooruPost
-	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+	// hararest returns { status: "success", data: [...posts] }
+	var payload APIResponse[[]DanbooruPost]
+	if err := decodeAPIResponse(resp, &payload); err != nil {
 		return nil, err
 	}
-	return res, nil
+	return payload.Data, nil
 }
+
+// ---------------------------------------------------------------------------
+// Yandere (direct access — NOT proxied, already works)
+// ---------------------------------------------------------------------------
 
 type YanderePost struct {
 	FileURL    string `json:"file_url"`
@@ -179,6 +211,10 @@ func (c *Client) Yandere(ctx context.Context, tags string, limit int) ([]Yandere
 	return res, nil
 }
 
+// ---------------------------------------------------------------------------
+// NHentai (proxied via hararest)
+// ---------------------------------------------------------------------------
+
 type NhentaiGallery struct {
 	ID      int    `json:"id"`
 	MediaID string `json:"media_id"`
@@ -209,13 +245,13 @@ type NhentaiSearchResponse struct {
 	Result []NhentaiGallery `json:"result"`
 }
 
+// NhentaiGallery fetches a gallery from NHentai via the hararest NSFW proxy.
 func (c *Client) NhentaiGallery(ctx context.Context, id string) (*NhentaiGallery, error) {
-	reqURL := fmt.Sprintf("https://nhentai.net/api/gallery/%s", url.PathEscape(id))
+	reqURL := fmt.Sprintf("%s/api/nsfw/nhentai/gallery/%s", c.BaseURL, url.PathEscape(id))
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", "Mozilla/5.0")
 
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
@@ -224,23 +260,24 @@ func (c *Client) NhentaiGallery(ctx context.Context, id string) (*NhentaiGallery
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return nil, apiHTTPStatusError("nhentai", resp.StatusCode, body)
 	}
 
-	var res NhentaiGallery
-	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+	var payload APIResponse[NhentaiGallery]
+	if err := decodeAPIResponse(resp, &payload); err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return &payload.Data, nil
 }
 
+// NhentaiSearch searches NHentai via the hararest NSFW proxy.
 func (c *Client) NhentaiSearch(ctx context.Context, query string) ([]NhentaiGallery, error) {
-	reqURL := fmt.Sprintf("https://nhentai.net/api/galleries/search?query=%s", url.QueryEscape(query))
+	reqURL := fmt.Sprintf("%s/api/nsfw/nhentai/search?query=%s", c.BaseURL, url.QueryEscape(query))
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", "Mozilla/5.0")
 
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
@@ -249,14 +286,15 @@ func (c *Client) NhentaiSearch(ctx context.Context, query string) ([]NhentaiGall
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return nil, apiHTTPStatusError("nhentai", resp.StatusCode, body)
 	}
 
-	var res NhentaiSearchResponse
-	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+	var payload APIResponse[NhentaiSearchResponse]
+	if err := decodeAPIResponse(resp, &payload); err != nil {
 		return nil, err
 	}
-	return res.Result, nil
+	return payload.Data.Result, nil
 }
 
 func nhentaiExt(t string) string {

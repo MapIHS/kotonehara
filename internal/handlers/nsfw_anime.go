@@ -61,7 +61,12 @@ func init() {
 
 func nsfwAnime(tag string) func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 	return func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
-		ap := api.Shared("https://api.waifu.im", 15*time.Second)
+		if cfg.BASEApiURL == "" {
+			m.Reply(ctx, "Fitur ini belum dikonfigurasi (BASEAPI_URL kosong).")
+			return
+		}
+
+		ap := api.Shared(cfg.BASEApiURL, 15*time.Second)
 
 		img, err := ap.WaifuIm(ctx, tag, true)
 		if err != nil {

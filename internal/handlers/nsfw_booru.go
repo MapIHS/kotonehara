@@ -14,7 +14,7 @@ import (
 	"github.com/MapIHS/kotonehara/internal/service/api"
 )
 
-type booruFetcher func(ctx context.Context, tags string, limit int) (url string, caption string, err error)
+type booruFetcher func(ctx context.Context, cfg config.Config, tags string, limit int) (url string, caption string, err error)
 
 func init() {
 	commands.Register(&commands.Command{
@@ -57,7 +57,7 @@ func init() {
 
 func handleBooru(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config, fetcher booruFetcher) {
 	tags := strings.ReplaceAll(m.Query, " ", "+")
-	url, caption, err := fetcher(ctx, tags, 10)
+	url, caption, err := fetcher(ctx, cfg, tags, 10)
 	if err != nil {
 		m.Reply(ctx, "❌ "+err.Error())
 		return
@@ -75,8 +75,11 @@ func handleBooru(ctx context.Context, client *clients.Client, m *message.Message
 	}
 }
 
-func r34Fetcher(ctx context.Context, tags string, limit int) (string, string, error) {
-	ap := api.Shared("https://api.rule34.xxx", 15*time.Second)
+func r34Fetcher(ctx context.Context, cfg config.Config, tags string, limit int) (string, string, error) {
+	if cfg.BASEApiURL == "" {
+		return "", "", fmt.Errorf("Fitur ini belum dikonfigurasi (BASEAPI_URL kosong).")
+	}
+	ap := api.Shared(cfg.BASEApiURL, 15*time.Second)
 	posts, err := ap.Rule34(ctx, tags, limit)
 	if err != nil {
 		return "", "", fmt.Errorf("Gagal mengambil data dari Rule34: %v", err)
@@ -95,8 +98,11 @@ func r34Fetcher(ctx context.Context, tags string, limit int) (string, string, er
 	return url, caption, nil
 }
 
-func danbooruFetcher(ctx context.Context, tags string, limit int) (string, string, error) {
-	ap := api.Shared("https://danbooru.donmai.us", 15*time.Second)
+func danbooruFetcher(ctx context.Context, cfg config.Config, tags string, limit int) (string, string, error) {
+	if cfg.BASEApiURL == "" {
+		return "", "", fmt.Errorf("Fitur ini belum dikonfigurasi (BASEAPI_URL kosong).")
+	}
+	ap := api.Shared(cfg.BASEApiURL, 15*time.Second)
 	posts, err := ap.Danbooru(ctx, tags, limit)
 	if err != nil {
 		return "", "", fmt.Errorf("Gagal mengambil data dari Danbooru: %v", err)
@@ -115,7 +121,8 @@ func danbooruFetcher(ctx context.Context, tags string, limit int) (string, strin
 	return url, caption, nil
 }
 
-func yandereFetcher(ctx context.Context, tags string, limit int) (string, string, error) {
+func yandereFetcher(ctx context.Context, cfg config.Config, tags string, limit int) (string, string, error) {
+	// Yandere tetap direct access — tidak perlu proxy (sudah work tanpa Cloudflare)
 	ap := api.Shared("https://yande.re", 15*time.Second)
 	posts, err := ap.Yandere(ctx, tags, limit)
 	if err != nil {
