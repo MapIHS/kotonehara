@@ -113,7 +113,14 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 	}
 
 	body := ExtractBody(mess)
-	cmd, query := splitCommand(body)
+
+	// Strip prefix before splitting so m.Command/m.Query are always clean.
+	// e.g. ".smeme test" or ". smeme test" → body for split = "smeme test"
+	splitBody := body
+	if pfx := strings.TrimSpace(p.cfg.Prefix); pfx != "" && strings.HasPrefix(strings.TrimSpace(body), pfx) {
+		splitBody = strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(body), pfx))
+	}
+	cmd, query := splitCommand(splitBody)
 	quotedMsg := pickQuoted(mess)
 	media := pickMedia(quotedMsg, mess)
 
