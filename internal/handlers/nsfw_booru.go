@@ -53,6 +53,30 @@ func init() {
 			handleBooru(ctx, client, m, cfg, yandereFetcher)
 		},
 	})
+	commands.Register(&commands.Command{
+		Name:      "neko",
+		As:        []string{"nekonsfw"},
+		Tags:      "nsfw",
+		Description: "Kirim gambar neko nsfw",
+		IsPrefix:  true,
+		IsPrivate: true,
+		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
+			url, caption, err := yandereFetcher(ctx, cfg, "neko", 20)
+			if err != nil {
+				m.Reply(ctx, "❌ "+err.Error())
+				return
+			}
+			buff, err := client.FetchBytes(url)
+			if err != nil {
+				m.Reply(ctx, "❌ Gagal mengunduh gambar: "+err.Error())
+				return
+			}
+			_, err = client.SendImage(ctx, m.From, buff, caption, m.ID)
+			if err != nil {
+				m.Reply(ctx, "❌ Gagal mengirim gambar: "+err.Error())
+			}
+		},
+	})
 }
 
 func handleBooru(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config, fetcher booruFetcher) {
@@ -80,7 +104,7 @@ func r34Fetcher(ctx context.Context, cfg config.Config, tags string, limit int) 
 		return "", "", fmt.Errorf("Fitur ini belum dikonfigurasi (BASEAPI_URL kosong).")
 	}
 	ap := api.Shared(cfg.BASEApiURL, 15*time.Second)
-	posts, err := ap.Rule34(ctx, tags, limit)
+	posts, err := ap.Rule34(ctx, tags, limit, cfg.Rule34APIKey, cfg.Rule34UserID)
 	if err != nil {
 		return "", "", fmt.Errorf("Gagal mengambil data dari Rule34: %v", err)
 	}

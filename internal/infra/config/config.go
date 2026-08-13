@@ -32,6 +32,8 @@ type Config struct {
 	OpenAISystemPrompt   string
 	OpenAITimeout        time.Duration
 	FreeDailyLimit       int
+	Rule34APIKey         string
+	Rule34UserID         string
 }
 
 // OpenAIProvider describes one OpenAI-compatible upstream. Models can contain
@@ -115,6 +117,8 @@ func Load() Config {
 		OpenAISystemPrompt:   openAISystemPrompt,
 		OpenAITimeout:        openAITimeout,
 		FreeDailyLimit:       freeDailyLimit,
+		Rule34APIKey:         strings.TrimSpace(os.Getenv("RULE34_API_KEY")),
+		Rule34UserID:         strings.TrimSpace(os.Getenv("RULE34_USER_ID")),
 	}
 }
 

@@ -109,8 +109,11 @@ type Rule34Post struct {
 }
 
 // Rule34 fetches posts from Rule34 via the hararest NSFW proxy.
-func (c *Client) Rule34(ctx context.Context, tags string, limit int) ([]Rule34Post, error) {
+func (c *Client) Rule34(ctx context.Context, tags string, limit int, apiKey string, userId string) ([]Rule34Post, error) {
 	reqURL := fmt.Sprintf("%s/api/nsfw/rule34?tags=%s&limit=%d", c.BaseURL, url.QueryEscape(tags), limit)
+	if apiKey != "" && userId != "" {
+		reqURL += fmt.Sprintf("&api_key=%s&user_id=%s", apiKey, userId)
+	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, err
