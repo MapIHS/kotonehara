@@ -3,6 +3,7 @@ package clients
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"image"
 	_ "image/gif"
 	"image/jpeg"
@@ -56,35 +57,39 @@ func (c *Client) MakeVideoThumb(ctx context.Context, src []byte, maxW, maxH int)
 	}
 	defer os.RemoveAll(dir)
 
-	inFile := filepath.Join(dir, "input")
+	inFile := filepath.Join(dir, "input.mp4")
 	outFile := filepath.Join(dir, "thumb.jpg")
 
 	if err := os.WriteFile(inFile, src, 0600); err != nil {
 		return nil, err
 	}
 
-	scale := "scale=256:-1"
+	scale := "scale=320:-2"
 	if maxW > 0 && maxH > 0 {
-		scale = "scale=min(" + strconv.Itoa(maxW) + ",iw):min(" + strconv.Itoa(maxH) + ",ih):force_original_aspect_ratio=decrease"
-	} else if maxW > 0 {
-		scale = "scale=" + strconv.Itoa(maxW) + ":-1"
-	} else if maxH > 0 {
-		scale = "scale=-1:" + strconv.Itoa(maxH)
+		scale = "scale=" + strconv.Itoa(maxW) + ":" + strconv.Itoa(maxH) + ":force_original_aspect_ratio=decrease"
 	}
 
-	cmd := exec.CommandContext(ctx, "ffmpeg",
-		"-y",
-		"-i", inFile,
-		"-frames:v", "1",
-		"-vf", scale,
-		"-q:v", "4",
-		outFile,
-	)
-	if err := cmd.Run(); err != nil {
-		return nil, err
+	// Try at 1s first to skip black intro frames, fallback to 0s
+	for _, ss := range []string{"1", "0"} {
+		cmd := exec.CommandContext(ctx, "ffmpeg",
+			"-y",
+			"-ss", ss,
+			"-i", inFile,
+			"-frames:v", "1",
+			"-vf", scale,
+			"-q:v", "3",
+			outFile,
+		)
+		if err := cmd.Run(); err != nil {
+			continue
+		}
+		data, err := os.ReadFile(outFile)
+		if err == nil && len(data) > 0 {
+			return data, nil
+		}
 	}
 
-	return os.ReadFile(outFile)
+	return nil, fmt.Errorf("failed to generate video thumbnail")
 }
 
 // VideoMeta holds basic video metadata extracted by ffprobe.
