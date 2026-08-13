@@ -86,3 +86,59 @@ func (c *Client) MakeVideoThumb(ctx context.Context, src []byte, maxW, maxH int)
 
 	return os.ReadFile(outFile)
 }
+
+// VideoMeta holds basic video metadata extracted by ffprobe.
+type VideoMeta struct {
+	Width    uint32
+	Height   uint32
+	Duration uint32 // seconds
+}
+
+// ProbeVideoInfo extracts width, height, and duration from raw video bytes
+// using ffprobe. Returns zero-value VideoMeta on any error (best-effort).
+func ProbeVideoInfo(ctx context.Context, data []byte) VideoMeta {
+	dir, err := os.MkdirTemp("", "videoprobe")
+	if err != nil {
+		return VideoMeta{}
+	}
+	defer os.RemoveAll(dir)
+
+	inFile := filepath.Join(dir, "input.mp4")
+	if err := os.WriteFile(inFile, data, 0600); err != nil {
+		return VideoMeta{}
+	}
+
+	out, err := exec.CommandContext(ctx, "ffprobe",
+		"-v", "error",
+		"-select_streams", "v:0",
+		"-show_entries", "stream=width,height,duration",
+		"-show_entries", "format=duration",
+		"-of", "csv=p=0:s=,",
+		inFile,
+	).Output()
+	if err != nil {
+		return VideoMeta{}
+	}
+
+	var meta VideoMeta
+	// ffprobe outputs lines like "1280,720,123.456" (stream) and "123.456" (format)
+	for _, line := range bytes.Split(bytes.TrimSpace(out), []byte("\n")) {
+		parts := bytes.Split(line, []byte(","))
+		if len(parts) >= 3 {
+			w, _ := strconv.ParseUint(string(parts[0]), 10, 32)
+			h, _ := strconv.ParseUint(string(parts[1]), 10, 32)
+			if w > 0 && h > 0 {
+				meta.Width = uint32(w)
+				meta.Height = uint32(h)
+			}
+			if d, err := strconv.ParseFloat(string(parts[2]), 64); err == nil && d > 0 {
+				meta.Duration = uint32(d)
+			}
+		} else if len(parts) == 1 && meta.Duration == 0 {
+			if d, err := strconv.ParseFloat(string(parts[0]), 64); err == nil && d > 0 {
+				meta.Duration = uint32(d)
+			}
+		}
+	}
+	return meta
+}

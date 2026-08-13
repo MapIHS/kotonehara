@@ -129,6 +129,12 @@ func (c *Client) SendVideo(ctx context.Context, to types.JID, data []byte, gifPl
 		return whatsmeow.SendResponse{}, err
 	}
 
+	// Extract video metadata (best-effort, non-fatal)
+	meta := ProbeVideoInfo(ctx, data)
+
+	// Generate JPEG thumbnail from first frame (best-effort)
+	thumb, _ := c.MakeVideoThumb(ctx, data, 256, 256)
+
 	msg := &waE2E.Message{
 		VideoMessage: &waE2E.VideoMessage{
 			URL:           proto.String(up.URL),
@@ -139,9 +145,20 @@ func (c *Client) SendVideo(ctx context.Context, to types.JID, data []byte, gifPl
 			Mimetype:      proto.String(mime),
 			FileEncSHA256: up.FileEncSHA256,
 			FileSHA256:    up.FileSHA256,
-			FileLength:    &up.FileLength,
+			FileLength:    proto.Uint64(uint64(len(data))),
+			JPEGThumbnail: thumb,
 			ContextInfo:   opts,
 		},
+	}
+
+	if meta.Width > 0 {
+		msg.VideoMessage.Width = proto.Uint32(meta.Width)
+	}
+	if meta.Height > 0 {
+		msg.VideoMessage.Height = proto.Uint32(meta.Height)
+	}
+	if meta.Duration > 0 {
+		msg.VideoMessage.Seconds = proto.Uint32(meta.Duration)
 	}
 
 	return c.WA.SendMessage(ctx, to, msg)
