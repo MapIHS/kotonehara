@@ -21,7 +21,7 @@ type WaifuImImage struct {
 }
 
 type WaifuImResponse struct {
-	Images []WaifuImImage `json:"images"`
+	Items []WaifuImImage `json:"items"`
 }
 
 // WaifuIm fetches an image from Waifu.im via the hararest NSFW proxy.
@@ -48,10 +48,11 @@ func (c *Client) WaifuIm(ctx context.Context, tag string, nsfw bool) (*WaifuImIm
 	if err := decodeAPIResponse(resp, &payload); err != nil {
 		return nil, err
 	}
-	if len(payload.Data.Images) == 0 {
-		return nil, fmt.Errorf("no images found")
+	if len(payload.Data.Items) == 0 {
+		return nil, fmt.Errorf("tidak ada gambar ditemukan untuk tag %s", tag)
 	}
-	return &payload.Data.Images[0], nil
+
+	return &payload.Data.Items[0], nil
 }
 
 // ---------------------------------------------------------------------------
