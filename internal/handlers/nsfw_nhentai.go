@@ -44,12 +44,21 @@ func nhentaiGallery(ctx context.Context, client *clients.Client, m *message.Mess
 		return
 	}
 
-	code := strings.Fields(m.Query)[0]
+	args := strings.Fields(m.Query)
+	if len(args) == 0 {
+		m.Reply(ctx, "Harap masukkan kode gallery (contoh: .nh 672279)")
+		return
+	}
+	code := args[0]
 
 	ap := api.Shared(cfg.BASEApiURL, 15*time.Second)
 	gallery, err := ap.NhentaiGallery(ctx, code)
 	if err != nil {
 		m.Reply(ctx, "❌ Gagal mengambil gallery: "+err.Error())
+		return
+	}
+	if gallery == nil || gallery.ID == 0 {
+		m.Reply(ctx, "❌ Gallery tidak ditemukan atau API mengembalikan respon kosong.")
 		return
 	}
 
