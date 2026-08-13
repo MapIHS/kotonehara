@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/MapIHS/kotonehara/internal/clients"
@@ -24,11 +25,13 @@ func ytv(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 
 	targetURL := args[0]
 	quality := "360p"
+	qualityRequested := false
 
 	ap := api.Shared(cfg.BASEApiURL, 0)
 
 	if len(args) > 1 {
 		quality = strings.TrimSuffix(args[1], "p") + "p"
+		qualityRequested = true
 	}
 
 	info, err := ap.YoutubeInfo(ctx, targetURL)
@@ -38,15 +41,33 @@ func ytv(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 	}
 
 	availableQualities := info.Videos
-	isQualityAvailable := contains(availableQualities, quality)
 
-	if len(args) <= 1 && !isQualityAvailable {
-		if contains(availableQualities, "480p") {
-			quality = "480p"
-		} else if contains(availableQualities, "720p") {
-			quality = "720p"
-		} else if len(availableQualities) > 0 {
-			quality = availableQualities[0]
+	if !contains(availableQualities, quality) {
+		if qualityRequested {
+			// Coba cari resolusi terdekat yang <= yang diminta
+			reqH := parseHeight(quality)
+			best := ""
+			bestH := 0
+			for _, q := range availableQualities {
+				h := parseHeight(q)
+				if h <= reqH && h > bestH {
+					bestH = h
+					best = q
+				}
+			}
+			if best == "" && len(availableQualities) > 0 {
+				best = availableQualities[0]
+			}
+			quality = best
+		} else {
+			// Tidak ada quality request, pakai fallback default
+			if contains(availableQualities, "480p") {
+				quality = "480p"
+			} else if contains(availableQualities, "720p") {
+				quality = "720p"
+			} else if len(availableQualities) > 0 {
+				quality = availableQualities[0]
+			}
 		}
 	}
 
@@ -114,6 +135,11 @@ func init() {
 		IsPrefix: true,
 		Exec:     yta,
 	})
+}
+
+func parseHeight(quality string) int {
+	n, _ := strconv.Atoi(strings.TrimSuffix(quality, "p"))
+	return n
 }
 
 func contains(slice []string, item string) bool {
