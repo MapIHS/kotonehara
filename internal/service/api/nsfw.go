@@ -223,16 +223,11 @@ type NhentaiGallery struct {
 		Japanese string `json:"japanese"`
 		Pretty   string `json:"pretty"`
 	} `json:"title"`
-	Images struct {
-		Pages []struct {
-			T string `json:"t"`
-			W int    `json:"w"`
-			H int    `json:"h"`
-		} `json:"pages"`
-		Cover struct {
-			T string `json:"t"`
-		} `json:"cover"`
-	} `json:"images"`
+	Cover struct {
+		Path   string `json:"path"`
+		Width  int    `json:"width"`
+		Height int    `json:"height"`
+	} `json:"cover"`
 	Tags []struct {
 		Name string `json:"name"`
 		Type string `json:"type"`
@@ -241,8 +236,15 @@ type NhentaiGallery struct {
 	NumFavorites int `json:"num_favorites"`
 }
 
+type NhentaiSearchResult struct {
+	ID           int    `json:"id"`
+	MediaID      string `json:"media_id"`
+	EnglishTitle string `json:"english_title"`
+	NumPages     int    `json:"num_pages"`
+}
+
 type NhentaiSearchResponse struct {
-	Result []NhentaiGallery `json:"result"`
+	Result []NhentaiSearchResult `json:"result"`
 }
 
 // NhentaiGallery fetches a gallery from NHentai via the hararest NSFW proxy.
@@ -272,7 +274,7 @@ func (c *Client) NhentaiGallery(ctx context.Context, id string) (*NhentaiGallery
 }
 
 // NhentaiSearch searches NHentai via the hararest NSFW proxy.
-func (c *Client) NhentaiSearch(ctx context.Context, query string) ([]NhentaiGallery, error) {
+func (c *Client) NhentaiSearch(ctx context.Context, query string) ([]NhentaiSearchResult, error) {
 	reqURL := fmt.Sprintf("%s/api/nsfw/nhentai/search?query=%s", c.BaseURL, url.QueryEscape(query))
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {
@@ -297,19 +299,6 @@ func (c *Client) NhentaiSearch(ctx context.Context, query string) ([]NhentaiGall
 	return payload.Data.Result, nil
 }
 
-func nhentaiExt(t string) string {
-	switch t {
-	case "j":
-		return "jpg"
-	case "p":
-		return "png"
-	case "w":
-		return "webp"
-	default:
-		return "jpg"
-	}
-}
-
-func NhentaiCoverURL(mediaID, ext string) string {
-	return fmt.Sprintf("https://t.nhentai.net/galleries/%s/cover.%s", mediaID, nhentaiExt(ext))
+func NhentaiCoverURL(path string) string {
+	return fmt.Sprintf("https://t.nhentai.net/%s", path)
 }

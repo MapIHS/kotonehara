@@ -36,18 +36,7 @@ func init() {
 	})
 }
 
-func nhentaiExt(t string) string {
-	switch t {
-	case "j":
-		return "jpg"
-	case "p":
-		return "png"
-	case "g":
-		return "gif"
-	default:
-		return "jpg"
-	}
-}
+
 
 func nhentaiGallery(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 	if cfg.BASEApiURL == "" {
@@ -64,8 +53,7 @@ func nhentaiGallery(ctx context.Context, client *clients.Client, m *message.Mess
 		return
 	}
 
-	ext := nhentaiExt(gallery.Images.Cover.T)
-	coverURL := api.NhentaiCoverURL(gallery.MediaID, ext)
+	coverURL := api.NhentaiCoverURL(gallery.Cover.Path)
 
 	var tags, artists []string
 	for _, tag := range gallery.Tags {
@@ -121,7 +109,7 @@ func nhentaiSearch(ctx context.Context, client *clients.Client, m *message.Messa
 
 	for i := 0; i < limit; i++ {
 		res := results[i]
-		txt += fmt.Sprintf("%d. %s | 📄 %v hal | Code: %v\n", i+1, res.Title.Pretty, res.NumPages, res.ID)
+		txt += fmt.Sprintf("%d. %s | 📄 %v hal | Code: %v\n", i+1, res.EnglishTitle, res.NumPages, res.ID)
 	}
 
 	m.Reply(ctx, txt)
