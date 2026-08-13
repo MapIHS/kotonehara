@@ -17,6 +17,18 @@ import (
 	_ "golang.org/x/image/webp"
 )
 
+func (c *Client) ConvertToJPEG(src []byte) ([]byte, error) {
+	img, _, err := image.Decode(bytes.NewReader(src))
+	if err != nil {
+		return nil, err
+	}
+	var out bytes.Buffer
+	if err := jpeg.Encode(&out, img, &jpeg.Options{Quality: 85}); err != nil {
+		return nil, err
+	}
+	return out.Bytes(), nil
+}
+
 func (c *Client) MakeJPEGThumb(src []byte, maxW, maxH int) ([]byte, error) {
 	img, _, err := image.Decode(bytes.NewReader(src))
 	if err != nil {

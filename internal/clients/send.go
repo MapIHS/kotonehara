@@ -204,6 +204,15 @@ func (c *Client) SendImage(ctx context.Context, to types.JID, data []byte, capti
 		return whatsmeow.SendResponse{}, err
 	}
 
+	if mime == "image/webp" {
+		jpegData, err := c.ConvertToJPEG(data)
+		if err == nil {
+			data = jpegData
+			mime = "image/jpeg"
+			// keep original width/height as it doesn't change
+		}
+	}
+
 	var widthVal, heightVal *uint32
 	if width > 0 {
 		widthVal = proto.Uint32(uint32(width))
