@@ -19,12 +19,8 @@ func init() {
 		Tags:        "downloader",
 		Description: "Download artwork dari Pixiv",
 		IsPrefix:    true,
+		IsQuery:     true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
-			if m.Query == "" {
-				m.Reply(ctx, "Harap sertakan ID Pixiv atau URL karyanya.\n\nContoh: `.pixiv 12345678` atau `.pixiv https://www.pixiv.net/en/artworks/12345678`")
-				return
-			}
-
 			m.Reply(ctx, "Tunggu Sebentar ya.")
 
 			ap := api.Shared(cfg.BASEApiURL, 60*time.Second)
@@ -78,12 +74,8 @@ func init() {
 		Tags:        "search",
 		Description: "Cari artwork di Pixiv",
 		IsPrefix:    true,
+		IsQuery:     true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
-			if m.Query == "" {
-				m.Reply(ctx, "Harap sertakan kata kunci pencarian.\n\nContoh: `.pixivsearch anime girl`")
-				return
-			}
-
 			m.Reply(ctx, "Tunggu Sebentar ya.")
 
 			ap := api.Shared(cfg.BASEApiURL, 60*time.Second)

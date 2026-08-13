@@ -20,15 +20,11 @@ func init() {
 		Tags:        "search",
 		Description: "Melakukan pencarian di web menggunakan Brave Search",
 		IsPrefix:    true,
+		IsQuery:     true,
 		ShowWait:    true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			if cfg.BASEApiURL == "" {
 				m.Reply(ctx, "Fitur ini belum dikonfigurasi (BASEAPI_URL kosong).")
-				return
-			}
-
-			if m.Query == "" {
-				m.Reply(ctx, "Masukkan kata kunci yang ingin dicari di Brave Search.")
 				return
 			}
 

@@ -16,11 +16,6 @@ import (
 func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 	_ = cfg
 
-	if m.Media == nil {
-		m.Reply(ctx, "Kirim atau balas gambar dulu, yaa.")
-		return
-	}
-
 	args := strings.TrimSpace(m.Query)
 	parts := strings.Split(args, "|")
 
@@ -78,6 +73,7 @@ func init() {
 		As:       []string{"stickermeme"},
 		Tags:     "convert",
 		IsPrefix: true,
+		IsMedia:  true,
 		Exec:     smeme,
 	})
 }

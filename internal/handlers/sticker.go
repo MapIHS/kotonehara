@@ -20,11 +20,6 @@ import (
 )
 
 func stc(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
-	if m.Media == nil {
-		_, _ = m.Reply(ctx, "Kirim atau balas gambar dulu, yaa.")
-		return
-	}
-
 	opCtx, cancel := context.WithTimeout(ctx, 90*time.Second)
 	defer cancel()
 
@@ -122,6 +117,7 @@ func init() {
 		As:       []string{"s", "stiker"},
 		Tags:     "convert",
 		IsPrefix: true,
+		IsMedia:  true,
 		Exec:     stc,
 	})
 }

@@ -19,12 +19,8 @@ func init() {
 		Tags:        "downloader",
 		Description: "Download video atau gambar dari Pinterest",
 		IsPrefix:    true,
+		IsQuery:     true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
-			if m.Query == "" {
-				m.Reply(ctx, "Harap sertakan link Pinterest yang ingin didownload.\n\nContoh: `.pinterest https://id.pinterest.com/pin/12345/`")
-				return
-			}
-
 			m.Reply(ctx, "Tunggu Sebentar ya.")
 
 			ap := api.Shared(cfg.BASEApiURL, 60*time.Second)
@@ -56,12 +52,8 @@ func init() {
 		Tags:        "search",
 		Description: "Cari gambar di Pinterest",
 		IsPrefix:    true,
+		IsQuery:     true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
-			if m.Query == "" {
-				m.Reply(ctx, "Harap sertakan kata kunci pencarian.\n\nContoh: `.pinsearch anime scenery`")
-				return
-			}
-
 			m.Reply(ctx, "Tunggu Sebentar ya.")
 
 			ap := api.Shared(cfg.BASEApiURL, 60*time.Second)

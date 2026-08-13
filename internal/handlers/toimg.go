@@ -23,12 +23,8 @@ func init() {
 		Tags:        "convert",
 		Description: "Change Media to Image",
 		IsPrefix:    true,
+		IsMedia:     true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
-			if m.Media == nil {
-				m.Reply(ctx, "Balas Medianya dulu, yaa.")
-				return
-			}
-
 			data, err := client.WA.Download(ctx, m.Media)
 			if err != nil || len(data) == 0 {
 				m.Reply(ctx, "Media belum bisa diambil, yaa.")
