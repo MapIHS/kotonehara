@@ -17,18 +17,7 @@ import (
 type booruFetcher func(ctx context.Context, cfg config.Config, tags string, limit int) (url string, caption string, err error)
 
 func init() {
-	commands.Register(&commands.Command{
-		Name:        "r34",
-		As:          []string{"rule34"},
-		Tags:        "nsfw",
-		Description: "Cari gambar di Rule34",
-		IsPrefix:    true,
-		IsQuery:     true,
-		IsPrivate:   true,
-		Exec:        func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
-			handleBooru(ctx, client, m, cfg, r34Fetcher)
-		},
-	})
+
 	commands.Register(&commands.Command{
 		Name:        "danbooru",
 		As:          []string{"dan"},
@@ -99,28 +88,6 @@ func handleBooru(ctx context.Context, client *clients.Client, m *message.Message
 	}
 }
 
-func r34Fetcher(ctx context.Context, cfg config.Config, tags string, limit int) (string, string, error) {
-	if cfg.BASEApiURL == "" {
-		return "", "", fmt.Errorf("Fitur ini belum dikonfigurasi (BASEAPI_URL kosong).")
-	}
-	ap := api.Shared(cfg.BASEApiURL, 15*time.Second)
-	posts, err := ap.Rule34(ctx, tags, limit, cfg.Rule34APIKey, cfg.Rule34UserID)
-	if err != nil {
-		return "", "", fmt.Errorf("Gagal mengambil data dari Rule34: %v", err)
-	}
-	if len(posts) == 0 {
-		return "", "", fmt.Errorf("Gambar tidak ditemukan.")
-	}
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	post := posts[r.Intn(len(posts))]
-	
-	url := post.FileURL
-	if url == "" {
-		url = post.SampleURL
-	}
-	caption := fmt.Sprintf("🏷️ Tags: %s\n⭐ Score: %v", post.Tags, post.Score)
-	return url, caption, nil
-}
 
 func danbooruFetcher(ctx context.Context, cfg config.Config, tags string, limit int) (string, string, error) {
 	if cfg.BASEApiURL == "" {

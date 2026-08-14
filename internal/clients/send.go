@@ -120,6 +120,12 @@ func (c *Client) SendVideo(ctx context.Context, to types.JID, data []byte, gifPl
 	if mime == "application/octet-stream" {
 		mime = "video/mp4"
 	}
+	if mime == "image/gif" {
+		if mp4Data, err := c.ConvertGifToMP4(ctx, data); err == nil {
+			data = mp4Data
+			mime = "video/mp4"
+		}
+	}
 	if !strings.HasPrefix(mime, "video/") {
 		return whatsmeow.SendResponse{}, fmt.Errorf("data bukan video valid (mime: %s)", mime)
 	}

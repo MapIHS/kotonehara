@@ -29,6 +29,35 @@ func (c *Client) ConvertToJPEG(src []byte) ([]byte, error) {
 	return out.Bytes(), nil
 }
 
+func (c *Client) ConvertGifToMP4(ctx context.Context, src []byte) ([]byte, error) {
+	dir, err := os.MkdirTemp("", "gif2mp4")
+	if err != nil {
+		return nil, err
+	}
+	defer os.RemoveAll(dir)
+
+	inFile := filepath.Join(dir, "input.gif")
+	outFile := filepath.Join(dir, "output.mp4")
+
+	if err := os.WriteFile(inFile, src, 0600); err != nil {
+		return nil, err
+	}
+
+	cmd := exec.CommandContext(ctx, "ffmpeg",
+		"-y",
+		"-i", inFile,
+		"-movflags", "faststart",
+		"-pix_fmt", "yuv420p",
+		"-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2",
+		outFile,
+	)
+	if err := cmd.Run(); err != nil {
+		return nil, err
+	}
+
+	return os.ReadFile(outFile)
+}
+
 func (c *Client) MakeJPEGThumb(src []byte, maxW, maxH int) ([]byte, error) {
 	img, _, err := image.Decode(bytes.NewReader(src))
 	if err != nil {
