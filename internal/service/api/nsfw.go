@@ -95,50 +95,6 @@ func (c *Client) PurrBot(ctx context.Context, category string) (string, error) {
 }
 
 // ---------------------------------------------------------------------------
-// Rule34 (proxied via hararest)
-// ---------------------------------------------------------------------------
-
-type Rule34Post struct {
-	FileURL    string `json:"file_url"`
-	SampleURL  string `json:"sample_url"`
-	PreviewURL string `json:"preview_url"`
-	Tags       string `json:"tags"`
-	Score      int    `json:"score"`
-	Width      int    `json:"width"`
-	Height     int    `json:"height"`
-}
-
-// Rule34 fetches posts from Rule34 via the hararest NSFW proxy.
-func (c *Client) Rule34(ctx context.Context, tags string, limit int, apiKey string, userId string) ([]Rule34Post, error) {
-	reqURL := fmt.Sprintf("%s/api/nsfw/rule34?tags=%s&limit=%d", c.BaseURL, url.QueryEscape(tags), limit)
-	if apiKey != "" && userId != "" {
-		reqURL += fmt.Sprintf("&api_key=%s&user_id=%s", apiKey, userId)
-	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.HTTP.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, apiHTTPStatusError("rule34", resp.StatusCode, body)
-	}
-
-	// hararest returns { status: "success", data: [...posts] }
-	var payload APIResponse[[]Rule34Post]
-	if err := decodeAPIResponse(resp, &payload); err != nil {
-		return nil, err
-	}
-	return payload.Data, nil
-}
-
-// ---------------------------------------------------------------------------
 // Danbooru (proxied via hararest)
 // ---------------------------------------------------------------------------
 

@@ -18,7 +18,7 @@ func init() {
 		SkipQuota:   true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			text := fmt.Sprintf("Hello %s, Berikut List Command Yang Tersedia\n\n", m.PushName)
-			text += commands.BuildMenuText(cfg.Prefix)
+			text += commands.BuildMenuText(cfg.Prefix, m.IsGroup)
 			_, _ = m.Reply(ctx, text)
 		},
 	})

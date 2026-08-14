@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func BuildMenuText(prefix string) string {
+func BuildMenuText(prefix string, isGroup bool) string {
 	tags := groupByTag()
 
 	keys := make([]string, 0, len(tags))
@@ -16,14 +16,30 @@ func BuildMenuText(prefix string) string {
 
 	var b strings.Builder
 	for _, key := range keys {
-		b.WriteString(" *")
-		b.WriteString(strings.ToUpper(key))
-		b.WriteString("*\n")
-
 		cmds := append([]*Command(nil), tags[key]...)
+
+		// Filter out private-only commands when in a group
+		if isGroup {
+			filtered := cmds[:0]
+			for _, c := range cmds {
+				if !c.IsPrivate {
+					filtered = append(filtered, c)
+				}
+			}
+			cmds = filtered
+		}
+
+		if len(cmds) == 0 {
+			continue
+		}
+
 		sort.Slice(cmds, func(i, j int) bool {
 			return strings.ToLower(cmds[i].Name) < strings.ToLower(cmds[j].Name)
 		})
+
+		b.WriteString(" *")
+		b.WriteString(strings.ToUpper(key))
+		b.WriteString("*\n")
 
 		for _, c := range cmds {
 			p := ""
