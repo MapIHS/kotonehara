@@ -10,6 +10,7 @@ import (
 
 	"github.com/MapIHS/kotonehara/internal/clients"
 	"github.com/MapIHS/kotonehara/internal/infra/config"
+	"github.com/MapIHS/kotonehara/internal/infra/store"
 	"github.com/MapIHS/kotonehara/internal/message"
 )
 
@@ -109,8 +110,15 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 		return
 	}
 	if cmd.IsPrivate && m.IsGroup {
-		_, _ = m.Reply(ctx, "Hanya untuk chat pribadi, yaa.")
-		return
+		if strings.Contains(strings.ToLower(cmd.Tags), "nsfw") {
+			if !store.IsNSFWEnabled(m.From.ToNonAD().String()) {
+				_, _ = m.Reply(ctx, "Fitur NSFW dinonaktifkan di grup ini.\n\n_Admin dapat menyalakannya dengan perintah .nsfw_")
+				return
+			}
+		} else {
+			_, _ = m.Reply(ctx, "Hanya untuk chat pribadi, yaa.")
+			return
+		}
 	}
 	if m.IsGroup && (cmd.IsAdmin || cmd.IsBotAdmin) {
 		fillAdminStatus(ctx, c, m)

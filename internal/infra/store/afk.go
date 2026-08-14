@@ -18,6 +18,7 @@ var db *sqlx.DB
 func InitDB(database *sqlx.DB) {
 	db = database
 	createTable()
+	createGroupSettingsTable()
 }
 
 func createTable() {

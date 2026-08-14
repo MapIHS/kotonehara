@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func BuildMenuText(prefix string, isGroup bool) string {
+func BuildMenuText(prefix string, isGroup bool, nsfwEnabled bool) string {
 	tags := groupByTag()
 
 	keys := make([]string, 0, len(tags))
@@ -22,7 +22,11 @@ func BuildMenuText(prefix string, isGroup bool) string {
 		if isGroup {
 			filtered := cmds[:0]
 			for _, c := range cmds {
-				if !c.IsPrivate {
+				if c.IsPrivate {
+					if nsfwEnabled && strings.Contains(strings.ToLower(c.Tags), "nsfw") {
+						filtered = append(filtered, c)
+					}
+				} else {
 					filtered = append(filtered, c)
 				}
 			}
