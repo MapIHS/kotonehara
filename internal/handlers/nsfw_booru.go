@@ -42,30 +42,6 @@ func init() {
 			handleBooru(ctx, client, m, cfg, yandereFetcher)
 		},
 	})
-	commands.Register(&commands.Command{
-		Name:      "neko",
-		As:        []string{"nekonsfw"},
-		Tags:      "nsfw",
-		Description: "Kirim gambar neko nsfw",
-		IsPrefix:  true,
-		IsPrivate: true,
-		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
-			url, caption, err := yandereFetcher(ctx, cfg, "neko", 20)
-			if err != nil {
-				m.Reply(ctx, "❌ "+err.Error())
-				return
-			}
-			buff, err := client.FetchBytes(url)
-			if err != nil {
-				m.Reply(ctx, "❌ Gagal mengunduh gambar: "+err.Error())
-				return
-			}
-			_, err = client.SendImage(ctx, m.From, buff, caption, m.ID)
-			if err != nil {
-				m.Reply(ctx, "❌ Gagal mengirim gambar: "+err.Error())
-			}
-		},
-	})
 }
 
 func handleBooru(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config, fetcher booruFetcher) {

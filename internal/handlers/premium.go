@@ -85,12 +85,13 @@ func init() {
 		IsOwner:     true,
 		SkipQuota:   true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
-			if m.Query == "" {
+			args := strings.Fields(m.Query)
+			if len(args) == 0 {
 				m.Reply(ctx, "Format: `.delpremium <nomor>`\n\nContoh: `.delpremium 628123456789`")
 				return
 			}
 
-			phone := strings.TrimPrefix(strings.Fields(m.Query)[0], "+")
+			phone := strings.TrimPrefix(args[0], "+")
 			phone = strings.TrimPrefix(phone, "0")
 			if !strings.HasPrefix(phone, "62") {
 				phone = "62" + phone

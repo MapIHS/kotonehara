@@ -20,6 +20,14 @@ func init() {
 		IsPrivate: true,
 		Exec:      nsfwAnime("waifu"),
 	})
+	commands.Register(&commands.Command{
+		Name:      "neko",
+		As:        []string{"nekonsfw"},
+		Tags:      "nsfw",
+		IsPrefix:  true,
+		IsPrivate: true,
+		Exec:      nsfwAnime("neko"),
+	})
 
 	commands.Register(&commands.Command{
 		Name:      "hentai",

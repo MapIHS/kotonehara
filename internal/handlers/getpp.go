@@ -16,7 +16,7 @@ func init() {
 	commands.Register(&commands.Command{
 		Name:     "getpp",
 		Tags:     "main",
-		As:       []string{"getpp", "getprofilepicture"},
+		As:       []string{"getprofilepicture"},
 		IsPrefix:    true,
 		SkipQuota:   true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {

@@ -26,7 +26,7 @@ func init() {
 	})
 	commands.Register(&commands.Command{
 		Name:        "nhsearch",
-		As:          []string{"nhsearch"},
+		As:          []string{"nhs"},
 		Tags:        "nsfw",
 		Description: "Cari komik nhentai",
 		IsPrefix:    true,

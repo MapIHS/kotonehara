@@ -159,7 +159,7 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 		IsVideo: isVideo,
 		IsGif:   isGif,
 
-		QuotedMsg: pickQuoted(mess),
+		QuotedMsg: quotedMsg,
 		ID:        msgID,
 
 		IsQuotedImage:   isQuotedImage,
