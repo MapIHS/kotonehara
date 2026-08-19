@@ -18,20 +18,16 @@ func CheckAFK(ctx context.Context, c *clients.Client, m *message.Message) {
 		return
 	}
 
-	// Resolve sender to phone-number JID for AFK store lookup.
-	senderPhone := c.SenderPhone(ctx, m.Sender)
-	// Keep original sender JID/LID for MentionedJID (WhatsApp needs LID to trigger notification).
 	senderRaw := m.Sender.ToNonAD().String()
 
 	// 1. If sender is AFK, remove their AFK status
 	if !strings.HasPrefix(strings.TrimSpace(m.Body), ".afk") && !strings.HasPrefix(strings.TrimSpace(m.Body), "afk") {
-		if afk, cleared := store.ClearAFK(senderPhone); cleared {
+		if afk, cleared := findAndClearAFK(ctx, c, m.Sender); cleared {
 			duration := formatDuration(time.Since(afk.Time))
-			phone := jidToPhone(senderPhone)
 			if m.ID != nil {
-				m.ID.MentionedJID = append(m.ID.MentionedJID, senderRaw)
+				m.ID.MentionedJID = []string{senderRaw}
 			}
-			m.Reply(ctx, fmt.Sprintf("👋 Welcome back @%s! Status AFK kamu telah dihapus.\nKamu AFK selama %s.", phone, duration))
+			m.Reply(ctx, fmt.Sprintf("👋 Welcome back @%s! Status AFK kamu telah dihapus.\nKamu AFK selama %s.", lidUser(senderRaw), duration))
 		}
 	}
 
@@ -40,25 +36,18 @@ func CheckAFK(ctx context.Context, c *clients.Client, m *message.Message) {
 	var taggedJIDs []string
 
 	if m.ContextInfo != nil {
-		// Check explicitly mentioned JIDs
 		for _, rawJid := range m.ContextInfo.GetMentionedJID() {
-			// Resolve to phone JID for AFK store lookup
-			phoneJid := c.SenderPhone(ctx, jidFromString(rawJid))
-			if afk, ok := store.GetAFK(phoneJid); ok {
+			if afk, ok := findAFK(ctx, c, rawJid); ok {
 				duration := formatDuration(time.Since(afk.Time))
-				phone := jidToPhone(phoneJid)
-				mentionedAFKs = append(mentionedAFKs, fmt.Sprintf("• @%s sedang AFK: %s (sejak %s lalu)", phone, afk.Reason, duration))
-				// Use ORIGINAL rawJid (LID) for MentionedJID so WhatsApp triggers notification
+				mentionedAFKs = append(mentionedAFKs, fmt.Sprintf("• @%s sedang AFK: %s (sejak %s lalu)", lidUser(rawJid), afk.Reason, duration))
 				taggedJIDs = append(taggedJIDs, rawJid)
 			}
 		}
 
-		// Check quoted message participant
 		if m.QuotedMsg != nil {
 			quotedRaw := m.ContextInfo.GetParticipant()
 			if quotedRaw != "" {
-				phoneJid := c.SenderPhone(ctx, jidFromString(quotedRaw))
-				if afk, ok := store.GetAFK(phoneJid); ok {
+				if afk, ok := findAFK(ctx, c, quotedRaw); ok {
 					alreadyMentioned := false
 					for _, jid := range taggedJIDs {
 						if jid == quotedRaw {
@@ -68,9 +57,7 @@ func CheckAFK(ctx context.Context, c *clients.Client, m *message.Message) {
 					}
 					if !alreadyMentioned {
 						duration := formatDuration(time.Since(afk.Time))
-						phone := jidToPhone(phoneJid)
-						mentionedAFKs = append(mentionedAFKs, fmt.Sprintf("• @%s sedang AFK: %s (sejak %s lalu)", phone, afk.Reason, duration))
-						// Use ORIGINAL quotedRaw (LID) for MentionedJID
+						mentionedAFKs = append(mentionedAFKs, fmt.Sprintf("• @%s sedang AFK: %s (sejak %s lalu)", lidUser(quotedRaw), afk.Reason, duration))
 						taggedJIDs = append(taggedJIDs, quotedRaw)
 					}
 				}
@@ -87,14 +74,53 @@ func CheckAFK(ctx context.Context, c *clients.Client, m *message.Message) {
 	}
 }
 
-// jidToPhone extracts the phone number part from a JID string.
-// "628xxx@s.whatsapp.net" → "628xxx"
-func jidToPhone(jid string) string {
+func findAndClearAFK(ctx context.Context, c *clients.Client, sender types.JID) (store.AFKState, bool) {
+	rawJID := sender.ToNonAD().String()
+	if afk, cleared := store.ClearAFK(rawJID); cleared {
+		// Also clean phone JID if it exists
+		phoneJID := c.SenderPhone(ctx, sender)
+		if phoneJID != "" && phoneJID != rawJID {
+			store.ClearAFK(phoneJID)
+		}
+		return afk, true
+	}
+
+	phoneJID := c.SenderPhone(ctx, sender)
+	if phoneJID != "" && phoneJID != rawJID {
+		if afk, cleared := store.ClearAFK(phoneJID); cleared {
+			return afk, true
+		}
+	}
+	return store.AFKState{}, false
+}
+
+func findAFK(ctx context.Context, c *clients.Client, jidStr string) (store.AFKState, bool) {
+	if afk, ok := store.GetAFK(jidStr); ok {
+		return afk, true
+	}
+	parsed := parseJID(jidStr)
+	if !parsed.IsEmpty() {
+		phoneJID := c.SenderPhone(ctx, parsed)
+		if phoneJID != "" && phoneJID != jidStr {
+			if afk, ok := store.GetAFK(phoneJID); ok {
+				return afk, true
+			}
+		}
+	}
+	return store.AFKState{}, false
+}
+
+// lidUser extracts the user ID part from a JID string for use in @mention text.
+// "170743069466624@lid" -> "170743069466624"
+// "628xxx@s.whatsapp.net" -> "628xxx"
+// In WhatsApp, the @text string MUST match the user part of the JID in MentionedJID
+// so the WhatsApp mobile client renders it as a blue clickable mention tag.
+func lidUser(jid string) string {
 	return strings.Split(jid, "@")[0]
 }
 
-// jidFromString parses a raw JID string into types.JID for resolution.
-func jidFromString(raw string) types.JID {
+// parseJID parses a raw JID string into types.JID.
+func parseJID(raw string) types.JID {
 	jid, _ := types.ParseJID(raw)
 	return jid
 }
