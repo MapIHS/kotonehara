@@ -24,7 +24,7 @@ func init() {
 			if reason == "" {
 				reason = "Tanpa alasan"
 			}
-			senderJid := m.Sender.ToNonAD().String()
+			senderJid := client.SenderPhone(ctx, m.Sender)
 			store.SetAFK(senderJid, reason)
 			m.Reply(ctx, "💤 Kamu sekarang AFK.\n\nAlasan: "+reason+"\n\nStatus AFK akan hilang otomatis kalau kamu mengirim pesan lagi.")
 		},
