@@ -18,16 +18,18 @@ func CheckAFK(ctx context.Context, c *clients.Client, m *message.Message) {
 		return
 	}
 
-	// Resolve sender to phone-number JID (handles LID → PN mapping).
-	senderJid := c.SenderPhone(ctx, m.Sender)
+	// Resolve sender to phone-number JID for AFK store lookup.
+	senderPhone := c.SenderPhone(ctx, m.Sender)
+	// Keep original sender JID/LID for MentionedJID (WhatsApp needs LID to trigger notification).
+	senderRaw := m.Sender.ToNonAD().String()
 
 	// 1. If sender is AFK, remove their AFK status
 	if !strings.HasPrefix(strings.TrimSpace(m.Body), ".afk") && !strings.HasPrefix(strings.TrimSpace(m.Body), "afk") {
-		if afk, cleared := store.ClearAFK(senderJid); cleared {
+		if afk, cleared := store.ClearAFK(senderPhone); cleared {
 			duration := formatDuration(time.Since(afk.Time))
-			phone := jidToPhone(senderJid)
+			phone := jidToPhone(senderPhone)
 			if m.ID != nil {
-				m.ID.MentionedJID = append(m.ID.MentionedJID, senderJid)
+				m.ID.MentionedJID = append(m.ID.MentionedJID, senderRaw)
 			}
 			m.Reply(ctx, fmt.Sprintf("👋 Welcome back @%s! Status AFK kamu telah dihapus.\nKamu AFK selama %s.", phone, duration))
 		}
@@ -39,14 +41,15 @@ func CheckAFK(ctx context.Context, c *clients.Client, m *message.Message) {
 
 	if m.ContextInfo != nil {
 		// Check explicitly mentioned JIDs
-		for _, jid := range m.ContextInfo.GetMentionedJID() {
-			// Resolve mentioned JID (might be LID) to phone-number JID
-			resolvedJid := c.SenderPhone(ctx, jidFromString(jid))
-			if afk, ok := store.GetAFK(resolvedJid); ok {
+		for _, rawJid := range m.ContextInfo.GetMentionedJID() {
+			// Resolve to phone JID for AFK store lookup
+			phoneJid := c.SenderPhone(ctx, jidFromString(rawJid))
+			if afk, ok := store.GetAFK(phoneJid); ok {
 				duration := formatDuration(time.Since(afk.Time))
-				phone := jidToPhone(resolvedJid)
+				phone := jidToPhone(phoneJid)
 				mentionedAFKs = append(mentionedAFKs, fmt.Sprintf("• @%s sedang AFK: %s (sejak %s lalu)", phone, afk.Reason, duration))
-				taggedJIDs = append(taggedJIDs, resolvedJid)
+				// Use ORIGINAL rawJid (LID) for MentionedJID so WhatsApp triggers notification
+				taggedJIDs = append(taggedJIDs, rawJid)
 			}
 		}
 
@@ -54,20 +57,21 @@ func CheckAFK(ctx context.Context, c *clients.Client, m *message.Message) {
 		if m.QuotedMsg != nil {
 			quotedRaw := m.ContextInfo.GetParticipant()
 			if quotedRaw != "" {
-				resolvedQuoted := c.SenderPhone(ctx, jidFromString(quotedRaw))
-				if afk, ok := store.GetAFK(resolvedQuoted); ok {
+				phoneJid := c.SenderPhone(ctx, jidFromString(quotedRaw))
+				if afk, ok := store.GetAFK(phoneJid); ok {
 					alreadyMentioned := false
 					for _, jid := range taggedJIDs {
-						if jid == resolvedQuoted {
+						if jid == quotedRaw {
 							alreadyMentioned = true
 							break
 						}
 					}
 					if !alreadyMentioned {
 						duration := formatDuration(time.Since(afk.Time))
-						phone := jidToPhone(resolvedQuoted)
+						phone := jidToPhone(phoneJid)
 						mentionedAFKs = append(mentionedAFKs, fmt.Sprintf("• @%s sedang AFK: %s (sejak %s lalu)", phone, afk.Reason, duration))
-						taggedJIDs = append(taggedJIDs, resolvedQuoted)
+						// Use ORIGINAL quotedRaw (LID) for MentionedJID
+						taggedJIDs = append(taggedJIDs, quotedRaw)
 					}
 				}
 			}
