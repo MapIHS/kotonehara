@@ -24,8 +24,13 @@ func CheckAFK(ctx context.Context, c *clients.Client, m *message.Message) {
 	if !strings.HasPrefix(strings.TrimSpace(m.Body), ".afk") && !strings.HasPrefix(strings.TrimSpace(m.Body), "afk") {
 		if afk, cleared := findAndClearAFK(ctx, c, m.Sender); cleared {
 			duration := formatDuration(time.Since(afk.Time))
+
+			// Build MentionedJID: always include the sender + any @mentions in reason text
+			jids := []string{senderRaw}
+			jids = append(jids, extractMentionJIDs(afk.Reason)...)
+
 			if m.ID != nil {
-				m.ID.MentionedJID = []string{senderRaw}
+				m.ID.MentionedJID = jids
 			}
 			m.Reply(ctx, fmt.Sprintf("👋 Welcome back @%s! Status AFK kamu telah dihapus.\nKamu AFK selama %s.", lidUser(senderRaw), duration))
 		}
@@ -39,8 +44,13 @@ func CheckAFK(ctx context.Context, c *clients.Client, m *message.Message) {
 		for _, rawJid := range m.ContextInfo.GetMentionedJID() {
 			if afk, ok := findAFK(ctx, c, rawJid); ok {
 				duration := formatDuration(time.Since(afk.Time))
-				mentionedAFKs = append(mentionedAFKs, fmt.Sprintf("• @%s sedang AFK: %s (sejak %s lalu)", lidUser(rawJid), afk.Reason, duration))
+				reasonText := afk.Reason
+				// Collect any @mention JIDs embedded in the reason text
+				reasonJIDs := extractMentionJIDs(reasonText)
+
+				mentionedAFKs = append(mentionedAFKs, fmt.Sprintf("• @%s sedang AFK: %s (sejak %s lalu)", lidUser(rawJid), reasonText, duration))
 				taggedJIDs = append(taggedJIDs, rawJid)
+				taggedJIDs = append(taggedJIDs, reasonJIDs...)
 			}
 		}
 
@@ -57,8 +67,12 @@ func CheckAFK(ctx context.Context, c *clients.Client, m *message.Message) {
 					}
 					if !alreadyMentioned {
 						duration := formatDuration(time.Since(afk.Time))
-						mentionedAFKs = append(mentionedAFKs, fmt.Sprintf("• @%s sedang AFK: %s (sejak %s lalu)", lidUser(quotedRaw), afk.Reason, duration))
+						reasonText := afk.Reason
+						reasonJIDs := extractMentionJIDs(reasonText)
+
+						mentionedAFKs = append(mentionedAFKs, fmt.Sprintf("• @%s sedang AFK: %s (sejak %s lalu)", lidUser(quotedRaw), reasonText, duration))
 						taggedJIDs = append(taggedJIDs, quotedRaw)
+						taggedJIDs = append(taggedJIDs, reasonJIDs...)
 					}
 				}
 			}
@@ -66,6 +80,9 @@ func CheckAFK(ctx context.Context, c *clients.Client, m *message.Message) {
 	}
 
 	if len(mentionedAFKs) > 0 {
+		// Deduplicate taggedJIDs
+		taggedJIDs = dedup(taggedJIDs)
+
 		replyText := "Sstt, orangnya lagi nggak ada!\n\n" + strings.Join(mentionedAFKs, "\n")
 		if m.ID != nil {
 			m.ID.MentionedJID = taggedJIDs
@@ -74,10 +91,43 @@ func CheckAFK(ctx context.Context, c *clients.Client, m *message.Message) {
 	}
 }
 
+// extractMentionJIDs finds all @<digits> patterns in text and returns them as
+// potential LID JIDs (e.g. "170743069466624@lid").
+// WhatsApp renders @<user> as a blue tag only if <user>@<server> is in MentionedJID.
+func extractMentionJIDs(text string) []string {
+	matches := mentionRe.FindAllStringSubmatch(text, -1)
+	if len(matches) == 0 {
+		return nil
+	}
+	var jids []string
+	for _, m := range matches {
+		user := m[1]
+		// LID numbers are typically 15+ digits; phone numbers are 7-15 digits.
+		// We add both possible servers so WhatsApp can match either.
+		if len(user) >= 15 {
+			jids = append(jids, user+"@lid")
+		} else {
+			jids = append(jids, user+"@s.whatsapp.net")
+		}
+	}
+	return jids
+}
+
+func dedup(s []string) []string {
+	seen := make(map[string]bool, len(s))
+	var result []string
+	for _, v := range s {
+		if !seen[v] {
+			seen[v] = true
+			result = append(result, v)
+		}
+	}
+	return result
+}
+
 func findAndClearAFK(ctx context.Context, c *clients.Client, sender types.JID) (store.AFKState, bool) {
 	rawJID := sender.ToNonAD().String()
 	if afk, cleared := store.ClearAFK(rawJID); cleared {
-		// Also clean phone JID if it exists
 		phoneJID := c.SenderPhone(ctx, sender)
 		if phoneJID != "" && phoneJID != rawJID {
 			store.ClearAFK(phoneJID)
@@ -113,8 +163,6 @@ func findAFK(ctx context.Context, c *clients.Client, jidStr string) (store.AFKSt
 // lidUser extracts the user ID part from a JID string for use in @mention text.
 // "170743069466624@lid" -> "170743069466624"
 // "628xxx@s.whatsapp.net" -> "628xxx"
-// In WhatsApp, the @text string MUST match the user part of the JID in MentionedJID
-// so the WhatsApp mobile client renders it as a blue clickable mention tag.
 func lidUser(jid string) string {
 	return strings.Split(jid, "@")[0]
 }
