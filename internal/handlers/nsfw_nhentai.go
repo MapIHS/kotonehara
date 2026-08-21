@@ -36,8 +36,6 @@ func init() {
 	})
 }
 
-
-
 func nhentaiGallery(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 	if cfg.BASEApiURL == "" {
 		m.Reply(ctx, "Fitur ini belum dikonfigurasi (BASEAPI_URL kosong).")

@@ -13,11 +13,11 @@ import (
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:     "delete",
-		As:       []string{"delete", "del", "d"},
-		Tags:     "admin",
-		IsPrefix:    true,
-		SkipQuota:   true,
+		Name:      "delete",
+		As:        []string{"delete", "del", "d"},
+		Tags:      "admin",
+		IsPrefix:  true,
+		SkipQuota: true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			if m.IsBot {
 				return

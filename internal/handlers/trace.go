@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,6 +15,21 @@ import (
 	"github.com/MapIHS/kotonehara/internal/message"
 	"github.com/MapIHS/kotonehara/internal/service/api"
 )
+
+const maxTracePreviewBytes = 64 * 1024 * 1024
+
+var errTracePreviewTooLarge = errors.New("preview trace.moe terlalu besar")
+
+func readTracePreview(r io.Reader) ([]byte, error) {
+	body, err := io.ReadAll(io.LimitReader(r, maxTracePreviewBytes+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(body) > maxTracePreviewBytes {
+		return nil, errTracePreviewTooLarge
+	}
+	return body, nil
+}
 
 func formatSeconds(seconds float64) string {
 	mins := int(seconds) / 60
@@ -166,10 +182,10 @@ func init() {
 				reqVid, err := http.NewRequestWithContext(opCtx, http.MethodGet, previewURL, nil)
 				if err == nil {
 					resVid, err := apiClient.HTTP.Do(reqVid)
-					if err == nil && resVid.StatusCode == http.StatusOK {
-						defer resVid.Body.Close()
-						vidRaw, _ := io.ReadAll(resVid.Body)
-						if len(vidRaw) > 0 {
+					if err == nil && resVid != nil {
+						vidRaw, readErr := readTracePreview(resVid.Body)
+						_ = resVid.Body.Close()
+						if resVid.StatusCode == http.StatusOK && readErr == nil && len(vidRaw) > 0 {
 							// Send video preview
 							_, _ = client.SendVideo(ctx, m.From, vidRaw, false, replyText, m.ID)
 							videoSent = true
@@ -192,10 +208,10 @@ func init() {
 					reqImg, err := http.NewRequestWithContext(opCtx, http.MethodGet, imageURL, nil)
 					if err == nil {
 						resImg, err := apiClient.HTTP.Do(reqImg)
-						if err == nil && resImg.StatusCode == http.StatusOK {
-							defer resImg.Body.Close()
-							imgRaw, _ := io.ReadAll(resImg.Body)
-							if len(imgRaw) > 0 {
+						if err == nil && resImg != nil {
+							imgRaw, readErr := readTracePreview(resImg.Body)
+							_ = resImg.Body.Close()
+							if resImg.StatusCode == http.StatusOK && readErr == nil && len(imgRaw) > 0 {
 								// Send Image preview
 								_, _ = client.SendImage(ctx, m.From, imgRaw, replyText, m.ID)
 								imageSent = true

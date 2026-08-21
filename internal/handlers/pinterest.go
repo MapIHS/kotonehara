@@ -72,7 +72,7 @@ func init() {
 			for i := 0; i < limit; i++ {
 				item := res.Results[i]
 				caption := fmt.Sprintf("🔍 *%s*\n🔗 %s", item.Title, item.Link)
-				
+
 				if len(item.Images) == 0 {
 					client.SendText(ctx, m.From, caption+"\n_(Tidak ada gambar)_", m.ID)
 					continue

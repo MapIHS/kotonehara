@@ -47,7 +47,7 @@ func init() {
 				if err != nil {
 					continue
 				}
-				
+
 				cap := ""
 				if i == 0 {
 					cap = caption
@@ -98,9 +98,9 @@ func init() {
 			for i := 0; i < limit; i++ {
 				item := res.Results[i]
 				url := fmt.Sprintf("https://www.pixiv.net/en/artworks/%s", item.ID)
-				
+
 				caption := fmt.Sprintf("🔍 *%s*\n👤 %s\n🔗 %s", item.Title, item.Author, url)
-				
+
 				imgData, err := client.FetchBytesWithHeaders(item.URL, headers)
 				if err != nil {
 					client.SendText(ctx, m.From, caption+"\n_(Gagal memuat gambar)_", m.ID)

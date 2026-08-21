@@ -30,11 +30,11 @@ var sourceCodePreviewCache struct {
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:     "sc",
-		As:       []string{"sourcecode"},
-		Tags:     "main",
-		IsPrefix:    true,
-		SkipQuota:   true,
+		Name:      "sc",
+		As:        []string{"sourcecode"},
+		Tags:      "main",
+		IsPrefix:  true,
+		SkipQuota: true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			thumbnail, width, height := sourceCodePreviewThumbnail(client)
 			preview := sourceCodePreviewMessage(thumbnail, m.ID)

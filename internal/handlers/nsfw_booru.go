@@ -26,7 +26,7 @@ func init() {
 		IsPrefix:    true,
 		IsQuery:     true,
 		IsPrivate:   true,
-		Exec:        func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
+		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			handleBooru(ctx, client, m, cfg, danbooruFetcher)
 		},
 	})
@@ -38,7 +38,7 @@ func init() {
 		IsPrefix:    true,
 		IsQuery:     true,
 		IsPrivate:   true,
-		Exec:        func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
+		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			handleBooru(ctx, client, m, cfg, yandereFetcher)
 		},
 	})
@@ -64,7 +64,6 @@ func handleBooru(ctx context.Context, client *clients.Client, m *message.Message
 	}
 }
 
-
 func danbooruFetcher(ctx context.Context, cfg config.Config, tags string, limit int) (string, string, error) {
 	if cfg.BASEApiURL == "" {
 		return "", "", fmt.Errorf("Fitur ini belum dikonfigurasi (BASEAPI_URL kosong).")
@@ -79,7 +78,7 @@ func danbooruFetcher(ctx context.Context, cfg config.Config, tags string, limit 
 	}
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	post := posts[r.Intn(len(posts))]
-	
+
 	url := post.LargeURL
 	if url == "" {
 		url = post.FileURL
@@ -100,7 +99,7 @@ func yandereFetcher(ctx context.Context, cfg config.Config, tags string, limit i
 	}
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	post := posts[r.Intn(len(posts))]
-	
+
 	url := post.SampleURL
 	if url == "" {
 		url = post.FileURL

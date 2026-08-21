@@ -133,11 +133,11 @@ func detectToURLMime(data []byte) string {
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:     "tourl",
-		As:       []string{"url", "upload"},
-		Tags:     "tools",
-		IsPrefix:    true,
-		SkipQuota:   true,
-		Exec:     toURLCmd,
+		Name:      "tourl",
+		As:        []string{"url", "upload"},
+		Tags:      "tools",
+		IsPrefix:  true,
+		SkipQuota: true,
+		Exec:      toURLCmd,
 	})
 }
