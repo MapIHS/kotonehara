@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"context"
+	"log"
 	"regexp"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/MapIHS/kotonehara/internal/clients"
 	"github.com/MapIHS/kotonehara/internal/commands"
@@ -11,6 +13,8 @@ import (
 	"github.com/MapIHS/kotonehara/internal/infra/store"
 	"github.com/MapIHS/kotonehara/internal/message"
 )
+
+const maxAFKReasonRunes = 300
 
 func init() {
 	commands.Register(&commands.Command{
@@ -24,32 +28,30 @@ func init() {
 			reason := strings.TrimSpace(m.Query)
 			if reason == "" {
 				reason = "Tanpa alasan"
+			} else if utf8.RuneCountInString(reason) > maxAFKReasonRunes {
+				_, _ = m.Reply(ctx, "Alasan AFK terlalu panjang. Maksimal 300 karakter.")
+				return
 			}
 
-			rawJid := m.Sender.ToNonAD().String()
-			store.SetAFK(rawJid, reason)
-
-			phoneJid := client.SenderPhone(ctx, m.Sender)
-			if phoneJid != "" && phoneJid != rawJid {
-				store.SetAFK(phoneJid, reason)
+			for _, jid := range afkJIDs(ctx, client, m.Sender.String()) {
+				if err := store.SetAFK(ctx, jid, reason); err != nil {
+					log.Printf("set AFK: %v", err)
+					_, _ = m.Reply(ctx, "Status AFK belum bisa disimpan.")
+					return
+				}
 			}
 
-			// Forward mentions from the original message so @tags in the reason render properly.
 			if m.ID != nil && m.ContextInfo != nil {
 				m.ID.MentionedJID = collectMentions(reason, m.ContextInfo.GetMentionedJID())
 			}
 
-			m.Reply(ctx, "💤 Kamu sekarang AFK.\n\nAlasan: "+reason+"\n\nStatus AFK akan hilang otomatis kalau kamu mengirim pesan lagi.")
+			_, _ = m.Reply(ctx, "💤 Kamu sekarang AFK.\n\nAlasan: "+reason+"\n\nStatus AFK akan hilang otomatis kalau kamu mengirim pesan lagi.")
 		},
 	})
 }
 
-// mentionRe matches @<digits> patterns in message text (LID or phone mentions).
 var mentionRe = regexp.MustCompile(`@(\d+)`)
 
-// collectMentions returns the subset of candidateJIDs whose user part appears
-// as @<user> in the text.  This ensures MentionedJID only contains JIDs that
-// actually have a corresponding @tag in the text body.
 func collectMentions(text string, candidateJIDs []string) []string {
 	matches := mentionRe.FindAllStringSubmatch(text, -1)
 	if len(matches) == 0 {

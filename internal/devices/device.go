@@ -143,7 +143,7 @@ func (d *Devices) registerEventHandler(client *whatsmeow.Client, callClient *meo
 		switch v := evt.(type) {
 		case *events.Message:
 			parse := m.Parse(d.ctx, v)
-			
+
 			d.tryStartCommand(func() {
 				defer func() {
 					if r := recover(); r != nil {
@@ -151,8 +151,7 @@ func (d *Devices) registerEventHandler(client *whatsmeow.Client, callClient *meo
 					}
 				}()
 
-				// Check AFK status first
-				handlers.CheckAFK(d.ctx, c, parse)
+				handlers.CheckAFK(d.ctx, c, parse, d.cfg)
 
 				if !commands.CanHandle(parse.Body, d.cfg) {
 					return
