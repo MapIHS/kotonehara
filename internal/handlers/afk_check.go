@@ -24,10 +24,10 @@ func CheckAFK(ctx context.Context, c *clients.Client, m *message.Message, cfg co
 
 	senderRaw := m.Sender.ToNonAD().String()
 	if isAFKActivity(m) && !isAFKCommand(m.Body, cfg.Prefix) {
-		if afk, cleared := findAndClearAFK(ctx, c, m.Sender); cleared {
+		if afk, cleared := findAndClearAFK(ctx, c, m.Sender, m.SenderAlt); cleared {
 			duration := formatDuration(time.Since(afk.Time))
 			if m.ID != nil {
-				m.ID.MentionedJID = dedup(append([]string{senderRaw}, extractMentionJIDs(afk.Reason)...))
+				m.ID.MentionedJID = []string{senderRaw}
 			}
 			_, _ = m.Reply(ctx, fmt.Sprintf("👋 Welcome back @%s! Status AFK kamu telah dihapus.\nKamu AFK selama %s.", jidUser(senderRaw), duration))
 		}
@@ -62,14 +62,19 @@ func isAFKActivity(m *message.Message) bool {
 func collectMentionedAFKs(ctx context.Context, c *clients.Client, m *message.Message) ([]string, []string) {
 	var mentionedAFKs []string
 	var taggedJIDs []string
+	seenIdentities := make(map[string]struct{})
 
 	if m.ContextInfo == nil {
 		return mentionedAFKs, taggedJIDs
 	}
 
 	for _, rawJid := range m.ContextInfo.GetMentionedJID() {
-		line, jids, ok := afkMentionLine(ctx, c, rawJid)
+		line, jids, identityKey, ok := afkMentionLine(ctx, c, rawJid)
 		if ok {
+			if _, seen := seenIdentities[identityKey]; seen {
+				continue
+			}
+			seenIdentities[identityKey] = struct{}{}
 			mentionedAFKs = append(mentionedAFKs, line)
 			taggedJIDs = append(taggedJIDs, jids...)
 		}
@@ -77,8 +82,11 @@ func collectMentionedAFKs(ctx context.Context, c *clients.Client, m *message.Mes
 
 	quotedRaw := m.ContextInfo.GetParticipant()
 	if m.QuotedMsg != nil && quotedRaw != "" && !containsJID(taggedJIDs, quotedRaw) {
-		line, jids, ok := afkMentionLine(ctx, c, quotedRaw)
+		line, jids, identityKey, ok := afkMentionLine(ctx, c, quotedRaw)
 		if ok {
+			if _, seen := seenIdentities[identityKey]; seen {
+				return mentionedAFKs, dedup(taggedJIDs)
+			}
 			mentionedAFKs = append(mentionedAFKs, line)
 			taggedJIDs = append(taggedJIDs, jids...)
 		}
@@ -87,31 +95,25 @@ func collectMentionedAFKs(ctx context.Context, c *clients.Client, m *message.Mes
 	return mentionedAFKs, dedup(taggedJIDs)
 }
 
-func afkMentionLine(ctx context.Context, c *clients.Client, rawJid string) (string, []string, bool) {
+func afkMentionLine(ctx context.Context, c *clients.Client, rawJid string) (string, []string, string, bool) {
+	parsed, err := types.ParseJID(rawJid)
+	if err != nil || parsed.IsEmpty() {
+		return "", nil, "", false
+	}
+	id, err := c.ResolveIdentity(ctx, parsed, types.EmptyJID)
+	if err != nil {
+		log.Printf("resolve mentioned AFK identity %s: %v", rawJid, err)
+	}
 	afk, ok := findAFK(ctx, c, rawJid)
 	if !ok {
-		return "", nil, false
+		return "", nil, "", false
 	}
 	duration := formatDuration(time.Since(afk.Time))
-	jids := append([]string{rawJid}, extractMentionJIDs(afk.Reason)...)
-	return fmt.Sprintf("• @%s sedang AFK: %s (sejak %s lalu)", jidUser(rawJid), afk.Reason, duration), jids, true
-}
-
-func extractMentionJIDs(text string) []string {
-	matches := mentionRe.FindAllStringSubmatch(text, -1)
-	if len(matches) == 0 {
-		return nil
+	identityKey := id.Key
+	if identityKey == "" {
+		identityKey = parsed.ToNonAD().String()
 	}
-	var jids []string
-	for _, match := range matches {
-		user := match[1]
-		if len(user) >= 15 {
-			jids = append(jids, user+"@lid")
-		} else {
-			jids = append(jids, user+"@s.whatsapp.net")
-		}
-	}
-	return dedup(jids)
+	return fmt.Sprintf("• @%s sedang AFK: %s (sejak %s lalu)", jidUser(rawJid), afk.Reason, duration), []string{rawJid}, identityKey, true
 }
 
 func dedup(s []string) []string {
@@ -127,8 +129,8 @@ func dedup(s []string) []string {
 	return result
 }
 
-func findAndClearAFK(ctx context.Context, c *clients.Client, sender types.JID) (store.AFKState, bool) {
-	jids := afkJIDs(ctx, c, sender.String())
+func findAndClearAFK(ctx context.Context, c *clients.Client, sender, senderAlt types.JID) (store.AFKState, bool) {
+	jids := afkJIDs(ctx, c, sender, senderAlt)
 	afk, cleared, err := store.ClearAFK(ctx, jids...)
 	if err != nil {
 		log.Printf("clear AFK: %v", err)
@@ -138,7 +140,8 @@ func findAndClearAFK(ctx context.Context, c *clients.Client, sender types.JID) (
 }
 
 func findAFK(ctx context.Context, c *clients.Client, jidStr string) (store.AFKState, bool) {
-	afk, ok, err := store.GetAFK(ctx, afkJIDs(ctx, c, jidStr)...)
+	parsed := parseJID(jidStr)
+	afk, ok, err := store.GetAFK(ctx, afkJIDs(ctx, c, parsed, types.EmptyJID)...)
 	if err != nil {
 		log.Printf("get AFK: %v", err)
 		return store.AFKState{}, false
@@ -146,15 +149,18 @@ func findAFK(ctx context.Context, c *clients.Client, jidStr string) (store.AFKSt
 	return afk, ok
 }
 
-func afkJIDs(ctx context.Context, c *clients.Client, jidStr string) []string {
-	parsed := parseJID(jidStr)
-	jids := []string{jidStr}
-	if !parsed.IsEmpty() {
-		nonAD := parsed.ToNonAD().String()
-		jids = append(jids, nonAD)
-		if phoneJID := c.SenderPhone(ctx, parsed); phoneJID != "" {
-			jids = append(jids, phoneJID)
-		}
+func afkJIDs(ctx context.Context, c *clients.Client, primary, alternate types.JID) []string {
+	id, err := c.ResolveIdentity(ctx, primary, alternate)
+	if err != nil {
+		log.Printf("resolve AFK identity %s: %v", primary, err)
+	}
+	jids := id.AliasStrings()
+	stateJID := id.StateJID()
+	if stateJID != "" {
+		jids = append([]string{stateJID}, jids...)
+	}
+	if raw := primary.String(); raw != "" {
+		jids = append(jids, raw)
 	}
 	return dedup(jids)
 }

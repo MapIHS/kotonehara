@@ -3,6 +3,7 @@ package message
 import (
 	"context"
 
+	"github.com/MapIHS/kotonehara/internal/identity"
 	"go.mau.fi/whatsmeow"
 	waE2E "go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types"
@@ -14,10 +15,14 @@ type WAClient interface {
 }
 
 type Message struct {
-	From        types.JID
-	Sender      types.JID
-	PushName    string
-	OwnerNumber []string
+	From           types.JID
+	Sender         types.JID
+	SenderAlt      types.JID
+	RecipientAlt   types.JID
+	AddressingMode types.AddressingMode
+	Identity       identity.Identity
+	PushName       string
+	OwnerNumber    []string
 
 	IsOwner bool
 	IsBot   bool

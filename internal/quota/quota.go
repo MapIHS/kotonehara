@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"sync"
 
+	"github.com/MapIHS/kotonehara/internal/identity"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -13,6 +15,9 @@ import (
 // "628xxx:0@s.whatsapp.net" becomes "628xxx@s.whatsapp.net".
 // This ensures consistent JID storage and lookup.
 func normalizeJID(jid string) string {
+	if parsed, err := identity.ParseUser(jid); err == nil {
+		return parsed.String()
+	}
 	at := strings.IndexByte(jid, '@')
 	if at < 0 {
 		return jid
@@ -35,9 +40,11 @@ type CheckResult struct {
 
 // Checker is the main quota enforcement engine.
 type Checker struct {
-	store     *store
-	freeLimit int
-	ownerJIDs map[string]bool
+	store      *store
+	freeLimit  int
+	ownerJIDs  map[string]bool
+	identityMu sync.Mutex
+	reconciled map[string]bool
 }
 
 var globalChecker *Checker
@@ -49,9 +56,10 @@ func Init(db *sqlx.DB, freeLimit int, owners []string) {
 		m[normalizeJID(o)] = true
 	}
 	globalChecker = &Checker{
-		store:     newStore(db),
-		freeLimit: freeLimit,
-		ownerJIDs: m,
+		store:      newStore(db),
+		freeLimit:  freeLimit,
+		ownerJIDs:  m,
+		reconciled: make(map[string]bool),
 	}
 }
 
@@ -64,7 +72,14 @@ func Global() *Checker {
 // Returns (allowed bool, blockMessage string, err error).
 // This signature is designed to be used with commands.SetQuotaCheck.
 func (c *Checker) CheckCommand(ctx context.Context, jid string) (bool, string, error) {
+	return c.CheckIdentity(ctx, jid, nil)
+}
+
+func (c *Checker) CheckIdentity(ctx context.Context, jid string, aliases []string) (bool, string, error) {
 	jid = normalizeJID(jid)
+	if err := c.reconcileAliases(ctx, jid, aliases); err != nil {
+		return false, "", err
+	}
 
 	// 1. Owner bypass
 	if c.ownerJIDs[jid] {
@@ -103,9 +118,37 @@ func (c *Checker) CheckCommand(ctx context.Context, jid string) (bool, string, e
 	return true, "", nil
 }
 
+func (c *Checker) reconcileAliases(ctx context.Context, canonical string, aliases []string) error {
+	c.identityMu.Lock()
+	defer c.identityMu.Unlock()
+
+	for _, alias := range aliases {
+		alias = normalizeJID(alias)
+		if alias == "" || alias == canonical {
+			continue
+		}
+		pair := canonical + "|" + alias
+		if c.reconciled[pair] {
+			continue
+		}
+		if err := mergeQuotaIdentity(ctx, c.store.db, canonical, alias); err != nil {
+			return err
+		}
+		c.reconciled[pair] = true
+	}
+	return nil
+}
+
 // GetUsageInfo returns the current usage info for a JID (used by .quota command).
 func (c *Checker) GetUsageInfo(ctx context.Context, jid string) (*UsageInfo, error) {
+	return c.GetIdentityUsageInfo(ctx, jid, nil)
+}
+
+func (c *Checker) GetIdentityUsageInfo(ctx context.Context, jid string, aliases []string) (*UsageInfo, error) {
 	jid = normalizeJID(jid)
+	if err := c.reconcileAliases(ctx, jid, aliases); err != nil {
+		return nil, err
+	}
 
 	// Owner
 	if c.ownerJIDs[jid] {

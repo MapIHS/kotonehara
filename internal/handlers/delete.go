@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/MapIHS/kotonehara/internal/clients"
 	"github.com/MapIHS/kotonehara/internal/commands"
@@ -29,20 +30,42 @@ func init() {
 				return
 			}
 
-			isBotMessage := ctxInfo.GetParticipant() == client.BotJID()
+			var quotedSender types.JID
+			participant := ctxInfo.GetParticipant()
+			if participant != "" {
+				var err error
+				quotedSender, err = types.ParseJID(participant)
+				if err != nil || quotedSender.IsEmpty() {
+					_, _ = m.Reply(ctx, "Identitas pengirim pesan tidak valid.")
+					return
+				}
+			}
+			isBotMessage := !m.IsGroup && participant == ""
+			if !quotedSender.IsEmpty() {
+				var err error
+				isBotMessage, err = client.SameUser(ctx, quotedSender, client.BotIdentity())
+				if err != nil {
+					log.Printf("resolve quoted sender: %v", err)
+					_, _ = m.Reply(ctx, "Gagal memverifikasi pengirim pesan.")
+					return
+				}
+			}
 			isGroupAdmin := false
 			isBotAdmin := false
 
 			if m.IsGroup {
 				admins, err := client.GroupAdmins(ctx, m.From)
 				if err == nil {
-					senderStr := m.Sender.String()
-					botStr := client.BotJID()
+					senderAliases := make(map[string]struct{})
+					for _, alias := range m.Identity.AliasStrings() {
+						senderAliases[alias] = struct{}{}
+					}
+					botIdentity := client.BotIdentity()
 					for _, admin := range admins {
-						if admin == senderStr {
+						if _, ok := senderAliases[admin]; ok {
 							isGroupAdmin = true
 						}
-						if admin == botStr {
+						if botIdentity.MatchesString(admin) {
 							isBotAdmin = true
 						}
 					}
@@ -68,8 +91,7 @@ func init() {
 
 			fmt.Println("Deleting message with stanza ID:", ctxInfo.GetStanzaID())
 
-			senderJID, _ := types.ParseJID(ctxInfo.GetParticipant())
-			_, err := client.DeleteMessage(ctx, m.From, senderJID, ctxInfo.GetStanzaID())
+			_, err := client.DeleteMessage(ctx, m.From, quotedSender, ctxInfo.GetStanzaID())
 			if err != nil {
 				_, _ = m.Reply(ctx, "Gagal menghapus pesan.")
 			}

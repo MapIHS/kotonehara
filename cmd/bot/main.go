@@ -64,18 +64,27 @@ func main() {
 	container := sqlstore.NewWithDB(db.DB, cfg.DBDriver, dbLog)
 
 	upCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
 
 	if err := container.Upgrade(upCtx); err != nil {
+		cancel()
 		log.Fatal("upgrade store: ", err)
 	}
+	cancel()
 
 	// Initialize quota system
-	if err := quota.Migrate(upCtx, db); err != nil {
+	migrationCtx, cancelMigration := context.WithTimeout(ctx, 2*time.Minute)
+	defer cancelMigration()
+	if err := quota.Migrate(migrationCtx, db); err != nil {
 		log.Fatal("quota migrate: ", err)
 	}
+	if err := quota.MigrateIdentityAliases(migrationCtx, db); err != nil {
+		log.Fatal("quota identity migration: ", err)
+	}
+	if err := store.MigrateAFKIdentities(migrationCtx); err != nil {
+		log.Fatal("AFK identity migration: ", err)
+	}
 	quota.Init(db, cfg.FreeDailyLimit, cfg.Owners)
-	commands.SetQuotaCheck(quota.Global().CheckCommand)
+	commands.SetQuotaCheck(quota.Global().CheckIdentity)
 	log.Printf("quota: free daily limit = %d", cfg.FreeDailyLimit)
 
 	d := devices.New(container, cfg, ctx)

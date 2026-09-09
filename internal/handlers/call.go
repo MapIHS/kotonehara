@@ -12,6 +12,7 @@ import (
 
 	"github.com/MapIHS/kotonehara/internal/clients"
 	"github.com/MapIHS/kotonehara/internal/commands"
+	"github.com/MapIHS/kotonehara/internal/identity"
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"github.com/MapIHS/kotonehara/internal/message"
 	meowcaller "github.com/purpshell/meowcaller"
@@ -42,6 +43,12 @@ func callCmd(ctx context.Context, client *clients.Client, m *message.Message, cf
 		_, _ = m.Reply(ctx, "Target call belum ada. Balas pesan orangnya, tag, atau masukkan nomornya. Contoh: .call 628xxxx")
 		return
 	}
+	normalizedTarget, err := normalizeCallTarget(target)
+	if err != nil {
+		_, _ = m.Reply(ctx, "Target call harus berupa nomor, PN JID, atau LID JID yang valid.")
+		return
+	}
+	target = normalizedTarget
 
 	source, cleanupSource, hasAudio, err := openCallAudioSourceForMessage(ctx, client, m, audioPath)
 	if err != nil {
@@ -116,6 +123,14 @@ func callCmd(ctx context.Context, client *clients.Client, m *message.Message, cf
 		msg += "\nAuto Cancel setelah 60 detik."
 	}
 	_, _ = m.Reply(ctx, msg)
+}
+
+func normalizeCallTarget(target string) (string, error) {
+	jid, err := identity.ParseUser(target)
+	if err != nil {
+		return "", err
+	}
+	return jid.String(), nil
 }
 
 func callTargetAndAudio(m *message.Message, args []string) (target, audioPath string) {

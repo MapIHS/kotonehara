@@ -16,10 +16,10 @@ import (
 
 // quotaCheck is set from cmd/bot/main.go to avoid circular imports.
 // Returns (allowed, blockMessage, error).
-var quotaCheck func(ctx context.Context, jid string) (bool, string, error)
+var quotaCheck func(ctx context.Context, jid string, aliases []string) (bool, string, error)
 
 // SetQuotaCheck sets the quota check function for command execution.
-func SetQuotaCheck(fn func(ctx context.Context, jid string) (bool, string, error)) {
+func SetQuotaCheck(fn func(ctx context.Context, jid string, aliases []string) (bool, string, error)) {
 	quotaCheck = fn
 }
 
@@ -56,9 +56,15 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 		return
 	}
 
-	ck := m.Sender.String() + "|" + cmd.Name
-	if !allowCooldown(ck) {
-		if shouldSendCooldownSticker(ck) {
+	cooldownKeys := make([]string, 0, 4)
+	for _, alias := range m.Identity.AliasStrings() {
+		cooldownKeys = append(cooldownKeys, alias+"|"+cmd.Name)
+	}
+	if len(cooldownKeys) == 0 {
+		cooldownKeys = append(cooldownKeys, m.Sender.ToNonAD().String()+"|"+cmd.Name)
+	}
+	if !allowCooldownAliases(cooldownKeys) {
+		if shouldSendCooldownSticker(cooldownKeys[0]) {
 			if data, err := loadSpamSticker(); err == nil && len(data) > 0 {
 				_, _ = c.SendSticker(ctx, m.From, data, false, false, m.ID)
 			}
@@ -76,8 +82,7 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 	// Quota check: skip for commands marked SkipQuota or owner-only commands
 	if !cmd.SkipQuota && !cmd.IsOwner && quotaCheck != nil {
 		// Resolve LID → phone number for consistent DB lookups.
-		senderPN := c.SenderPhone(ctx, m.Sender)
-		allowed, blockMsg, err := quotaCheck(ctx, senderPN)
+		allowed, blockMsg, err := quotaCheck(ctx, m.Identity.StateJID(), m.Identity.AliasStrings())
 		if err != nil {
 			log.Printf("quota check error: %v", err)
 			// fail open: allow command if quota system errors
@@ -197,13 +202,16 @@ func fillAdminStatus(ctx context.Context, c *clients.Client, m *message.Message)
 		return
 	}
 
-	sender := m.Sender.String()
-	bot := c.BotJID()
+	senderAliases := make(map[string]struct{})
+	for _, alias := range m.Identity.AliasStrings() {
+		senderAliases[alias] = struct{}{}
+	}
+	botIdentity := c.BotIdentity()
 	for _, admin := range admins {
-		if admin == sender {
+		if _, ok := senderAliases[admin]; ok {
 			m.IsAdmin = true
 		}
-		if admin == bot {
+		if botIdentity.MatchesString(admin) {
 			m.IsBotAdmin = true
 		}
 		if m.IsAdmin && m.IsBotAdmin {

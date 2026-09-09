@@ -54,7 +54,7 @@ func init() {
 				return
 			}
 
-			err := qc.AddPremium(ctx, targetJID.String(), m.Sender.String(), days)
+			err := qc.AddPremium(ctx, targetJID.String(), m.Identity.StateJID(), days)
 			if err != nil {
 				m.Reply(ctx, "Gagal menambahkan premium: "+err.Error())
 				return

@@ -3,6 +3,7 @@ package clients
 import (
 	"context"
 
+	"github.com/MapIHS/kotonehara/internal/identity"
 	"go.mau.fi/whatsmeow/types"
 )
 
@@ -20,14 +21,33 @@ func (c *Client) GroupAdmins(ctx context.Context, j types.JID) ([]string, error)
 	}
 
 	admins := make([]string, 0, len(info.Participants))
-	for _, p := range info.Participants {
-		if p.IsAdmin || p.IsSuperAdmin {
-			admins = append(admins, p.JID.String())
-		}
-	}
+	admins = append(admins, groupAdminAliases(info.Participants)...)
 
 	// set cache
 	c.admins.set(key, admins)
 
 	return admins, nil
+}
+
+func groupAdminAliases(participants []types.GroupParticipant) []string {
+	admins := make([]string, 0, len(participants))
+	seen := make(map[string]struct{})
+	for _, participant := range participants {
+		if !participant.IsAdmin && !participant.IsSuperAdmin {
+			continue
+		}
+		for _, jid := range []types.JID{participant.JID, participant.PhoneNumber, participant.LID} {
+			jid = identity.Normalize(jid)
+			if jid.IsEmpty() {
+				continue
+			}
+			value := jid.String()
+			if _, ok := seen[value]; ok {
+				continue
+			}
+			seen[value] = struct{}{}
+			admins = append(admins, value)
+		}
+	}
+	return admins
 }

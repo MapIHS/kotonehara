@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/MapIHS/kotonehara/internal/identity"
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"go.mau.fi/whatsmeow"
 	waE2E "go.mau.fi/whatsmeow/proto/waE2E"
@@ -13,15 +14,13 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// JIDResolver resolves a JID (possibly a LID) to a canonical phone-number
-// JID string. Used to match sender identity against owner list, etc.
-type JIDResolver func(ctx context.Context, jid types.JID) string
+type IdentityResolver func(ctx context.Context, primary, alternate types.JID) (identity.Identity, error)
 
 type Parser struct {
-	Client      WAClient
-	ResolveJID  JIDResolver
-	log         waLog.Logger
-	cfg         config.Config
+	Client          WAClient
+	ResolveIdentity IdentityResolver
+	log             waLog.Logger
+	cfg             config.Config
 }
 
 func NewParser(c WAClient, cfg config.Config) *Parser {
@@ -85,28 +84,16 @@ func quoteContextInfo(mess *events.Message) *waE2E.ContextInfo {
 }
 
 func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
-	var sender string
-	rawSender := mess.Info.Sender.String()
-	rawSenderUser := mess.Info.Sender.User
-	senderUser := rawSenderUser
-
-	if p.ResolveJID != nil {
-		sender = p.ResolveJID(ctx, mess.Info.Sender)
-		if parts := strings.Split(sender, "@"); len(parts) > 0 {
-			senderUser = parts[0]
+	senderIdentity := identity.New(mess.Info.Sender, mess.Info.SenderAlt)
+	if p.ResolveIdentity != nil {
+		if resolved, err := p.ResolveIdentity(ctx, mess.Info.Sender, mess.Info.SenderAlt); err == nil {
+			senderIdentity = resolved
 		}
-	} else {
-		sender = rawSender
 	}
 	isOwner := false
-
 	for _, own := range p.cfg.Owners {
-		ownUser := strings.Split(own, "@")[0]
-		
-		if strings.EqualFold(own, sender) || 
-		   strings.EqualFold(own, rawSender) || 
-		   strings.EqualFold(ownUser, senderUser) || 
-		   strings.EqualFold(ownUser, rawSenderUser) {
+		ownerJID, err := identity.ParseUser(own)
+		if err == nil && senderIdentity.Matches(ownerJID) {
 			isOwner = true
 			break
 		}
@@ -138,10 +125,14 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 	msgID := extractQuoteContext(mess)
 
 	return &Message{
-		From:        mess.Info.Chat,
-		Sender:      mess.Info.Sender,
-		PushName:    mess.Info.PushName,
-		OwnerNumber: p.cfg.Owners,
+		From:           mess.Info.Chat,
+		Sender:         mess.Info.Sender,
+		SenderAlt:      mess.Info.SenderAlt,
+		RecipientAlt:   mess.Info.RecipientAlt,
+		AddressingMode: mess.Info.AddressingMode,
+		Identity:       senderIdentity,
+		PushName:       mess.Info.PushName,
+		OwnerNumber:    p.cfg.Owners,
 
 		IsOwner: isOwner,
 		IsBot:   mess.Info.IsFromMe,

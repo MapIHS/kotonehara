@@ -52,13 +52,18 @@ func toLID(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 
 func parseLIDTarget(input string) (types.JID, bool, error) {
 	input = strings.TrimSpace(strings.ToLower(input))
-	if jid, err := types.ParseJID(input); err == nil && !jid.IsEmpty() {
+	if strings.Contains(input, "@") {
+		jid, err := types.ParseJID(input)
+		if err != nil || jid.IsEmpty() {
+			return types.EmptyJID, false, fmt.Errorf("invalid JID")
+		}
 		if jid.Server == types.HiddenUserServer {
 			return jid.ToNonAD(), true, nil
 		}
 		if jid.Server == types.DefaultUserServer {
 			return jid.ToNonAD(), false, nil
 		}
+		return types.EmptyJID, false, fmt.Errorf("unsupported JID namespace")
 	}
 
 	phone := strings.Map(func(r rune) rune {

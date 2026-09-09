@@ -27,7 +27,7 @@ func init() {
 				return
 			}
 
-			info, err := qc.GetUsageInfo(ctx, client.SenderPhone(ctx, m.Sender))
+			info, err := qc.GetIdentityUsageInfo(ctx, m.Identity.StateJID(), m.Identity.AliasStrings())
 			if err != nil {
 				m.Reply(ctx, "Gagal mengambil info kuota.")
 				return

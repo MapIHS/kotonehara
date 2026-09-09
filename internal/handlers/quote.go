@@ -8,6 +8,7 @@ import (
 
 	"github.com/MapIHS/kotonehara/internal/clients"
 	"github.com/MapIHS/kotonehara/internal/commands"
+	"github.com/MapIHS/kotonehara/internal/identity"
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"github.com/MapIHS/kotonehara/internal/media/sticker"
 	"github.com/MapIHS/kotonehara/internal/message"
@@ -91,7 +92,12 @@ func quoteCmd(ctx context.Context, client *clients.Client, m *message.Message, c
 			participant = m.ContextInfo.GetParticipant()
 		}
 		if participant != "" {
-			senderJID, _ = types.ParseJID(participant)
+			var err error
+			senderJID, err = types.ParseJID(participant)
+			if err != nil {
+				m.Reply(ctx, "Identitas pengirim quote tidak valid.")
+				return
+			}
 		}
 		if senderJID.IsEmpty() {
 			senderJID = m.Sender
@@ -105,7 +111,12 @@ func quoteCmd(ctx context.Context, client *clients.Client, m *message.Message, c
 			participant = m.ContextInfo.GetParticipant()
 		}
 		if participant != "" {
-			senderJID, _ = types.ParseJID(participant)
+			var err error
+			senderJID, err = types.ParseJID(participant)
+			if err != nil {
+				m.Reply(ctx, "Identitas pengirim quote tidak valid.")
+				return
+			}
 		}
 		if senderJID.IsEmpty() {
 			senderJID = m.Sender
@@ -126,7 +137,12 @@ func quoteCmd(ctx context.Context, client *clients.Client, m *message.Message, c
 			}
 			var nestedJID types.JID
 			if participant != "" {
-				nestedJID, _ = types.ParseJID(participant)
+				var err error
+				nestedJID, err = types.ParseJID(participant)
+				if err != nil {
+					m.Reply(ctx, "Identitas pengirim reply tidak valid.")
+					return
+				}
 			} else {
 				nestedJID = m.Sender // fallback
 			}
@@ -216,7 +232,7 @@ func quoteCmd(ctx context.Context, client *clients.Client, m *message.Message, c
 				Media:    media,
 				Avatar:   true,
 				From: quote.From{
-					ID:   hashJID(senderJID.String()),
+					ID:   hashJID(quoteIdentityKey(opCtx, client, senderJID)),
 					Name: senderName,
 					Photo: quote.Photo{
 						URL: avatarURL,
@@ -274,37 +290,45 @@ func resolveContactName(ctx context.Context, client *clients.Client, jid types.J
 		return jidToDisplayName(jid)
 	}
 
-	// Check if it's the bot itself (by primary ID or LID)
-	if client.WA.Store.ID != nil && jid.User == client.WA.Store.ID.User {
-		if client.WA.Store.PushName != "" {
-			return client.WA.Store.PushName
-		}
-		return "Kotonehara"
+	resolved, err := client.ResolveIdentity(ctx, jid, types.EmptyJID)
+	if err != nil {
+		resolved = identity.New(jid, types.EmptyJID)
 	}
-	if !client.WA.Store.LID.IsEmpty() && jid.User == client.WA.Store.LID.User {
+	botIdentity := client.BotIdentity()
+	if resolved.Matches(botIdentity.PN) || resolved.Matches(botIdentity.LID) {
 		if client.WA.Store.PushName != "" {
 			return client.WA.Store.PushName
 		}
 		return "Kotonehara"
 	}
 
-	contact, err := client.WA.Store.Contacts.GetContact(ctx, jid)
-	if err == nil && contact.Found {
-		if contact.PushName != "" {
-			return contact.PushName
-		}
-		if contact.FullName != "" {
-			return contact.FullName
-		}
-		if contact.FirstName != "" {
-			return contact.FirstName
-		}
-		if contact.BusinessName != "" {
-			return contact.BusinessName
+	for _, alias := range resolved.Aliases() {
+		contact, err := client.WA.Store.Contacts.GetContact(ctx, alias)
+		if err == nil && contact.Found {
+			if contact.PushName != "" {
+				return contact.PushName
+			}
+			if contact.FullName != "" {
+				return contact.FullName
+			}
+			if contact.FirstName != "" {
+				return contact.FirstName
+			}
+			if contact.BusinessName != "" {
+				return contact.BusinessName
+			}
 		}
 	}
 
 	return jidToDisplayName(jid)
+}
+
+func quoteIdentityKey(ctx context.Context, client *clients.Client, jid types.JID) string {
+	id, err := client.ResolveIdentity(ctx, jid, types.EmptyJID)
+	if err == nil && id.Key != "" {
+		return id.Key
+	}
+	return identity.Normalize(jid).String()
 }
 
 func jidToDisplayName(jid types.JID) string {

@@ -20,14 +20,14 @@ type PremiumUser struct {
 // UsageInfo holds the current usage state for a user.
 type UsageInfo struct {
 	UsedCount int
-	MaxLimit  int  // -1 means unlimited
+	MaxLimit  int // -1 means unlimited
 	IsPremium bool
 	ResetDate string
 }
 
 type store struct {
-	db     *sqlx.DB
-	isPG   bool
+	db   *sqlx.DB
+	isPG bool
 }
 
 func newStore(db *sqlx.DB) *store {

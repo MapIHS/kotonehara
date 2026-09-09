@@ -33,12 +33,15 @@ func init() {
 				return
 			}
 
-			for _, jid := range afkJIDs(ctx, client, m.Sender.String()) {
-				if err := store.SetAFK(ctx, jid, reason); err != nil {
-					log.Printf("set AFK: %v", err)
-					_, _ = m.Reply(ctx, "Status AFK belum bisa disimpan.")
-					return
-				}
+			jids := afkJIDs(ctx, client, m.Sender, m.SenderAlt)
+			if len(jids) == 0 {
+				_, _ = m.Reply(ctx, "Identitas pengirim tidak valid.")
+				return
+			}
+			if err := store.SetAFK(ctx, jids[0], reason, jids[1:]...); err != nil {
+				log.Printf("set AFK: %v", err)
+				_, _ = m.Reply(ctx, "Status AFK belum bisa disimpan.")
+				return
 			}
 
 			if m.ID != nil && m.ContextInfo != nil {

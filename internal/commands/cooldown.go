@@ -34,6 +34,10 @@ func SetCooldown(d time.Duration) {
 }
 
 func allowCooldown(key string) bool {
+	return allowCooldownAliases([]string{key})
+}
+
+func allowCooldownAliases(keys []string) bool {
 	cd.mu.Lock()
 	defer cd.mu.Unlock()
 	if cd.d == 0 {
@@ -41,10 +45,17 @@ func allowCooldown(key string) bool {
 	}
 	now := time.Now()
 	sweepCooldownLocked(now, cooldownSweepLimit)
-	if until, ok := cd.m[key]; ok && now.Before(until) {
-		return false
+	for _, key := range keys {
+		if until, ok := cd.m[key]; ok && now.Before(until) {
+			return false
+		}
 	}
-	cd.m[key] = now.Add(cd.d)
+	until := now.Add(cd.d)
+	for _, key := range keys {
+		if key != "" {
+			cd.m[key] = until
+		}
+	}
 	return true
 }
 

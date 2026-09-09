@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -39,7 +40,95 @@ func createTable() {
 	}
 }
 
-func SetAFK(ctx context.Context, jid string, reason string) error {
+func MigrateAFKIdentities(ctx context.Context) error {
+	if db == nil {
+		return errors.New("database belum diinisialisasi")
+	}
+	if err := normalizeAFKRows(ctx); err != nil {
+		return err
+	}
+	rows, err := db.QueryxContext(ctx, `
+		SELECT m.lid, m.pn FROM whatsmeow_lid_map m
+		WHERE EXISTS (SELECT 1 FROM afk_users a WHERE a.jid = m.lid || '@lid')`)
+	if err != nil {
+		return fmt.Errorf("read LID mappings for AFK: %w", err)
+	}
+	type mapping struct{ lid, pn string }
+	var mappings []mapping
+	for rows.Next() {
+		var lidUser, pnUser string
+		if err := rows.Scan(&lidUser, &pnUser); err != nil {
+			rows.Close()
+			return fmt.Errorf("scan LID mapping for AFK: %w", err)
+		}
+		mappings = append(mappings, mapping{lid: lidUser, pn: pnUser})
+	}
+	if err := rows.Err(); err != nil {
+		rows.Close()
+		return err
+	}
+	if err := rows.Close(); err != nil {
+		return err
+	}
+	for _, mapping := range mappings {
+		if err := mergeAFKIdentity(ctx, mapping.pn+"@s.whatsapp.net", mapping.lid+"@lid"); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func normalizeAFKRows(ctx context.Context) error {
+	var states []AFKState
+	if err := db.SelectContext(ctx, &states, `SELECT jid, reason, created_at FROM afk_users`); err != nil {
+		return fmt.Errorf("read AFK rows: %w", err)
+	}
+	for _, state := range states {
+		at := strings.IndexByte(state.JID, '@')
+		if at < 0 {
+			continue
+		}
+		user, server := state.JID[:at], state.JID[at:]
+		colon := strings.IndexByte(user, ':')
+		if colon < 0 {
+			continue
+		}
+		if err := mergeAFKIdentity(ctx, user[:colon]+server, state.JID); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func mergeAFKIdentity(ctx context.Context, canonical string, aliases ...string) error {
+	all := uniqueNonEmpty(append(aliases, canonical))
+	if len(all) == 0 {
+		return nil
+	}
+
+	var latest AFKState
+	found := false
+	query := db.Rebind(`SELECT jid, reason, created_at FROM afk_users WHERE jid = ? LIMIT 1`)
+	for _, jid := range all {
+		var state AFKState
+		err := db.GetContext(ctx, &state, query, jid)
+		if err == nil && (!found || state.Time.After(latest.Time)) {
+			latest, found = state, true
+		} else if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("read AFK alias: %w", err)
+		}
+	}
+	if !found {
+		return nil
+	}
+	return setAFK(ctx, canonical, latest.Reason, latest.Time, all...)
+}
+
+func SetAFK(ctx context.Context, jid string, reason string, aliases ...string) error {
+	return setAFK(ctx, jid, reason, time.Now(), aliases...)
+}
+
+func setAFK(ctx context.Context, jid string, reason string, createdAt time.Time, aliases ...string) error {
 	if db == nil {
 		return errors.New("database belum diinisialisasi")
 	}
@@ -67,13 +156,29 @@ func SetAFK(ctx context.Context, jid string, reason string) error {
 		`
 	}
 
-	_, err := db.NamedExecContext(ctx, query, map[string]interface{}{
+	tx, err := db.BeginTxx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("begin set AFK: %w", err)
+	}
+	defer tx.Rollback()
+
+	deleteQuery := db.Rebind(`DELETE FROM afk_users WHERE jid = ?`)
+	for _, alias := range uniqueNonEmpty(append(aliases, jid)) {
+		if _, err := tx.ExecContext(ctx, deleteQuery, alias); err != nil {
+			return fmt.Errorf("clean alias AFK: %w", err)
+		}
+	}
+
+	_, err = tx.NamedExecContext(ctx, query, map[string]interface{}{
 		"jid":        jid,
 		"reason":     reason,
-		"created_at": time.Now(),
+		"created_at": createdAt,
 	})
 	if err != nil {
 		return fmt.Errorf("set AFK: %w", err)
+	}
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("commit set AFK: %w", err)
 	}
 	return nil
 }
@@ -91,13 +196,21 @@ func ClearAFK(ctx context.Context, jids ...string) (AFKState, bool, error) {
 		return AFKState{}, false, err
 	}
 
+	tx, err := db.BeginTxx(ctx, nil)
+	if err != nil {
+		return AFKState{}, false, fmt.Errorf("begin clear AFK: %w", err)
+	}
+	defer tx.Rollback()
+
 	query := db.Rebind(`DELETE FROM afk_users WHERE jid = ?`)
 	for _, jid := range uniqueNonEmpty(jids) {
-		if _, err := db.ExecContext(ctx, query, jid); err != nil {
+		if _, err := tx.ExecContext(ctx, query, jid); err != nil {
 			return AFKState{}, false, fmt.Errorf("clear AFK: %w", err)
 		}
 	}
-
+	if err := tx.Commit(); err != nil {
+		return AFKState{}, false, fmt.Errorf("commit clear AFK: %w", err)
+	}
 	return state, true, nil
 }
 

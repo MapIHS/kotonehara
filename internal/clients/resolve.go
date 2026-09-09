@@ -2,37 +2,30 @@ package clients
 
 import (
 	"context"
-	"log"
 
+	"github.com/MapIHS/kotonehara/internal/identity"
 	"go.mau.fi/whatsmeow/types"
 )
 
-// SenderPhone resolves a sender JID to a canonical phone-number JID string
-// (e.g. "628xxx@s.whatsapp.net") regardless of whether the input is a
-// traditional PN JID or a LID.  Device suffixes are always stripped.
-//
-// If the JID is a LID and the mapping is not found in the local store,
-// the original LID (with device stripped) is returned as a fallback.
-func (c *Client) SenderPhone(ctx context.Context, sender types.JID) string {
-	clean := sender.ToNonAD()
-
-	switch clean.Server {
-	case types.DefaultUserServer:
-		// Already a phone-number JID – just return it.
-		return clean.String()
-
-	case types.HiddenUserServer:
-		// LID – try to resolve to phone number via local mapping table.
-		pn, err := c.WA.Store.LIDs.GetPNForLID(ctx, clean)
-		if err != nil {
-			log.Printf("resolve LID %s: %v", clean, err)
-			return clean.String() // fallback
-		}
-		if !pn.IsEmpty() {
-			return pn.ToNonAD().String()
-		}
-		return clean.String() // mapping not found, fallback
+func (c *Client) ResolveIdentity(ctx context.Context, primary, alternate types.JID) (identity.Identity, error) {
+	id := identity.New(primary, alternate)
+	if c == nil || c.WA == nil || c.WA.Store == nil || c.WA.Store.LIDs == nil {
+		return id, nil
 	}
 
-	return clean.String()
+	if id.PN.IsEmpty() && !id.LID.IsEmpty() {
+		pn, err := c.WA.Store.LIDs.GetPNForLID(ctx, id.LID)
+		if err != nil {
+			return id, err
+		}
+		id.Add(pn)
+	}
+	if id.LID.IsEmpty() && !id.PN.IsEmpty() {
+		lid, err := c.WA.Store.LIDs.GetLIDForPN(ctx, id.PN)
+		if err != nil {
+			return id, err
+		}
+		id.Add(lid)
+	}
+	return id, nil
 }
