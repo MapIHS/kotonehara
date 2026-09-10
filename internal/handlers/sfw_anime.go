@@ -54,7 +54,7 @@ func sfwAnime(tag string) func(ctx context.Context, client *clients.Client, m *m
 			return
 		}
 
-		ap := api.Shared(cfg.BASEApiURL, 15*time.Second)
+		ap := api.Shared(cfg.BASEApiURL, 90*time.Second)
 
 		img, err := ap.WaifuIm(ctx, tag, false)
 		if err != nil {

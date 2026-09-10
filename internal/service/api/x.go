@@ -19,11 +19,11 @@ const (
 )
 
 type XResult struct {
-	Status        string             `json:"status,omitempty"`
-	Message       string             `json:"message,omitempty"`
-	InputURL      string             `json:"input_url,omitempty"`
-	SearchURL     string             `json:"search_url,omitempty"`
-	MediaLinks    []TwitterMediaLink `json:"media_links,omitempty"`
+	Status     string             `json:"status,omitempty"`
+	Message    string             `json:"message,omitempty"`
+	InputURL   string             `json:"input_url,omitempty"`
+	SearchURL  string             `json:"search_url,omitempty"`
+	MediaLinks []TwitterMediaLink `json:"media_links,omitempty"`
 }
 
 type TwitterMediaLink struct {
@@ -58,7 +58,7 @@ func (c *Client) X(ctx context.Context, targetURL string) (*XResult, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("X api http %d", resp.StatusCode)
+		return nil, readAPIError("X", resp)
 	}
 
 	body, err := readResponseBody(resp, maxAPIResponseSize)

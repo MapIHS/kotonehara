@@ -45,7 +45,7 @@ func init() {
 }
 
 func handleBooru(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config, fetcher booruFetcher) {
-	tags := strings.ReplaceAll(m.Query, " ", "+")
+	tags := strings.Join(strings.Fields(m.Query), " ")
 	url, caption, err := fetcher(ctx, cfg, tags, 10)
 	if err != nil {
 		m.Reply(ctx, "❌ "+err.Error())
@@ -68,7 +68,7 @@ func danbooruFetcher(ctx context.Context, cfg config.Config, tags string, limit 
 	if cfg.BASEApiURL == "" {
 		return "", "", fmt.Errorf("Fitur ini belum dikonfigurasi (BASEAPI_URL kosong).")
 	}
-	ap := api.Shared(cfg.BASEApiURL, 15*time.Second)
+	ap := api.Shared(cfg.BASEApiURL, 90*time.Second)
 	posts, err := ap.Danbooru(ctx, tags, limit)
 	if err != nil {
 		return "", "", fmt.Errorf("Gagal mengambil data dari Danbooru: %v", err)

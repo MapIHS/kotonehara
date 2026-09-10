@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 )
@@ -39,11 +38,10 @@ func (c *Client) WaifuIm(ctx context.Context, tag string, nsfw bool) (*WaifuImIm
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, apiHTTPStatusError("waifu.im", resp.StatusCode, body)
+		return nil, readAPIError("waifu.im", resp)
 	}
 
-	// hararest returns { status: "success", data: { images: [...] } }
+	// hararest returns { status: "success", data: { items: [...] } }
 	var payload APIResponse[WaifuImResponse]
 	if err := decodeAPIResponse(resp, &payload); err != nil {
 		return nil, err
@@ -79,8 +77,7 @@ func (c *Client) PurrBot(ctx context.Context, category string) (string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return "", apiHTTPStatusError("purrbot", resp.StatusCode, body)
+		return "", readAPIError("purrbot", resp)
 	}
 
 	// hararest returns { status: "success", data: { error: false, link: "..." } }
@@ -123,8 +120,7 @@ func (c *Client) Danbooru(ctx context.Context, tags string, limit int) ([]Danboo
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, apiHTTPStatusError("danbooru", resp.StatusCode, body)
+		return nil, readAPIError("danbooru", resp)
 	}
 
 	// hararest returns { status: "success", data: [...posts] }
@@ -222,8 +218,7 @@ func (c *Client) NhentaiGallery(ctx context.Context, id string) (*NhentaiGallery
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, apiHTTPStatusError("nhentai", resp.StatusCode, body)
+		return nil, readAPIError("nhentai", resp)
 	}
 
 	var payload APIResponse[NhentaiGallery]
@@ -248,8 +243,7 @@ func (c *Client) NhentaiSearch(ctx context.Context, query string) ([]NhentaiSear
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, apiHTTPStatusError("nhentai", resp.StatusCode, body)
+		return nil, readAPIError("nhentai", resp)
 	}
 
 	var payload APIResponse[NhentaiSearchResponse]

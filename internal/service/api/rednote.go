@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	neturl "net/url"
 )
@@ -79,7 +78,7 @@ func (c *Client) Rednote(ctx context.Context, targetURL string) (*xhsResult, err
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("xhs api http %d", resp.StatusCode)
+		return nil, readAPIError("xhs", resp)
 	}
 
 	var out APIResponse[xhsResult]

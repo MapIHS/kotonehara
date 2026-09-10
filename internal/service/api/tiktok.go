@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	neturl "net/url"
 )
@@ -67,7 +66,7 @@ func (c *Client) Tiktok(ctx context.Context, targetURL string) (*tiktokResult, e
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("tiktok api http %d", resp.StatusCode)
+		return nil, readAPIError("tiktok", resp)
 	}
 
 	var out APIResponse[tiktokResult]

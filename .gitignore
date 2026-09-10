@@ -10,3 +10,6 @@ test_*
 main
 configs/providers.json
 data/
+
+# Local integration audit notes
+/docs/hararest-integration-*.md

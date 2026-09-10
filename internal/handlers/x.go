@@ -166,7 +166,7 @@ func init() {
 
 			m.Reply(ctx, "Tunggu Sebentar ya.")
 
-			ap := api.Shared(cfg.BASEApiURL, 60*time.Second)
+			ap := api.Shared(cfg.BASEApiURL, 90*time.Second)
 
 			res, err := ap.X(ctx, args[0])
 			if err != nil {

@@ -38,7 +38,7 @@ func newSOCKS5HTTPClient(timeout time.Duration, socksAddr string) (*http.Client,
 	}
 
 	dialContext := func(ctx context.Context, network, addr string) (net.Conn, error) {
-		return d.Dial(network, addr)
+		return d.(proxy.ContextDialer).DialContext(ctx, network, addr)
 	}
 
 	tr := &http.Transport{
@@ -49,7 +49,7 @@ func newSOCKS5HTTPClient(timeout time.Duration, socksAddr string) (*http.Client,
 		IdleConnTimeout:     90 * time.Second,
 	}
 	if timeout > 0 {
-		tr.ResponseHeaderTimeout = 30 * time.Second
+		tr.ResponseHeaderTimeout = timeout
 	}
 
 	return &http.Client{
@@ -64,7 +64,7 @@ func newHTTPClient(timeout time.Duration) *http.Client {
 	tr.MaxIdleConnsPerHost = 20
 	tr.IdleConnTimeout = 90 * time.Second
 	if timeout > 0 {
-		tr.ResponseHeaderTimeout = 15 * time.Second
+		tr.ResponseHeaderTimeout = timeout
 	}
 	tr.ExpectContinueTimeout = time.Second
 

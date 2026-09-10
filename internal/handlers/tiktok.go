@@ -37,15 +37,59 @@ func init() {
 				return
 			}
 
-			buff, err := client.FetchBytes(*res.Video)
-			if err != nil {
-				m.Reply(ctx, "Maaf Terjadi kesalahan, yaa.")
-				return
-			}
-
 			caption := fmt.Sprintf("*Title* :%s", res.Title)
-			client.SendVideo(ctx, m.From, buff, false, caption, m.ID)
+			err = sendTikTokMedia(res.Images, res.Video, caption, client.FetchBytes,
+				func(data []byte, caption string) error {
+					_, err := client.SendImage(ctx, m.From, data, caption, m.ID)
+					return err
+				},
+				func(data []byte, caption string) error {
+					_, err := client.SendVideo(ctx, m.From, data, false, caption, m.ID)
+					return err
+				})
+			if err != nil {
+				m.Reply(ctx, err.Error())
+			}
 
 		},
 	})
+}
+
+// Keep media dispatch separate so photo posts and failed downloads can be tested
+// without a WhatsApp connection.
+func sendTikTokMedia(images []string, video *string, caption string, fetch func(string) ([]byte, error), sendImage, sendVideo func([]byte, string) error) error {
+	if len(images) > 0 {
+		sent := 0
+		for _, imageURL := range images {
+			if strings.TrimSpace(imageURL) == "" {
+				continue
+			}
+			data, err := fetch(imageURL)
+			if err != nil {
+				continue
+			}
+			imageCaption := ""
+			if sent == 0 {
+				imageCaption = caption
+			}
+			if err := sendImage(data, imageCaption); err == nil {
+				sent++
+			}
+		}
+		if sent == 0 {
+			return fmt.Errorf("Gagal mengunduh atau mengirim gambar TikTok.")
+		}
+		return nil
+	}
+	if video == nil || strings.TrimSpace(*video) == "" {
+		return fmt.Errorf("Media TikTok tidak ditemukan.")
+	}
+	data, err := fetch(*video)
+	if err != nil {
+		return fmt.Errorf("Gagal mengunduh video TikTok: %w", err)
+	}
+	if err := sendVideo(data, caption); err != nil {
+		return fmt.Errorf("Gagal mengirim video TikTok: %w", err)
+	}
+	return nil
 }

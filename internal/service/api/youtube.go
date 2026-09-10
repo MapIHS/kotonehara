@@ -53,7 +53,7 @@ func (c *Client) YoutubeInfo(ctx context.Context, targetURL string) (*videoInfo,
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("Youtube api http %d", resp.StatusCode)
+		return nil, readAPIError("Youtube", resp)
 	}
 
 	var out APIResponse[videoInfo]
@@ -76,7 +76,11 @@ func (c *Client) YoutubeDownload(ctx context.Context, targetURL string, quality 
 
 	q := u.Query()
 	q.Set("url", targetURL)
-	q.Set("quality", quality)
+	if isVideo && quality != "" {
+		q.Set("quality", quality)
+	} else {
+		q.Del("quality")
+	}
 	u.RawQuery = q.Encode()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
@@ -93,7 +97,7 @@ func (c *Client) YoutubeDownload(ctx context.Context, targetURL string, quality 
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("youtube api http %d", resp.StatusCode)
+		return nil, readAPIError("youtube", resp)
 	}
 
 	data, err := readResponseBody(resp, maxMediaSize)
@@ -143,7 +147,7 @@ func (c *Client) YoutubeSearch(ctx context.Context, query string, limit int) ([]
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("youtube search api http %d", resp.StatusCode)
+		return nil, readAPIError("youtube search", resp)
 	}
 
 	var out APIResponse[[]YoutubeSearchResult]

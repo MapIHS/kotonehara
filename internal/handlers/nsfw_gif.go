@@ -48,7 +48,7 @@ func nsfwGif(ctx context.Context, client *clients.Client, m *message.Message, cf
 		return
 	}
 
-	ap := api.Shared(cfg.BASEApiURL, 15*time.Second)
+	ap := api.Shared(cfg.BASEApiURL, 90*time.Second)
 	url, err := ap.PurrBot(ctx, cat)
 	if err != nil {
 		m.Reply(ctx, "❌ Gagal mengambil gif: "+err.Error())

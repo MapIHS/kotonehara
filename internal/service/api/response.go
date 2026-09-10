@@ -37,3 +37,11 @@ func decodeAPIResponse(resp *http.Response, dst any) error {
 	}
 	return json.Unmarshal(body, dst)
 }
+
+func readAPIError(service string, resp *http.Response) error {
+	body, err := readResponseBody(resp, maxAPIResponseSize)
+	if err != nil {
+		return fmt.Errorf("%s api http %d: %w", service, resp.StatusCode, err)
+	}
+	return apiHTTPStatusError(service, resp.StatusCode, body)
+}

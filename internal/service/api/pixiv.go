@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	neturl "net/url"
 )
@@ -50,7 +49,7 @@ func (c *Client) Pixiv(ctx context.Context, idOrURL string) (*PixivDownload, err
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("pixiv api http %d", resp.StatusCode)
+		return nil, readAPIError("pixiv", resp)
 	}
 
 	var out APIResponse[PixivDownload]
@@ -84,7 +83,7 @@ func (c *Client) PixivSearch(ctx context.Context, query string) (*PixivSearchRes
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("pixiv search api http %d", resp.StatusCode)
+		return nil, readAPIError("pixiv search", resp)
 	}
 
 	var out APIResponse[PixivSearchResponse]

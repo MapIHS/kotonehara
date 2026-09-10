@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 )
@@ -36,8 +35,7 @@ func (c *Client) SearchBrave(ctx context.Context, query string) (*BraveSearchDat
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, apiHTTPStatusError("brave", resp.StatusCode, body)
+		return nil, readAPIError("brave", resp)
 	}
 
 	var payload APIResponse[BraveSearchData]

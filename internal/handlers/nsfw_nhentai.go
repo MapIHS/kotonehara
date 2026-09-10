@@ -49,7 +49,7 @@ func nhentaiGallery(ctx context.Context, client *clients.Client, m *message.Mess
 	}
 	code := args[0]
 
-	ap := api.Shared(cfg.BASEApiURL, 15*time.Second)
+	ap := api.Shared(cfg.BASEApiURL, 90*time.Second)
 	gallery, err := ap.NhentaiGallery(ctx, code)
 	if err != nil {
 		m.Reply(ctx, "❌ Gagal mengambil gallery: "+err.Error())
@@ -96,7 +96,7 @@ func nhentaiSearch(ctx context.Context, client *clients.Client, m *message.Messa
 		return
 	}
 
-	ap := api.Shared(cfg.BASEApiURL, 15*time.Second)
+	ap := api.Shared(cfg.BASEApiURL, 90*time.Second)
 	results, err := ap.NhentaiSearch(ctx, m.Query)
 	if err != nil {
 		m.Reply(ctx, "❌ Gagal melakukan pencarian: "+err.Error())

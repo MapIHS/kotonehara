@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	neturl "net/url"
 )
@@ -51,7 +50,7 @@ func (c *Client) Pinterest(ctx context.Context, targetURL string) (*PinterestDow
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("pinterest api http %d", resp.StatusCode)
+		return nil, readAPIError("pinterest", resp)
 	}
 
 	var out APIResponse[PinterestDownload]
@@ -85,7 +84,7 @@ func (c *Client) PinterestSearch(ctx context.Context, query string) (*PinterestS
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("pinterest search api http %d", resp.StatusCode)
+		return nil, readAPIError("pinterest search", resp)
 	}
 
 	var out APIResponse[PinterestSearchResponse]

@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	neturl "net/url"
 )
@@ -44,7 +43,7 @@ func (c *Client) Facebook(ctx context.Context, targetURL string) (*facebookResul
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("facebook api http %d", resp.StatusCode)
+		return nil, readAPIError("facebook", resp)
 	}
 
 	var out APIResponse[facebookResult]

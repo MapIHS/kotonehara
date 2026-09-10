@@ -67,7 +67,7 @@ func nsfwAnime(tag string) func(ctx context.Context, client *clients.Client, m *
 			return
 		}
 
-		ap := api.Shared(cfg.BASEApiURL, 15*time.Second)
+		ap := api.Shared(cfg.BASEApiURL, 90*time.Second)
 
 		img, err := ap.WaifuIm(ctx, tag, true)
 		if err != nil {

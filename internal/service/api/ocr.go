@@ -24,7 +24,13 @@ func (c *Client) ExtractOCR(ctx context.Context, imageBytes []byte) (string, err
 		return "", err
 	}
 
-	req.Header.Set("Content-Type", "image/jpeg")
+	contentType := http.DetectContentType(imageBytes)
+	switch contentType {
+	case "image/jpeg", "image/png", "image/webp":
+	default:
+		return "", fmt.Errorf("OCR hanya mendukung JPEG, PNG, atau WebP")
+	}
+	req.Header.Set("Content-Type", contentType)
 
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
@@ -33,7 +39,7 @@ func (c *Client) ExtractOCR(ctx context.Context, imageBytes []byte) (string, err
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return "", fmt.Errorf("OCR api http %d", resp.StatusCode)
+		return "", readAPIError("OCR", resp)
 	}
 
 	var out APIResponse[ocrResponse]
