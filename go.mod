@@ -4,6 +4,7 @@ go 1.26.0
 
 require (
 	github.com/chai2010/webp v1.4.0
+	github.com/google/uuid v1.6.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lib/pq v1.12.3
 	github.com/mdp/qrterminal v1.0.1
@@ -22,7 +23,6 @@ require (
 	github.com/coder/websocket v1.8.15 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/elliotchance/orderedmap/v3 v3.1.1 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/hajimehoshi/go-mp3 v0.3.4 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect
