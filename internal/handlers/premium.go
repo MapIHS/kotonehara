@@ -26,14 +26,14 @@ func init() {
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			args := strings.Fields(m.Query)
 			if len(args) == 0 {
-				m.Reply(ctx, "Format: `.addpremium <nomor>` atau `.addpremium <nomor> <hari>`\n\nContoh:\n`.addpremium 628123456789` → permanent\n`.addpremium 628123456789 30` → 30 hari")
+				m.Reply(ctx, "Format: `.addpremium <nomor>` atau `.addpremium <nomor> <hari>`\nNomor internasional: kode negara + nomor, tanpa spasi. Awalan + atau 00 boleh dipakai.\n\nContoh:\n`.addpremium +14155552671` → permanent\n`.addpremium 447700900123 30` → 30 hari\n`.addpremium 08123456789 30` → nomor Indonesia, 30 hari")
 				return
 			}
 
-			phone := strings.TrimPrefix(args[0], "+")
-			phone = strings.TrimPrefix(phone, "0")
-			if !strings.HasPrefix(phone, "62") {
-				phone = "62" + phone
+			phone, err := normalizePremiumPhone(args[0])
+			if err != nil {
+				m.Reply(ctx, err.Error())
+				return
 			}
 
 			targetJID := types.NewJID(phone, types.DefaultUserServer)
@@ -54,7 +54,7 @@ func init() {
 				return
 			}
 
-			err := qc.AddPremium(ctx, targetJID.String(), m.Identity.StateJID(), days)
+			err = qc.AddPremium(ctx, targetJID.String(), m.Identity.StateJID(), days)
 			if err != nil {
 				m.Reply(ctx, "Gagal menambahkan premium: "+err.Error())
 				return
@@ -87,14 +87,14 @@ func init() {
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			args := strings.Fields(m.Query)
 			if len(args) == 0 {
-				m.Reply(ctx, "Format: `.delpremium <nomor>`\n\nContoh: `.delpremium 628123456789`")
+				m.Reply(ctx, "Format: `.delpremium <nomor>`\nGunakan kode negara + nomor tanpa spasi; awalan + atau 00 boleh dipakai.\n\nContoh: `.delpremium +14155552671`\nNomor Indonesia juga bisa memakai 08…")
 				return
 			}
 
-			phone := strings.TrimPrefix(args[0], "+")
-			phone = strings.TrimPrefix(phone, "0")
-			if !strings.HasPrefix(phone, "62") {
-				phone = "62" + phone
+			phone, err := normalizePremiumPhone(args[0])
+			if err != nil {
+				m.Reply(ctx, err.Error())
+				return
 			}
 
 			targetJID := types.NewJID(phone, types.DefaultUserServer)
@@ -105,7 +105,7 @@ func init() {
 				return
 			}
 
-			err := qc.RemovePremium(ctx, targetJID.String())
+			err = qc.RemovePremium(ctx, targetJID.String())
 			if err != nil {
 				m.Reply(ctx, "Gagal menghapus premium: "+err.Error())
 				return
@@ -157,4 +157,31 @@ func init() {
 			m.Reply(ctx, txt.String())
 		},
 	})
+}
+
+// normalizePremiumPhone preserves international country codes. Only an explicit
+// local 08 prefix uses the Indonesian shorthand; bare 81/82/etc. must stay intact.
+// This validates the number's syntax, not its allocation or WhatsApp registration.
+func normalizePremiumPhone(input string) (string, error) {
+	phone := strings.TrimSpace(input)
+	switch {
+	case strings.HasPrefix(phone, "+"):
+		phone = strings.TrimPrefix(phone, "+")
+	case strings.HasPrefix(phone, "00"):
+		phone = strings.TrimPrefix(phone, "00")
+	case strings.HasPrefix(phone, "08"):
+		phone = "62" + phone[1:]
+	}
+	invalid := func() (string, error) {
+		return "", fmt.Errorf("Nomor tidak valid. Gunakan kode negara + nomor (maksimal 15 digit), tanpa spasi atau tanda baca; contoh +14155552671 atau 447700900123. Nomor Indonesia boleh memakai 08…")
+	}
+	if len(phone) < 2 || len(phone) > 15 || phone[0] == '0' {
+		return invalid()
+	}
+	for _, digit := range phone {
+		if digit < '0' || digit > '9' {
+			return invalid()
+		}
+	}
+	return phone, nil
 }

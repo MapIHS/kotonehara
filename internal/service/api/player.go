@@ -24,8 +24,6 @@ type PlayerSession struct {
 	HTML      string    `json:"html"`
 }
 
-// CreatePlayer keeps the API origin as the default browser/WS origin. Hararest
-// may override it with PLAYER_PUBLIC_URL when the bot uses a private API address.
 func (c *Client) CreatePlayer(ctx context.Context, query string) (*PlayerSession, error) {
 	u, err := url.Parse(c.BaseURL)
 	if err != nil || u == nil || u.Host == "" || (u.Scheme != "http" && u.Scheme != "https") {
