@@ -139,50 +139,6 @@ PAIRING_PHONE_NUMBER=6281234567890
 
 Bot akan menampilkan kode pairing di terminal. Masukkan kode tersebut di HP: WhatsApp > Perangkat Tertaut > Tautkan dengan nomor telepon.
 
-## Rich HTML (eksperimental)
-
-Owner dapat me-reply pesan teks berisi HTML dengan `.richhtml` atau `.html`
-(sesuaikan dengan `PREFIX` bot). Contoh teks yang dapat di-reply:
-
-```html
-<h1>Halo</h1><p>Pesan dari Kotonehara.</p>
-```
-
-Payload maksimal 64 KiB dan dikirim ke chat tempat command dijalankan melalui
-AI rich response. Pesan tanpa reply teks ditolak. Tampilan HTML bergantung pada
-dukungan WhatsApp penerima; konfirmasi pengiriman tidak menjamin HTML dirender.
-
-`clients.BuildRichHTML` memakai primitive `GenAIaeacdsnwHtmlPrimitive`, mengikuti
-[builder HTML Casileys](https://github.com/kyleee-max/casileys/blob/main/lib/MessageBuilder/AIRich.js).
-`unifiedResponse.data` berisi JSON UTF-8 mentah sesuai
-[schema whatsmeow](https://github.com/tulir/whatsmeow/blob/9ec8f76db5f1/proto/waAICommon/WAWebProtobufsAICommon.proto);
-base64 hanya digunakan pada representasi JSON protobuf. ID respons pada metadata
-bot dan payload disamakan. HTML dengan UTF-8 tidak valid ditolak agar isinya tidak
-berubah diam-diam saat dienkode.
-
-`trusted_sources` adalah atribusi sumber, bukan izin jaringan. Dokumentasi
-[Elaina Baileys](https://www.npmjs.com/package/@rexxhayanasi/elaina-baileys)
-melaporkan pembatasan jaringan pada WebView HTML Android. Keberhasilan tes browser
-lokal belum membuktikan bahwa WebSocket dapat diakses dari kartu WhatsApp.
-
-### Player musik WebSocket
-
-Gunakan `.playws <judul lagu>` atau `.playws <link YouTube>` (alias `.playhtml`).
-Bot menyiapkan audio melalui Hararest, mengirim kartu dengan tombol putar/jeda
-dan posisi lagu langsung di WhatsApp.
-
-Player memakai base URL API yang sama dari `BASEAPI_URL`; misalnya
-`https://api.example.com` menjadi `wss://api.example.com/ws/player/...`.
-Hararest harus sudah menjalankan modul `/api/player/sessions` dan `/ws/player/`.
-Jika `BASEAPI_URL` adalah alamat internal/Tailscale yang tidak bisa diakses
-perangkat penerima, isi `PLAYER_PUBLIC_URL` di Hararest dengan origin API publik.
-Reverse proxy API harus meneruskan WebSocket Upgrade.
-
-Sesi berlaku 30 menit, dengan audio maksimal 24 MiB dan durasi 10 menit. Audio
-diputar setelah transfer WS selesai. Bila sesi berakhir atau backend direstart,
-jalankan `.playws` lagi. Dukungan rich HTML berbeda antar-client WhatsApp;
-renderer penerima perlu mendukung JavaScript, koneksi WS, dan audio.
-
 ## Docker / Podman
 
 Build image:
