@@ -13,7 +13,7 @@ import (
 func TestCreatePlayerUsesAPIOrigin(t *testing.T) {
 	var server *httptest.Server
 	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost || r.URL.Path != "/api/player/sessions" || r.Header.Get("Content-Type") != "application/json" {
+		if r.Method != http.MethodPost || r.URL.Path != "/api/player/jobs" || r.Header.Get("Content-Type") != "application/json" {
 			t.Errorf("unexpected request: %s %s", r.Method, r.URL)
 		}
 		var body map[string]string
@@ -23,12 +23,12 @@ func TestCreatePlayerUsesAPIOrigin(t *testing.T) {
 		if body["query"] != "artist & title" || body["baseUrl"] != server.URL {
 			t.Errorf("incorrect query or origin: %v", body)
 		}
-		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(APIResponse[PlayerSession]{Data: PlayerSession{
+		w.WriteHeader(http.StatusAccepted)
+		json.NewEncoder(w).Encode(map[string]any{"data": map[string]any{"id": strings.Repeat("a", 48), "state": "ready", "result": map[string]any{"kind": "player", "player": PlayerSession{
 			ID: "session", Title: "Title", HTML: "<p>Player</p>", Size: 1024,
 			WSURL: "wss://api.example.com/ws/player/session", PlayerURL: "https://api.example.com/player/session",
 			ExpiresAt: time.Now().Add(time.Minute),
-		}})
+		}}}})
 	}))
 	defer server.Close()
 	session, err := New(server.URL, time.Second).CreatePlayer(context.Background(), "artist & title")
@@ -44,7 +44,7 @@ func TestCreatePlayerErrorAndMissingSession(t *testing.T) {
 		body, want string
 	}{
 		{"busy", 503, `{"message":"Player sedang penuh"}`, "Player sedang penuh"},
-		{"missing", 201, `{"status":"success","data":{}}`, "tidak valid"},
+		{"missing", 202, `{"status":"success","data":{"id":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","state":"ready","result":{"kind":"player"}}}`, "tidak valid"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

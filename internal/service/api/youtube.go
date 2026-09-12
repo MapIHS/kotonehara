@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	neturl "net/url"
+	"time"
 )
 
 type channelInfo struct {
@@ -64,31 +65,33 @@ func (c *Client) YoutubeInfo(ctx context.Context, targetURL string) (*videoInfo,
 }
 
 func (c *Client) YoutubeDownload(ctx context.Context, targetURL string, quality string, isVideo bool) ([]byte, error) {
-	u, err := neturl.Parse(c.BaseURL)
-	if err != nil {
-		return nil, err
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
+	defer cancel()
+	input := map[string]string{"url": targetURL, "format": "audio"}
+	if isVideo {
+		input["format"] = "video"
 	}
-	u.Path = "/api/youtube/video"
-
-	if !isVideo {
-		u.Path = "/api/youtube/audio"
-	}
-
-	q := u.Query()
-	q.Set("url", targetURL)
 	if isVideo && quality != "" {
-		q.Set("quality", quality)
-	} else {
-		q.Del("quality")
+		input["quality"] = quality
 	}
-	u.RawQuery = q.Encode()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+	job, err := c.runMediaJob(ctx, "/api/youtube/jobs", input, jobPollInterval)
+	if err != nil {
+		return nil, err
+	}
+	if job.Result.Kind != "file" || job.Result.Size <= 0 || job.Result.Size > maxMediaSize {
+		return nil, fmt.Errorf("Hasil file job YouTube tidak valid atau terlalu besar")
+	}
+	endpoint, err := c.jobURL("/api/jobs/" + job.ID + "/file")
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Set("Accept", "application/json")
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Accept", "application/octet-stream")
 
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
@@ -103,6 +106,9 @@ func (c *Client) YoutubeDownload(ctx context.Context, targetURL string, quality 
 	data, err := readResponseBody(resp, maxMediaSize)
 	if err != nil {
 		return nil, err
+	}
+	if int64(len(data)) != job.Result.Size {
+		return nil, fmt.Errorf("File job YouTube tidak lengkap")
 	}
 	return data, nil
 }

@@ -13,31 +13,52 @@ import (
 
 func TestYouTubeDownloadOptionalQuality(t *testing.T) {
 	for _, tc := range []struct {
-		name, quality, path string
-		video               bool
+		name, quality string
+		video         bool
 	}{
-		{"audio", "", "/api/youtube/audio", false},
-		{"audio ignores quality", "720p", "/api/youtube/audio", false},
-		{"default video", "", "/api/youtube/video", true},
-		{"selected video", "720p", "/api/youtube/video", true},
+		{"audio", "", false}, {"audio ignores quality", "720p", false},
+		{"default video", "", true}, {"selected video", "720p", true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			id := strings.Repeat("a", 48)
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if r.URL.Path != tc.path {
-					t.Errorf("path = %s", r.URL.Path)
-				}
-				q := r.URL.Query()
-				if q.Get("url") != "https://youtu.be/test?foo=a&bar=b" {
-					t.Errorf("source URL was not preserved: %v", q)
-				}
-				if tc.video && tc.quality != "" {
-					if q.Get("quality") != tc.quality {
-						t.Errorf("quality = %q", q.Get("quality"))
+				switch r.URL.Path {
+				case "/api/youtube/jobs":
+					if r.Method != http.MethodPost || r.Header.Get("Idempotency-Key") == "" {
+						t.Error("missing POST/idempotency key")
 					}
-				} else if q.Has("quality") {
-					t.Error("optional quality must be omitted")
+					var body map[string]string
+					if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+						t.Error(err)
+					}
+					if body["url"] != "https://youtu.be/test?foo=a&bar=b" {
+						t.Errorf("URL changed: %v", body)
+					}
+					format := "audio"
+					if tc.video {
+						format = "video"
+					}
+					if body["format"] != format {
+						t.Errorf("format=%s", body["format"])
+					}
+					if tc.video && tc.quality != "" {
+						if body["quality"] != tc.quality {
+							t.Errorf("quality=%s", body["quality"])
+						}
+					} else if _, ok := body["quality"]; ok {
+						t.Error("optional quality must be omitted")
+					}
+					w.WriteHeader(http.StatusAccepted)
+					json.NewEncoder(w).Encode(map[string]any{"data": map[string]any{"id": id, "state": "ready", "result": map[string]any{"kind": "file", "size": len("media fixture")}}})
+				case "/api/jobs/" + id + "/file":
+					if r.Method != http.MethodGet {
+						t.Error("file request must be GET")
+					}
+					w.Write([]byte("media fixture"))
+				default:
+					t.Errorf("unexpected path=%s", r.URL.Path)
+					http.NotFound(w, r)
 				}
-				w.Write([]byte("media fixture"))
 			}))
 			defer server.Close()
 			data, err := New(server.URL, time.Second).YoutubeDownload(context.Background(), "https://youtu.be/test?foo=a&bar=b", tc.quality, tc.video)

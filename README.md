@@ -192,17 +192,6 @@ Jalankan test:
 go test ./...
 ```
 
-Smoke test integrasi Hararest dapat dijalankan secara opt-in:
-
-```bash
-HARAREST_LIVE_URL=http://HOST:PORT go test ./internal/service/api -run '^TestHararestLive$' -v -count=1
-```
-
-Tes ini memanggil API YouTube, Pinterest, Pixiv, Waifu SFW, dan OCR, termasuk
-mengunduh klip YouTube pendek. Tes tidak membuka sesi WhatsApp atau mengirim pesan.
-Tanpa `HARAREST_LIVE_URL`, tes live dilewati. Jalankan satu batch pada satu waktu
-agar tidak melewati limiter bersama Hararest.
-
 ## Struktur proyek
 
 ```text

@@ -1,11 +1,8 @@
 package api
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"net/url"
 	"strings"
 	"time"
@@ -25,33 +22,20 @@ type PlayerSession struct {
 }
 
 func (c *Client) CreatePlayer(ctx context.Context, query string) (*PlayerSession, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
+	defer cancel()
 	u, err := url.Parse(c.BaseURL)
 	if err != nil || u == nil || u.Host == "" || (u.Scheme != "http" && u.Scheme != "https") {
 		return nil, fmt.Errorf("BASEAPI_URL Hararest belum valid")
 	}
-	body, err := json.Marshal(map[string]string{"query": query, "baseUrl": u.Scheme + "://" + u.Host})
+	job, err := c.runMediaJob(ctx, "/api/player/jobs", map[string]string{"query": query, "baseUrl": u.Scheme + "://" + u.Host}, jobPollInterval)
 	if err != nil {
 		return nil, err
 	}
-	u.Path, u.RawPath, u.RawQuery, u.Fragment = "/api/player/sessions", "", "", ""
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), bytes.NewReader(body))
-	if err != nil {
-		return nil, err
+	if job.Result.Kind != "player" || job.Result.Player == nil {
+		return nil, fmt.Errorf("Respons sesi player Hararest tidak valid")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := c.HTTP.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, readAPIError("player", resp)
-	}
-	var result APIResponse[PlayerSession]
-	if err := decodeAPIResponse(resp, &result); err != nil {
-		return nil, err
-	}
-	session := &result.Data
+	session := job.Result.Player
 	ws, wsErr := url.Parse(session.WSURL)
 	page, pageErr := url.Parse(session.PlayerURL)
 	if wsErr != nil || pageErr != nil || ws.Host == "" || page.Host != ws.Host ||
