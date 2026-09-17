@@ -95,7 +95,7 @@ func attachHighQualityPreview(ctx context.Context, client *clients.Client, previ
 }
 
 func sourceCodePreviewMessage(thumbnail []byte, contextInfo *waE2E.ContextInfo) *waE2E.ExtendedTextMessage {
-	text := sourceCodeURL + "\nhttps://github.com/sanxlab/hararest\nhttps://github.com/MapIHS/removebg-be\n\nPake ajh, jangan lupa kasih stars"
+	text := sourceCodeURL + "\nhttps://github.com/sanxlab/hararest\nhttps://github.com/MapIHS/removebg-be\nhttps://github.com/MapIHS/go-tempupload\n\nPake ajh, jangan lupa kasih stars"
 	return &waE2E.ExtendedTextMessage{
 		Text:          proto.String(text),
 		MatchedText:   proto.String(sourceCodeURL),
