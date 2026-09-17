@@ -22,7 +22,11 @@ func TestBilibiliLive(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 	client := api.New(baseURL, 90*time.Second)
-	result, err := client.Bilibili(ctx, "https://www.bilibili.com/video/BV1Ak8Q6hECg/", "1080p")
+	targetURL := os.Getenv("BILIBILI_LIVE_VIDEO_URL")
+	if targetURL == "" {
+		targetURL = "https://www.bilibili.com/video/BV1Ak8Q6hECg/"
+	}
+	result, err := client.Bilibili(ctx, targetURL, "1080p")
 	if err != nil {
 		t.Fatal(err)
 	}

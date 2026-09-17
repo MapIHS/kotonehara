@@ -22,12 +22,13 @@ type BilibiliMedia struct {
 }
 
 type BilibiliResult struct {
-	ID       string  `json:"id"`
-	URL      string  `json:"url"`
-	Title    string  `json:"title"`
-	Duration float64 `json:"duration"`
-	Page     int     `json:"page"`
-	Author   struct {
+	ID          string  `json:"id"`
+	URL         string  `json:"url"`
+	Title       string  `json:"title"`
+	Description string  `json:"description"`
+	Duration    float64 `json:"duration"`
+	Page        int     `json:"page"`
+	Author      struct {
 		Name string `json:"name"`
 	} `json:"author"`
 	Format             string            `json:"format"`

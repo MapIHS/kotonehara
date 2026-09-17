@@ -55,3 +55,21 @@ func TestBilibiliAPIFailures(t *testing.T) {
 		})
 	}
 }
+
+func TestBilibiliOpusAPI(t *testing.T) {
+	const id = "1247969693541597185"
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/bilibili" || r.URL.Query().Get("url") != "https://www.bilibili.com/opus/"+id {
+			t.Error("wrong Opus request")
+		}
+		fmt.Fprint(w, `{"status":"success","data":{"id":"1247969693541597185","description":"Hey？","format":"images","media":[{"type":"gif","url":"https://i0.hdslb.com/bfs/new_dyn/post.gif","mimeType":"image/gif"}],"headers":{"Referer":"https://www.bilibili.com/"}}}`)
+	}))
+	defer server.Close()
+	result, err := New(server.URL, time.Second).Bilibili(context.Background(), "https://www.bilibili.com/opus/"+id, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.ID != id || result.Description != "Hey？" || result.Format != "images" || result.Media[0].Type != "gif" {
+		t.Fatalf("wrong Opus response: %+v", result)
+	}
+}

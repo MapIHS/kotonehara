@@ -24,6 +24,7 @@ func TestBilibiliQuery(t *testing.T) {
 		{"https://www.bilibili.com/video/BV1Ak8Q6hECg/?p=2", "1080p"},
 		{"https://b23.tv/test 720", "720p"},
 		{"https://bili2233.cn/test 4K", "4k"},
+		{"https://www.bilibili.com/opus/1247969693541597185?spm_id_from=333.1387.0.0", "1080p"},
 	} {
 		url, quality, err := parseBilibiliQuery(tc.query)
 		if err != nil || quality != tc.quality || url == "" {
@@ -87,7 +88,9 @@ func TestBilibiliHandler(t *testing.T) {
 						return errors.New("offline")
 					}
 					return nil
-				})
+				},
+				func(context.Context, *api.BilibiliResult) error { t.Fatal("video dispatched as Opus"); return nil },
+			)
 			if stage == "invalid" && fetched != 0 {
 				t.Fatal("invalid URL fetched")
 			}

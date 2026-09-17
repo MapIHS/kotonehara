@@ -17,6 +17,7 @@ import (
 )
 
 var bilibiliPath = regexp.MustCompile(`^/video/(BV[0-9A-Za-z]{10}|av[1-9][0-9]*)/?$`)
+var bilibiliOpusPath = regexp.MustCompile(`^/opus/[1-9][0-9]{0,24}/?$`)
 
 func parseBilibiliQuery(query string) (string, string, error) {
 	args := strings.Fields(query)
@@ -29,8 +30,8 @@ func parseBilibiliQuery(query string) (string, string, error) {
 	}
 	switch strings.ToLower(u.Hostname()) {
 	case "bilibili.com", "www.bilibili.com", "m.bilibili.com":
-		if !bilibiliPath.MatchString(u.Path) {
-			return "", "", fmt.Errorf("gunakan link video Bilibili BV atau av")
+		if !bilibiliPath.MatchString(u.Path) && !bilibiliOpusPath.MatchString(u.Path) {
+			return "", "", fmt.Errorf("gunakan link video Bilibili BV/av atau link Opus")
 		}
 	case "b23.tv", "bili2233.cn":
 		if strings.Trim(u.Path, "/") == "" {
@@ -56,18 +57,25 @@ func handleBilibili(ctx context.Context, m *message.Message,
 	fetch func(context.Context, string, string) (*api.BilibiliResult, error),
 	prepare func(context.Context, bilimedia.Selection, map[string]string) ([]byte, error),
 	send func(context.Context, []byte, string) error,
+	sendImages func(context.Context, *api.BilibiliResult) error,
 ) {
 	target, quality, err := parseBilibiliQuery(m.Query)
 	if err != nil {
 		m.Reply(ctx, err.Error())
 		return
 	}
-	m.Reply(ctx, "Sedang mengambil video Bilibili...")
+	m.Reply(ctx, "Sedang mengambil media Bilibili...")
 	workCtx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
 	result, err := fetch(workCtx, target, quality)
 	if err != nil {
 		m.Reply(ctx, "Gagal mengambil Bilibili: "+err.Error())
+		return
+	}
+	if result != nil && result.Format == "images" {
+		if err := sendImages(workCtx, result); err != nil {
+			m.Reply(ctx, "Gagal mengirim media Opus: "+err.Error())
+		}
 		return
 	}
 	selection, err := bilimedia.Select(result, quality)
@@ -96,7 +104,7 @@ func handleBilibili(ctx context.Context, m *message.Message,
 func init() {
 	commands.Register(&commands.Command{
 		Name: "bilibili", As: []string{"bili", "bilidl"}, Tags: "downloader",
-		Description: "Unduh video Bilibili bersuara: <url> [kualitas]",
+		Description: "Unduh video atau gambar/GIF Opus Bilibili: <url> [kualitas]",
 		IsQuery:     true, IsPrefix: true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			ap := api.Shared(cfg.BASEApiURL, 90*time.Second)
@@ -107,6 +115,21 @@ func init() {
 				func(ctx context.Context, data []byte, caption string) error {
 					_, err := client.SendVideo(ctx, m.From, data, false, caption, m.ID)
 					return err
+				},
+				func(ctx context.Context, result *api.BilibiliResult) error {
+					return sendBilibiliImages(ctx, result,
+						func(ctx context.Context, item api.BilibiliMedia, remaining int64) ([]byte, error) {
+							return bilimedia.FetchImage(ctx, ap.HTTP, item, result.Headers, remaining)
+						},
+						func(ctx context.Context, data []byte, gif bool, caption string) error {
+							if gif {
+								_, err := client.SendVideo(ctx, m.From, data, true, caption, m.ID)
+								return err
+							}
+							_, err := client.SendImage(ctx, m.From, data, caption, m.ID)
+							return err
+						},
+					)
 				},
 			)
 		},

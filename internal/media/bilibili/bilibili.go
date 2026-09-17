@@ -149,51 +149,6 @@ func download(ctx context.Context, client *http.Client, item api.BilibiliMedia, 
 	return 0, fmt.Errorf("gagal mengunduh %s Bilibili: %w", item.Type, lastErr)
 }
 
-func downloadOne(ctx context.Context, client *http.Client, source string, headers map[string]string, filename string, limit int64) (int64, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, source, nil)
-	if err != nil {
-		return 0, errors.New("URL media tidak valid")
-	}
-	for key, value := range headers {
-		if strings.EqualFold(key, "Referer") || strings.EqualFold(key, "User-Agent") {
-			req.Header.Set(key, value)
-		}
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		if ctx.Err() != nil {
-			return 0, ctx.Err()
-		}
-		return 0, errors.New("koneksi ke CDN gagal")
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return 0, fmt.Errorf("CDN HTTP %d", resp.StatusCode)
-	}
-	if resp.ContentLength > limit {
-		return 0, errors.New("media Bilibili melebihi batas 256 MiB")
-	}
-	file, err := os.Create(filename)
-	if err != nil {
-		return 0, err
-	}
-	n, copyErr := io.Copy(file, io.LimitReader(resp.Body, limit+1))
-	closeErr := file.Close()
-	if copyErr != nil {
-		return 0, errors.New("unduhan media Bilibili terputus")
-	}
-	if closeErr != nil {
-		return 0, closeErr
-	}
-	if n > limit {
-		return 0, errors.New("media Bilibili melebihi batas 256 MiB")
-	}
-	if n == 0 || (resp.ContentLength >= 0 && n != resp.ContentLength) {
-		return 0, errors.New("unduhan media Bilibili tidak lengkap")
-	}
-	return n, nil
-}
-
 // Prepare merges the selected tracks locally. Temporary files are always removed.
 func Prepare(ctx context.Context, httpClient *http.Client, selection Selection, headers map[string]string) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
@@ -213,17 +168,10 @@ func Prepare(ctx context.Context, httpClient *http.Client, selection Selection, 
 		return nil, err
 	}
 	defer os.RemoveAll(dir)
-	client := *httpClient
-	client.Timeout = 2 * time.Minute
-	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		if len(via) >= 5 {
-			return errors.New("terlalu banyak redirect media")
-		}
-		return validMediaURL(req.URL.String())
-	}
+	client := mediaClient(httpClient)
 	remaining := maxMediaBytes
 	get := func(item api.BilibiliMedia, name string) error {
-		n, err := download(ctx, &client, item, headers, filepath.Join(dir, name), remaining)
+		n, err := download(ctx, client, item, headers, filepath.Join(dir, name), remaining)
 		remaining -= n
 		return err
 	}
