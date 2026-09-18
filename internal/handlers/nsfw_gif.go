@@ -22,6 +22,7 @@ func init() {
 		IsPrefix:    true,
 		IsQuery:     true,
 		IsPrivate:   true,
+		Disable:     true,
 		Exec:        nsfwGif,
 	})
 }

@@ -25,6 +25,7 @@ func init() {
 		Description: "Cari gambar di Danbooru",
 		IsPrefix:    true,
 		IsQuery:     true,
+		Disable:     true,
 		IsPrivate:   true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			handleBooru(ctx, client, m, cfg, danbooruFetcher)
@@ -88,7 +89,6 @@ func danbooruFetcher(ctx context.Context, cfg config.Config, tags string, limit 
 }
 
 func yandereFetcher(ctx context.Context, cfg config.Config, tags string, limit int) (string, string, error) {
-	// Yandere tetap direct access — tidak perlu proxy (sudah work tanpa Cloudflare)
 	ap := api.Shared("https://yande.re", 15*time.Second)
 	posts, err := ap.Yandere(ctx, tags, limit)
 	if err != nil {

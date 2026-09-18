@@ -26,6 +26,7 @@ func init() {
 		Tags:      "nsfw",
 		IsPrefix:  true,
 		IsPrivate: true,
+		Disable:   true,
 		Exec:      nsfwAnime("neko"),
 	})
 
