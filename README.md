@@ -7,9 +7,9 @@ Kotonehara adalah bot WhatsApp berbasis Go yang dibangun dengan [`whatsmeow`](ht
 - Bot WhatsApp multi-command dengan prefix yang dapat dikonfigurasi.
 - Login WhatsApp via QR code.
 - Penyimpanan session/device menggunakan PostgreSQL atau SQLite (pilih via `DB_DRIVER`).
-- Downloader untuk Instagram, TikTok, Facebook, X/Twitter, YouTube, Threads, Rednote/Xiaohongshu, dan Bilibili melalui API eksternal.
+- Downloader untuk Instagram, TikTok, Facebook, X/Twitter, YouTube, Threads, Rednote/Xiaohongshu, Bilibili, dan Reddit melalui API eksternal.
 - Tools media: sticker, sticker meme, brat, image/video conversion, upload ke URL.
-- Sticker quote dan fake quote melalui Quote API.
+- Sticker quote dan fake quote melalui Hararest di `BASEAPI_URL`.
 - Command AI via OpenAI-compatible API.
 - WhatsApp outbound call via [`meowcaller`](https://github.com/purpshell/meowcaller) untuk owner.
 - Docker/Podman support.
@@ -57,10 +57,9 @@ Variabel penting:
 | `COOLDOWN` | Cooldown command, contoh `3s` atau `3`. Set `0` untuk nonaktif. | `3s` |
 | `ADMIN_TTL` | TTL cache admin grup. | `45s` |
 | `DISABLE_CONTACT_IMPORT` | Nonaktifkan import kontak WhatsApp. | `true` |
-| `BASEAPI_URL` | Base URL API eksternal untuk downloader. | kosong |
+| `BASEAPI_URL` | Base URL Hararest untuk downloader dan generator quote. | kosong |
 | `BASES3_URL` | Base URL service upload file. | kosong |
 | `REMOVEBG_URL` | Endpoint API untuk command `removebg`. | kosong |
-| `QUOTE_API_URL` | Endpoint generator gambar untuk command `.qc` dan `.fqc`. | kosong |
 | `OPENAI_BASE_URL` | Base URL API OpenAI-compatible. | `https://api.openai.com/v1` |
 | `OPENAI_API_KEY` | API key untuk command AI. | kosong |
 | `OPENAI_MODEL` | Model AI yang digunakan. | kosong |
@@ -68,6 +67,8 @@ Variabel penting:
 | `OPENAI_PROVIDERS_FILE` | Path file JSON provider, alternatif `OPENAI_PROVIDERS`. | kosong |
 | `OPENAI_TIMEOUT` | Timeout request AI. | `90s` |
 | `OPENAI_SYSTEM_PROMPT` | System prompt untuk command AI. | prompt Bahasa Indonesia bawaan |
+
+Untuk `.qc` dan `.fqc`, isi `BASEAPI_URL` dengan URL Hararest. Client memakai endpoint `/api/quote/generate` dari Hararest tanpa backend Quote API terpisah.
 
 Contoh minimal:
 
@@ -86,7 +87,6 @@ ADMIN_TTL=45s
 BASEAPI_URL=
 BASES3_URL=https://s3.example.com
 REMOVEBG_URL=
-QUOTE_API_URL=
 
 OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_API_KEY=

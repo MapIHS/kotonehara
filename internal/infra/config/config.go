@@ -23,7 +23,6 @@ type Config struct {
 	BASEApiURL           string
 	BASES3URL            string
 	RemoveBGURL          string
-	QuoteAPIURL          string
 	OpenAIBaseURL        string
 	OpenAIAPIKey         string
 	OpenAIModel          string
@@ -71,7 +70,6 @@ func Load() Config {
 
 	bases3url := strings.TrimSpace(os.Getenv("BASES3_URL"))
 	removeBGURL := strings.TrimRight(strings.TrimSpace(os.Getenv("REMOVEBG_URL")), "/")
-	quoteAPIURL := strings.TrimRight(strings.TrimSpace(os.Getenv("QUOTE_API_URL")), "/")
 	openAIBaseURL := strings.TrimRight(strings.TrimSpace(os.Getenv("OPENAI_BASE_URL")), "/")
 	if openAIBaseURL == "" {
 		openAIBaseURL = "https://api.openai.com/v1"
@@ -106,7 +104,6 @@ func Load() Config {
 		BASEApiURL:           baseurl,
 		BASES3URL:            bases3url,
 		RemoveBGURL:          removeBGURL,
-		QuoteAPIURL:          quoteAPIURL,
 		OpenAIBaseURL:        openAIBaseURL,
 		OpenAIAPIKey:         openAIAPIKey,
 		OpenAIModel:          openAIModel,

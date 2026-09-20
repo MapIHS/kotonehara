@@ -117,7 +117,6 @@ func cekAPI(ctx context.Context, client *clients.Client, m *message.Message, cfg
 		{Name: "BASE API", URL: cfg.BASEApiURL, ShowURL: true},
 		{Name: "BASE S3", URL: cfg.BASES3URL, ShowURL: true},
 		{Name: "RemoveBG", URL: cfg.RemoveBGURL, ShowURL: true},
-		{Name: "Quote API", URL: cfg.QuoteAPIURL, ShowURL: true},
 	}
 	if cfg.OpenAIProvidersError != "" {
 		endpoints = append(endpoints, apiEndpoint{Name: "AI Router Config", ConfigError: cfg.OpenAIProvidersError})
