@@ -244,7 +244,7 @@ func quoteCmd(ctx context.Context, client *clients.Client, m *message.Message, c
 		},
 	}
 
-	qc := quote.New(cfg.BASEApiURL+"/api/quote/generate", 30*time.Second)
+	qc := quote.New(cfg.BASEApiURL+"api/quote/generate", 30*time.Second)
 	imgBytes, err := qc.Generate(opCtx, payload)
 	if err != nil {
 		m.Reply(ctx, fmt.Sprintf("Gagal membuat quote: %s", err))
