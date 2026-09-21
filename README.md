@@ -58,7 +58,7 @@ Variabel penting:
 | `ADMIN_TTL` | TTL cache admin grup. | `45s` |
 | `DISABLE_CONTACT_IMPORT` | Nonaktifkan import kontak WhatsApp. | `true` |
 | `BASEAPI_URL` | Base URL Hararest untuk downloader dan generator quote. | kosong |
-| `BASES3_URL` | Base URL service upload file. | kosong |
+| `BASES3_URL` | Base URL go-tempupload dengan endpoint `POST /upload/presign`. Bot meminta URL lalu PUT file langsung ke storage. | kosong |
 | `REMOVEBG_URL` | Endpoint API untuk command `removebg`. | kosong |
 | `OPENAI_BASE_URL` | Base URL API OpenAI-compatible. | `https://api.openai.com/v1` |
 | `OPENAI_API_KEY` | API key untuk command AI. | kosong |
@@ -67,8 +67,6 @@ Variabel penting:
 | `OPENAI_PROVIDERS_FILE` | Path file JSON provider, alternatif `OPENAI_PROVIDERS`. | kosong |
 | `OPENAI_TIMEOUT` | Timeout request AI. | `90s` |
 | `OPENAI_SYSTEM_PROMPT` | System prompt untuk command AI. | prompt Bahasa Indonesia bawaan |
-
-Untuk `.qc` dan `.fqc`, isi `BASEAPI_URL` dengan URL Hararest. Client memakai endpoint `/api/quote/generate` dari Hararest tanpa backend Quote API terpisah.
 
 Contoh minimal:
 
