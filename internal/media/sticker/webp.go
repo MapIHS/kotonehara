@@ -5,10 +5,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	exec "github.com/MapIHS/kotonehara/internal/service/mediaproc"
 	"image"
 	idraw "image/draw"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 

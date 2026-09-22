@@ -4,13 +4,13 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	exec "github.com/MapIHS/kotonehara/internal/service/mediaproc"
 	"html"
 	"image"
 	"image/color"
 	"image/draw"
 	"image/png"
 	"math"
-	"os/exec"
 	"strings"
 	"sync"
 
@@ -81,7 +81,7 @@ func Render(opts Options) ([]byte, error) {
 	smallCanvasSize := canvasSize / blurFactor
 	small := image.NewRGBA(image.Rect(0, 0, smallCanvasSize, smallCanvasSize))
 	xdraw.BiLinear.Scale(small, small.Bounds(), img, img.Bounds(), xdraw.Src, nil)
-	
+
 	blurred := image.NewRGBA(img.Bounds())
 	xdraw.BiLinear.Scale(blurred, blurred.Bounds(), small, small.Bounds(), xdraw.Src, nil)
 

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand/v2"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -19,10 +20,11 @@ const jobPollInterval = 3 * time.Second
 var jobIDPattern = regexp.MustCompile(`^[a-f0-9]{48}$`)
 
 type mediaJob struct {
-	ID     string `json:"id"`
-	State  string `json:"state"`
-	Error  string `json:"error"`
-	Result struct {
+	PollAfterMs int64  `json:"pollAfterMs"`
+	ID          string `json:"id"`
+	State       string `json:"state"`
+	Error       string `json:"error"`
+	Result      struct {
 		Kind     string         `json:"kind"`
 		Size     int64          `json:"size"`
 		MimeType string         `json:"mimeType"`
@@ -105,7 +107,7 @@ func (c *Client) requestJob(ctx context.Context, method, path, key string, body 
 		if !retry || attempt == 2 {
 			return nil, err
 		}
-		if err := waitJobDelay(ctx, retryDelay); err != nil {
+		if err := waitJobDelay(ctx, retryDelay+time.Duration(rand.Int64N(int64(time.Second)))); err != nil {
 			return nil, err
 		}
 	}
@@ -139,7 +141,7 @@ func (c *Client) runMediaJob(ctx context.Context, endpoint string, input any, in
 		default:
 			return nil, fmt.Errorf("Status job Hararest tidak valid: %q", job.State)
 		}
-		if err := waitJobDelay(ctx, interval); err != nil {
+		if err := waitJobDelay(ctx, pollDelay(job.PollAfterMs, interval)); err != nil {
 			return nil, err
 		}
 		job, err = c.requestJob(ctx, http.MethodGet, "/api/jobs/"+id, "", nil, interval)
@@ -150,4 +152,14 @@ func (c *Client) runMediaJob(ctx context.Context, endpoint string, input any, in
 			return nil, fmt.Errorf("ID job Hararest berubah saat polling")
 		}
 	}
+}
+
+// Respect the server's minimum delay and spread simultaneous pollers.
+func pollDelay(serverMs int64, fallback time.Duration) time.Duration {
+	delay := fallback
+	if serverMs > 0 {
+		delay = time.Duration(min(serverMs, int64(30000))) * time.Millisecond
+	}
+	delay = max(time.Second, min(delay, 30*time.Second))
+	return delay + time.Duration(rand.Int64N(int64(delay/5)+1))
 }

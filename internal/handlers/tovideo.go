@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"context"
+	exec "github.com/MapIHS/kotonehara/internal/service/mediaproc"
 	"os"
-	"os/exec"
 	"path/filepath"
 
 	"github.com/MapIHS/kotonehara/internal/clients"

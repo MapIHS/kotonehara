@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	exec "github.com/MapIHS/kotonehara/internal/service/mediaproc"
 	"image"
 	_ "image/gif"
 	"image/jpeg"
 	_ "image/png"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 
@@ -105,6 +105,10 @@ func (c *Client) MakeVideoThumb(ctx context.Context, src []byte, maxW, maxH int)
 		return nil, err
 	}
 
+	return c.makeVideoThumbFile(ctx, inFile, outFile, maxW, maxH)
+}
+
+func (c *Client) makeVideoThumbFile(ctx context.Context, inFile, outFile string, maxW, maxH int) ([]byte, error) {
 	scale := "scale=320:-2"
 	if maxW > 0 && maxH > 0 {
 		scale = "scale=" + strconv.Itoa(maxW) + ":" + strconv.Itoa(maxH) + ":force_original_aspect_ratio=decrease"
@@ -154,6 +158,10 @@ func ProbeVideoInfo(ctx context.Context, data []byte) VideoMeta {
 		return VideoMeta{}
 	}
 
+	return probeVideoFile(ctx, inFile)
+}
+
+func probeVideoFile(ctx context.Context, inFile string) VideoMeta {
 	out, err := exec.CommandContext(ctx, "ffprobe",
 		"-v", "error",
 		"-select_streams", "v:0",

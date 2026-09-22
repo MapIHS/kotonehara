@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -73,13 +74,17 @@ func ytv(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 
 	m.Reply(ctx, fmt.Sprintf("Lagi didownload '%s' (%s)...", info.Title, quality))
 
-	res, err := ap.YoutubeDownload(ctx, targetURL, quality, true)
+	res, err := ap.YoutubeDownloadFile(ctx, targetURL, quality, true)
 	if err != nil {
 		m.Reply(ctx, err.Error())
 		return
 	}
 
-	client.SendVideo(ctx, m.From, res, false, "", m.ID)
+	defer os.Remove(res.Name())
+	defer res.Close()
+	if _, err := client.SendVideoFile(ctx, m.From, res, false, "", m.ID); err != nil {
+		m.Reply(ctx, err.Error())
+	}
 
 }
 
@@ -104,16 +109,20 @@ func yta(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 
 	m.Reply(ctx, fmt.Sprintf("Lagi didownload '%s'...", info.Title))
 
-	res, err := ap.YoutubeDownload(ctx, targetURL, "", false)
+	res, err := ap.YoutubeDownloadFile(ctx, targetURL, "", false)
 	if err != nil {
 		m.Reply(ctx, err.Error())
 		return
 	}
 
+	defer os.Remove(res.Name())
+	defer res.Close()
 	cleanTitle := regexp.MustCompile(`[|\\?*<:>+\[\]\/]`).ReplaceAllString(info.Title, "_")
 	fileName := cleanTitle + ".mp3"
 
-	client.SendDocument(ctx, m.From, res, fileName, "", m.ID)
+	if _, err := client.SendDocumentFile(ctx, m.From, res, fileName, "", m.ID); err != nil {
+		m.Reply(ctx, err.Error())
+	}
 
 }
 

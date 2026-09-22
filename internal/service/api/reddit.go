@@ -3,11 +3,11 @@ package api
 import (
 	"context"
 	"fmt"
+	exec "github.com/MapIHS/kotonehara/internal/service/mediaproc"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -104,22 +104,30 @@ func (c *Client) RedditMediaBytes(ctx context.Context, item RedditMedia) ([]byte
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		}
-		video, err := c.redditTrackBytes(ctx, item, maxMediaSize)
+
+		dir, err := os.MkdirTemp("", "kotonehara-reddit-*")
 		if err != nil {
 			return nil, err
 		}
-		audio, err := c.redditTrackBytes(ctx, RedditMedia{URL: item.AudioURL, Type: "audio", Format: "mp4"}, maxMediaSize-int64(len(video)))
+		defer os.RemoveAll(dir)
+		videoPath, audioPath := filepath.Join(dir, "video.mp4"), filepath.Join(dir, "audio.mp4")
+		size, err := c.redditTrackFile(ctx, item, videoPath, maxMediaSize)
 		if err != nil {
 			return nil, err
 		}
-		return mergeRedditTracks(ctx, video, audio)
+		_, err = c.redditTrackFile(ctx, RedditMedia{URL: item.AudioURL, Type: "audio", Format: "mp4"}, audioPath, maxMediaSize-size)
+		if err != nil {
+			return nil, err
+		}
+		return mergeRedditFiles(ctx, videoPath, audioPath, filepath.Join(dir, "output.mp4"))
+
 	}
 	return c.redditTrackBytes(ctx, item, maxMediaSize)
 }
 
 var redditMuxSlots = make(chan struct{}, 2)
 
-func (c *Client) redditTrackBytes(ctx context.Context, item RedditMedia, limit int64) ([]byte, error) {
+func (c *Client) redditTrackResponse(ctx context.Context, item RedditMedia) (*http.Response, error) {
 	if item.RequiresConversion {
 		return nil, fmt.Errorf("media memerlukan konversi eksternal yang tidak didukung")
 	}
@@ -141,10 +149,19 @@ func (c *Client) redditTrackBytes(ctx context.Context, item RedditMedia, limit i
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		resp.Body.Close()
 		return nil, fmt.Errorf("unduhan Reddit HTTP %d", resp.StatusCode)
 	}
+	return resp, nil
+}
+
+func (c *Client) redditTrackBytes(ctx context.Context, item RedditMedia, limit int64) ([]byte, error) {
+	resp, err := c.redditTrackResponse(ctx, item)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
 	data, err := readResponseBody(resp, limit)
 	if err != nil {
 		return nil, err
@@ -171,6 +188,10 @@ func mergeRedditTracks(ctx context.Context, video, audio []byte) ([]byte, error)
 	if err := os.WriteFile(audioPath, audio, 0600); err != nil {
 		return nil, err
 	}
+	return mergeRedditFiles(ctx, videoPath, audioPath, output)
+}
+
+func mergeRedditFiles(ctx context.Context, videoPath, audioPath, output string) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, "ffmpeg", "-hide_banner", "-loglevel", "error", "-nostdin", "-n", "-protocol_whitelist", "file", "-i", videoPath, "-protocol_whitelist", "file", "-i", audioPath, "-map", "0:v:0", "-map", "1:a:0", "-c", "copy", "-movflags", "+faststart", "-fs", fmt.Sprint(maxMediaSize+1), output)
 	if err := cmd.Run(); err != nil {
 		if ctx.Err() != nil {
@@ -191,4 +212,39 @@ func mergeRedditTracks(ctx context.Context, video, audio []byte) ([]byte, error)
 		return nil, fmt.Errorf("hasil video Reddit kosong atau melebihi batas ukuran")
 	}
 	return data, nil
+}
+
+// Validate MIME from a small prefix and stream the remainder with a shared size budget.
+func (c *Client) redditTrackFile(ctx context.Context, item RedditMedia, filename string, limit int64) (int64, error) {
+	resp, err := c.redditTrackResponse(ctx, item)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	if limit <= 0 || resp.ContentLength > limit {
+		return 0, errResponseTooLarge
+	}
+	f, err := os.OpenFile(filename, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
+	if err != nil {
+		return 0, err
+	}
+	defer f.Close()
+	n, err := io.Copy(f, io.LimitReader(resp.Body, limit+1))
+	if err != nil {
+		return 0, err
+	}
+	if n > limit {
+		return 0, errResponseTooLarge
+	}
+	var header [512]byte
+	read, err := f.ReadAt(header[:], 0)
+	if err != nil && err != io.EOF {
+		return 0, err
+	}
+	mime := http.DetectContentType(header[:read])
+	mp4Audio := item.Type == "audio" && item.Format == "mp4" && mime == "video/mp4"
+	if n == 0 || (!strings.HasPrefix(mime, item.Type+"/") && !mp4Audio) {
+		return 0, fmt.Errorf("respons bukan media %s yang valid (%s)", item.Type, mime)
+	}
+	return n, f.Close()
 }

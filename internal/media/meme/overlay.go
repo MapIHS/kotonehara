@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	exec "github.com/MapIHS/kotonehara/internal/service/mediaproc"
 	"image"
 	"image/draw"
 	"image/png"
 	"os"
-	"os/exec"
 	"path/filepath"
 )
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -25,16 +26,24 @@ type UsageInfo struct {
 	ResetDate string
 }
 
+type premiumEntry struct {
+	active bool
+	until  time.Time
+}
+
 type store struct {
-	db   *sqlx.DB
-	isPG bool
+	premiumMu    sync.Mutex
+	premiumCache map[string]premiumEntry
+	db           *sqlx.DB
+	isPG         bool
 }
 
 func newStore(db *sqlx.DB) *store {
 	driver := db.DriverName()
 	return &store{
-		db:   db,
-		isPG: driver == "postgres" || driver == "pgx",
+		db:           db,
+		premiumCache: make(map[string]premiumEntry),
+		isPG:         driver == "postgres" || driver == "pgx",
 	}
 }
 
@@ -65,17 +74,37 @@ func (s *store) todayWIBExpr() string {
 
 // IsPremium checks whether a JID has an active premium subscription.
 func (s *store) IsPremium(ctx context.Context, jid string) (bool, error) {
-	var count int
+
+	if err := ctx.Err(); err != nil {
+		return false, err
+	}
+	s.premiumMu.Lock()
+	defer s.premiumMu.Unlock()
+	now := time.Now()
+	if entry, ok := s.premiumCache[jid]; ok && now.Before(entry.until) {
+		return entry.active, nil
+	}
+	var expires sql.NullTime
 	q := fmt.Sprintf(
-		`SELECT COUNT(*) FROM premium_users
-		 WHERE jid = %s AND (expires_at IS NULL OR expires_at > %s)`,
+		`SELECT expires_at FROM premium_users WHERE jid = %s AND (expires_at IS NULL OR expires_at > %s)`,
 		s.ph(1), s.nowExpr(),
 	)
-	err := s.db.QueryRowContext(ctx, q, jid).Scan(&count)
-	if err != nil {
+	err := s.db.QueryRowContext(ctx, q, jid).Scan(&expires)
+	if err != nil && err != sql.ErrNoRows {
 		return false, fmt.Errorf("check premium: %w", err)
 	}
-	return count > 0, nil
+	active := err == nil
+	until := now.Add(30 * time.Second)
+	if active && expires.Valid && expires.Time.Before(until) {
+		until = expires.Time
+	}
+	// Bounded cache; a small deployment does not need an external cache.
+	if len(s.premiumCache) >= 1024 {
+		clear(s.premiumCache)
+	}
+	s.premiumCache[jid] = premiumEntry{active: active, until: until}
+	return active, nil
+
 }
 
 // IncrementAndGet atomically increments the daily usage counter for a JID
@@ -147,6 +176,10 @@ func (s *store) GetUsage(ctx context.Context, jid string) (int, string, error) {
 
 // AddPremium adds a JID as premium. If days <= 0, it's permanent (no expiry).
 func (s *store) AddPremium(ctx context.Context, jid, addedBy string, days int) error {
+	s.premiumMu.Lock()
+	defer s.premiumMu.Unlock()
+	defer delete(s.premiumCache, jid)
+
 	var expiresAt *time.Time
 	if days > 0 {
 		t := time.Now().UTC().AddDate(0, 0, days)
@@ -171,6 +204,10 @@ func (s *store) AddPremium(ctx context.Context, jid, addedBy string, days int) e
 
 // RemovePremium removes a JID from premium.
 func (s *store) RemovePremium(ctx context.Context, jid string) error {
+	s.premiumMu.Lock()
+	defer s.premiumMu.Unlock()
+	defer delete(s.premiumCache, jid)
+
 	q := fmt.Sprintf(`DELETE FROM premium_users WHERE jid = %s`, s.ph(1))
 	_, err := s.db.ExecContext(ctx, q, jid)
 	if err != nil {
@@ -194,4 +231,12 @@ func (s *store) ListPremium(ctx context.Context) ([]PremiumUser, error) {
 		return nil, fmt.Errorf("list premium: %w", err)
 	}
 	return users, nil
+}
+
+func (s *store) invalidatePremium(jids ...string) {
+	s.premiumMu.Lock()
+	defer s.premiumMu.Unlock()
+	for _, jid := range jids {
+		delete(s.premiumCache, jid)
+	}
 }

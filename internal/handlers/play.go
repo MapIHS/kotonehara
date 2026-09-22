@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 
@@ -50,14 +51,17 @@ func play(ctx context.Context, client *clients.Client, m *message.Message, cfg c
 		first.Title, first.Channel.Name, fmtPlayDuration(first.Duration)))
 
 	// Download audio
-	audioData, err := ap.YoutubeDownload(ctx, videoURL, "", false)
+	audioData, err := ap.YoutubeDownloadFile(ctx, videoURL, "", false)
 	if err != nil {
 		m.Reply(ctx, fmt.Sprintf("Gagal mengunduh audio: %s", err.Error()))
 		return
 	}
 
-	if len(audioData) == 0 {
-		m.Reply(ctx, "Audio kosong, coba lagi nanti yaa.")
+	defer os.Remove(audioData.Name())
+	defer audioData.Close()
+	info, err := audioData.Stat()
+	if err != nil {
+		m.Reply(ctx, err.Error())
 		return
 	}
 
@@ -66,13 +70,13 @@ func play(ctx context.Context, client *clients.Client, m *message.Message, cfg c
 
 	// Send as audio if <= 15MB, else as document
 	const maxAudioSize = 15 * 1024 * 1024
-	if len(audioData) <= maxAudioSize {
-		if _, err := client.SendAudio(ctx, m.From, audioData, false, m.ID); err != nil {
+	if info.Size() <= maxAudioSize {
+		if _, err := client.SendAudioFile(ctx, m.From, audioData, false, m.ID); err != nil {
 			// Fallback: send as document
-			client.SendDocument(ctx, m.From, audioData, fileName, "", m.ID)
+			client.SendDocumentFile(ctx, m.From, audioData, fileName, "", m.ID)
 		}
 	} else {
-		client.SendDocument(ctx, m.From, audioData, fileName, "", m.ID)
+		client.SendDocumentFile(ctx, m.From, audioData, fileName, "", m.ID)
 	}
 }
 

@@ -3,8 +3,10 @@ package api
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	neturl "net/url"
+	"os"
 	"time"
 )
 
@@ -64,7 +66,7 @@ func (c *Client) YoutubeInfo(ctx context.Context, targetURL string) (*videoInfo,
 	return &out.Data, nil
 }
 
-func (c *Client) YoutubeDownload(ctx context.Context, targetURL string, quality string, isVideo bool) ([]byte, error) {
+func (c *Client) YoutubeDownloadFile(ctx context.Context, targetURL string, quality string, isVideo bool) (*os.File, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
 	input := map[string]string{"url": targetURL, "format": "audio"}
@@ -103,14 +105,8 @@ func (c *Client) YoutubeDownload(ctx context.Context, targetURL string, quality 
 		return nil, readAPIError("youtube", resp)
 	}
 
-	data, err := readResponseBody(resp, maxMediaSize)
-	if err != nil {
-		return nil, err
-	}
-	if int64(len(data)) != job.Result.Size {
-		return nil, fmt.Errorf("File job YouTube tidak lengkap")
-	}
-	return data, nil
+	return downloadTempFile(resp, job.Result.Size)
+
 }
 
 type searchChannel struct {
@@ -161,4 +157,45 @@ func (c *Client) YoutubeSearch(ctx context.Context, query string, limit int) ([]
 		return nil, err
 	}
 	return out.Data, nil
+}
+
+// Compatibility for byte-based consumers. Bot YouTube handlers use files.
+func (c *Client) YoutubeDownload(ctx context.Context, targetURL, quality string, isVideo bool) ([]byte, error) {
+	f, err := c.YoutubeDownloadFile(ctx, targetURL, quality, isVideo)
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove(f.Name())
+	defer f.Close()
+	return io.ReadAll(f)
+}
+
+// The caller owns the returned file; all failed downloads are cleaned here.
+func downloadTempFile(resp *http.Response, expected int64) (*os.File, error) {
+	if expected <= 0 || expected > maxMediaSize || (resp.ContentLength >= 0 && resp.ContentLength != expected) {
+		return nil, fmt.Errorf("Ukuran file job YouTube tidak valid")
+	}
+	f, err := os.CreateTemp("", "kotonehara-youtube-*")
+	if err != nil {
+		return nil, err
+	}
+	ok := false
+	defer func() {
+		if !ok {
+			f.Close()
+			os.Remove(f.Name())
+		}
+	}()
+	n, err := io.Copy(f, io.LimitReader(resp.Body, expected+1))
+	if err != nil {
+		return nil, err
+	}
+	if n != expected {
+		return nil, fmt.Errorf("File job YouTube tidak lengkap atau melebihi ukuran")
+	}
+	if _, err = f.Seek(0, io.SeekStart); err != nil {
+		return nil, err
+	}
+	ok = true
+	return f, nil
 }

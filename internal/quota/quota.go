@@ -134,6 +134,7 @@ func (c *Checker) reconcileAliases(ctx context.Context, canonical string, aliase
 		if err := mergeQuotaIdentity(ctx, c.store.db, canonical, alias); err != nil {
 			return err
 		}
+		c.store.invalidatePremium(canonical, alias)
 		c.reconciled[pair] = true
 	}
 	return nil
