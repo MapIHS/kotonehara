@@ -18,6 +18,8 @@ jobs:
   go:
     name: Go test, vet, and build
     runs-on: self-hosted
+    env:
+      CGO_ENABLED: "1"
 
     steps:
       - name: Checkout repository
