@@ -1,0 +1,18 @@
+services:
+  kotonehara:
+    container_name: kotonehara-dev
+    build: .
+    init: true
+    restart: unless-stopped
+    command: ["/app/hara"]
+    env_file:
+      - /opt/oohara/kotonehara-dev.env
+    volumes:
+      - /opt/oohara/kotonehara-data:/app/data
+    networks:
+      - oohara-dev
+
+networks:
+  oohara-dev:
+    external: true
+    name: oohara-dev

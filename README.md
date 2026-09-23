@@ -160,6 +160,9 @@ docker run --rm -it --env-file .env --name kotonehara kotonehara:latest
 
 Image menjalankan `tailscale.sh` sebagai command default. Pastikan konfigurasi yang dibutuhkan script tersebut tersedia jika deployment memakai Tailscale.
 
+Untuk deployment branch `dev` langsung ke Docker di VPS, termasuk lokasi file
+env dan koneksi ke Hararest, lihat [Dev deployment on the VPS](docs/dev-vps.md).
+
 ## Development
 
 Jika memakai [`mise`](https://mise.jdx.dev/), task yang tersedia:

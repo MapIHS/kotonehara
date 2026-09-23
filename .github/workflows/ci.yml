@@ -52,6 +52,38 @@ jobs:
       - name: Build Docker image
         run: docker build --tag kotonehara:ci .
 
+  deploy-dev-to-vps:
+    name: Deploy dev bot to VPS
+    needs: [go, docker]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    runs-on: self-hosted
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Check VPS runtime configuration
+        run: |
+          test -r /opt/oohara/kotonehara-dev.env
+          mkdir -p /opt/oohara/kotonehara-data
+          docker network create oohara-dev >/dev/null 2>&1 || docker network inspect oohara-dev >/dev/null
+          docker compose version
+
+      - name: Deploy Kotonehara dev
+        run: docker compose --project-name kotonehara-dev --file compose.dev.yml up --detach --build --remove-orphans
+
+      - name: Check Kotonehara dev container
+        run: |
+          for attempt in $(seq 1 30); do
+            if [ "$(docker inspect --format='{{.State.Status}}' kotonehara-dev 2>/dev/null || true)" = running ]; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose --project-name kotonehara-dev --file compose.dev.yml logs --tail 100
+          exit 1
+
   deploy:
     name: Build and deploy container (Heroku)
     needs: [go, docker]
@@ -80,4 +112,3 @@ jobs:
 
       - name: Release Docker image on Heroku
         run: heroku container:release worker --app "$HEROKU_APP_NAME"
-
