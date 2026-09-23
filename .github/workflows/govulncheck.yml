@@ -4,10 +4,6 @@ on:
   schedule:
     # Run every Wednesday at 03:00 UTC
     - cron: "0 3 * * 3"
-  pull_request:
-    branches:
-      - main
-      - dev
   workflow_dispatch:
 
 permissions:
