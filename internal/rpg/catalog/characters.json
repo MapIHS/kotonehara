@@ -1,0 +1,1322 @@
+[
+  {
+    "id": "char_001",
+    "name": "Ranu Pendar",
+    "rarity": 1,
+    "role": "Vanguard",
+    "element": "Api",
+    "region_id": "r01",
+    "visual": "Mantel rumput pendek, kepang tembaga, tombak bersumbu merah dengan satu mata lentera retak.",
+    "personality": "Pengantar minyak yang selalu mengingat jalan pulang; ia bertarung agar kampungnya melihat satu fajar utuh.",
+    "skill": {
+      "name": "Tusuk Sumbu",
+      "description": "Serangan satu sasaran; memberi Bara selama 2 giliran."
+    },
+    "passive": {
+      "name": "Bekal Hangat",
+      "description": "Serangan pertama setelah menerima pemulihan memperoleh bonus kecil."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Ranu Pendar; Vanguard, element Api (Air means water), rarity 1/5, from Padang Embun. Visual identity: Mantel rumput pendek, kepang tembaga, tombak bersumbu merah dengan satu mata lentera retak. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Ranu Pendar; Vanguard, element Api (Air means water), rarity 1/5, from Padang Embun. Visual identity: Mantel rumput pendek, kepang tembaga, tombak bersumbu merah dengan satu mata lentera retak. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_002",
+    "name": "Nira Gelagah",
+    "rarity": 2,
+    "role": "Guardian",
+    "element": "Air",
+    "region_id": "r01",
+    "visual": "Perisai bundar anyaman gelagah, jas hujan biru pucat, botol embun di pinggang.",
+    "personality": "Pembuat tanggul yang tenang; berjanji menampung hujan bagi pulau-pulau yang terlepas.",
+    "skill": {
+      "name": "Pagar Embun",
+      "description": "Memberi perisai pada satu sekutu dan menarik serangan berikutnya."
+    },
+    "passive": {
+      "name": "Anyaman Rapat",
+      "description": "Perisai yang ia berikan bertahan sedikit lebih kuat saat HP rendah."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Nira Gelagah; Guardian, element Air (Air means water), rarity 2/5, from Padang Embun. Visual identity: Perisai bundar anyaman gelagah, jas hujan biru pucat, botol embun di pinggang. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Nira Gelagah; Guardian, element Air (Air means water), rarity 2/5, from Padang Embun. Visual identity: Perisai bundar anyaman gelagah, jas hujan biru pucat, botol embun di pinggang. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_003",
+    "name": "Senau Biji",
+    "rarity": 3,
+    "role": "Ranger",
+    "element": "Angin",
+    "region_id": "r01",
+    "visual": "Busur ranting berbentuk sabit, syal hijau terbang, kantong benih kuning di bahu.",
+    "personality": "Penghitung burung yang gemar bertanya; benihnya menandai jalur aman antar batu melayang.",
+    "skill": {
+      "name": "Panah Semai",
+      "description": "Menyerang sasaran belakang; memberi Tanda untuk serangan sekutu berikutnya."
+    },
+    "passive": {
+      "name": "Arah Tumbuh",
+      "description": "Kerusakan terhadap sasaran bertanda meningkat sedikit."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Senau Biji; Ranger, element Angin (Air means water), rarity 3/5, from Padang Embun. Visual identity: Busur ranting berbentuk sabit, syal hijau terbang, kantong benih kuning di bahu. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Senau Biji; Ranger, element Angin (Air means water), rarity 3/5, from Padang Embun. Visual identity: Busur ranting berbentuk sabit, syal hijau terbang, kantong benih kuning di bahu. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_004",
+    "name": "Luma Kincir",
+    "rarity": 4,
+    "role": "Arcanist",
+    "element": "Tanah",
+    "region_id": "r01",
+    "visual": "Topi kincir empat bilah, tongkat penumbuk batu, rok petak tanah liat.",
+    "personality": "Mekanik desa yang bicara kepada mesin; ia ingin menggerakkan kincir tanpa mencuri angin tetangga.",
+    "skill": {
+      "name": "Putar Pematang",
+      "description": "Menyerang seluruh musuh dengan serpihan tanah; peluang kecil Lambat."
+    },
+    "passive": {
+      "name": "Poros Kukuh",
+      "description": "Efek Lambat pertama yang diterima setiap pertempuran dipersingkat."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Luma Kincir; Arcanist, element Tanah (Air means water), rarity 4/5, from Padang Embun. Visual identity: Topi kincir empat bilah, tongkat penumbuk batu, rok petak tanah liat. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Luma Kincir; Arcanist, element Tanah (Air means water), rarity 4/5, from Padang Embun. Visual identity: Topi kincir empat bilah, tongkat penumbuk batu, rok petak tanah liat. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_005",
+    "name": "Tavi Embun",
+    "rarity": 5,
+    "role": "Medic",
+    "element": "Cahaya",
+    "region_id": "r01",
+    "visual": "Celemek putih kuning, rambut serupa tunas, lentera tabung berisi tetes bercahaya.",
+    "personality": "Perawat muda yang menyimpan cerita pasien pada simpul kain; takut gelap tetapi selalu berjaga terakhir.",
+    "skill": {
+      "name": "Tetes Pagi",
+      "description": "Memulihkan satu sekutu dan menghapus satu Bara."
+    },
+    "passive": {
+      "name": "Jaga Sumbu",
+      "description": "Sekutu dengan HP terendah menerima pemulihan kecil pada giliran pertamanya."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Tavi Embun; Medic, element Cahaya (Air means water), rarity 5/5, from Padang Embun. Visual identity: Celemek putih kuning, rambut serupa tunas, lentera tabung berisi tetes bercahaya. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Tavi Embun; Medic, element Cahaya (Air means water), rarity 5/5, from Padang Embun. Visual identity: Celemek putih kuning, rambut serupa tunas, lentera tabung berisi tetes bercahaya. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_006",
+    "name": "Kiri Serut",
+    "rarity": 1,
+    "role": "Trickster",
+    "element": "Bayangan",
+    "region_id": "r01",
+    "visual": "Topeng setengah kayu, mantel ungu asimetris, pisau ukir dengan pita hitam.",
+    "personality": "Pengukir mainan yang mencuri kembali pajak palsu; menyembunyikan kepedulian di balik lelucon buruk.",
+    "skill": {
+      "name": "Bayang Layang",
+      "description": "Menyerang satu musuh dan mengurangi akurasi satu giliran."
+    },
+    "passive": {
+      "name": "Sela Anyaman",
+      "description": "Setelah menghindar, serangan berikutnya memperoleh bonus kecil."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Kiri Serut; Trickster, element Bayangan (Air means water), rarity 1/5, from Padang Embun. Visual identity: Topeng setengah kayu, mantel ungu asimetris, pisau ukir dengan pita hitam. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Kiri Serut; Trickster, element Bayangan (Air means water), rarity 1/5, from Padang Embun. Visual identity: Topeng setengah kayu, mantel ungu asimetris, pisau ukir dengan pita hitam. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_007",
+    "name": "Eru Nadiakar",
+    "rarity": 2,
+    "role": "Vanguard",
+    "element": "Air",
+    "region_id": "r02",
+    "visual": "Kapak akar berujung tetes biru, lengan dibalut lumut, rambut putih pendek.",
+    "personality": "Penebang yang berhenti setelah mendengar pohon bernyanyi; kini membuka jalur tanpa menumbangkan rumah makhluk hutan.",
+    "skill": {
+      "name": "Belah Aliran",
+      "description": "Serangan satu sasaran; melemahkan serangan musuh satu giliran."
+    },
+    "passive": {
+      "name": "Denyut Akar",
+      "description": "Menerima pemulihan sedikit lebih besar saat memiliki efek lemah."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Eru Nadiakar; Vanguard, element Air (Air means water), rarity 2/5, from Hutan Lentera. Visual identity: Kapak akar berujung tetes biru, lengan dibalut lumut, rambut putih pendek. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Eru Nadiakar; Vanguard, element Air (Air means water), rarity 2/5, from Hutan Lentera. Visual identity: Kapak akar berujung tetes biru, lengan dibalut lumut, rambut putih pendek. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_008",
+    "name": "Sela Sulur",
+    "rarity": 3,
+    "role": "Guardian",
+    "element": "Angin",
+    "region_id": "r02",
+    "visual": "Perisai daun layang hijau, tudung beranting tipis, lonceng kayu tanpa bandul.",
+    "personality": "Pemandu pendiam yang mengenali tiap hembusan; ia melindungi pelancong dari lentera penipu.",
+    "skill": {
+      "name": "Kubah Sulur",
+      "description": "Memberi perisai kelompok kecil dan ketahanan terhadap Lambat satu giliran."
+    },
+    "passive": {
+      "name": "Langkah Ranting",
+      "description": "Sekali per pertempuran, mengurangi serangan pertama dari musuh belakang."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Sela Sulur; Guardian, element Angin (Air means water), rarity 3/5, from Hutan Lentera. Visual identity: Perisai daun layang hijau, tudung beranting tipis, lonceng kayu tanpa bandul. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Sela Sulur; Guardian, element Angin (Air means water), rarity 3/5, from Hutan Lentera. Visual identity: Perisai daun layang hijau, tudung beranting tipis, lonceng kayu tanpa bandul. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_009",
+    "name": "Omi Pijartanah",
+    "rarity": 4,
+    "role": "Ranger",
+    "element": "Tanah",
+    "region_id": "r02",
+    "visual": "Ketapel akar ganda, sepatu cendawan oker, kantong kerikil berpola cincin pohon.",
+    "personality": "Pencatat jamur yang keras kepala; ia percaya hutan mengingat semua nama yang dilupakan.",
+    "skill": {
+      "name": "Kerikil Riwayat",
+      "description": "Serangan satu sasaran; mengurangi pertahanan dua giliran."
+    },
+    "passive": {
+      "name": "Jejak Lumut",
+      "description": "Serangan terhadap musuh berpertahanan turun mengisi sedikit energi."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Omi Pijartanah; Ranger, element Tanah (Air means water), rarity 4/5, from Hutan Lentera. Visual identity: Ketapel akar ganda, sepatu cendawan oker, kantong kerikil berpola cincin pohon. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Omi Pijartanah; Ranger, element Tanah (Air means water), rarity 4/5, from Hutan Lentera. Visual identity: Ketapel akar ganda, sepatu cendawan oker, kantong kerikil berpola cincin pohon. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_010",
+    "name": "Vena Ronggacahya",
+    "rarity": 5,
+    "role": "Arcanist",
+    "element": "Cahaya",
+    "region_id": "r02",
+    "visual": "Tongkat rongga pohon berisi kunang-kunang, jubah krem berserat, mata emas.",
+    "personality": "Pembaca pola cahaya yang mudah tersesat; mencari saudari yang mengikuti lentera palsu.",
+    "skill": {
+      "name": "Aksara Kunang",
+      "description": "Menyerang seluruh musuh; mengungkap sasaran yang bersembunyi satu giliran."
+    },
+    "passive": {
+      "name": "Huruf Pulang",
+      "description": "Sekutu yang baru pulih dari lemah memperoleh ketahanan lemah singkat."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Vena Ronggacahya; Arcanist, element Cahaya (Air means water), rarity 5/5, from Hutan Lentera. Visual identity: Tongkat rongga pohon berisi kunang-kunang, jubah krem berserat, mata emas. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Vena Ronggacahya; Arcanist, element Cahaya (Air means water), rarity 5/5, from Hutan Lentera. Visual identity: Tongkat rongga pohon berisi kunang-kunang, jubah krem berserat, mata emas. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_011",
+    "name": "Daru Malamdaun",
+    "rarity": 1,
+    "role": "Medic",
+    "element": "Bayangan",
+    "region_id": "r02",
+    "visual": "Selendang daun ungu, tas obat hitam, penutup mata berbentuk kupu malam.",
+    "personality": "Tabib nokturnal yang lembut; meracik obat dari tumbuhan yang hanya mekar saat lentera padam.",
+    "skill": {
+      "name": "Balut Hening",
+      "description": "Memulihkan satu sekutu dan menghapus satu efek lemah non-kontrol."
+    },
+    "passive": {
+      "name": "Daun Penawar",
+      "description": "Pemulihan pada sekutu berefek lemah meningkat sedikit."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Daru Malamdaun; Medic, element Bayangan (Air means water), rarity 1/5, from Hutan Lentera. Visual identity: Selendang daun ungu, tas obat hitam, penutup mata berbentuk kupu malam. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Daru Malamdaun; Medic, element Bayangan (Air means water), rarity 1/5, from Hutan Lentera. Visual identity: Selendang daun ungu, tas obat hitam, penutup mata berbentuk kupu malam. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_012",
+    "name": "Kesa Aranglumut",
+    "rarity": 2,
+    "role": "Trickster",
+    "element": "Api",
+    "region_id": "r02",
+    "visual": "Jaket lumut jingga, sarung tangan bara dingin, yoyo biji berlubang.",
+    "personality": "Akrobat penjaga benih yang sok berani; menakuti pembakar hutan dengan api yang ia kendalikan.",
+    "skill": {
+      "name": "Biji Meletup",
+      "description": "Serangan dua sasaran acak; memberi Bara singkat."
+    },
+    "passive": {
+      "name": "Tawa Hangat",
+      "description": "Setelah memberi Bara, memperoleh sedikit energi sekali tiap giliran."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Kesa Aranglumut; Trickster, element Api (Air means water), rarity 2/5, from Hutan Lentera. Visual identity: Jaket lumut jingga, sarung tangan bara dingin, yoyo biji berlubang. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Kesa Aranglumut; Trickster, element Api (Air means water), rarity 2/5, from Hutan Lentera. Visual identity: Jaket lumut jingga, sarung tangan bara dingin, yoyo biji berlubang. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_013",
+    "name": "Jalu Pasanglayar",
+    "rarity": 3,
+    "role": "Vanguard",
+    "element": "Angin",
+    "region_id": "r03",
+    "visual": "Pedang dayung, rompi biru bertepi hijau, rambut berikat layar kecil.",
+    "personality": "Pendayung feri yang suka bernyanyi; membawa penumpang gratis sejak dermaga keluarganya runtuh.",
+    "skill": {
+      "name": "Tebas Pusaran",
+      "description": "Serangan satu sasaran dan peluang menggeser prioritas gilirannya ke belakang."
+    },
+    "passive": {
+      "name": "Layar Terisi",
+      "description": "Serangan pertama setiap gelombang memperoleh bonus kecil."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Jalu Pasanglayar; Vanguard, element Angin (Air means water), rarity 3/5, from Karang Biru. Visual identity: Pedang dayung, rompi biru bertepi hijau, rambut berikat layar kecil. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Jalu Pasanglayar; Vanguard, element Angin (Air means water), rarity 3/5, from Karang Biru. Visual identity: Pedang dayung, rompi biru bertepi hijau, rambut berikat layar kecil. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_014",
+    "name": "Mira Karangpijak",
+    "rarity": 4,
+    "role": "Guardian",
+    "element": "Tanah",
+    "region_id": "r03",
+    "visual": "Perisai karang persegi, pelindung bahu pasir, sabuk kerang batu.",
+    "personality": "Pembangun dermaga yang tegas; mengukur keberanian dari jumlah orang yang pulang.",
+    "skill": {
+      "name": "Benteng Terumbu",
+      "description": "Memberi perisai besar pada diri sendiri dan menjaga sekutu ber-HP terendah."
+    },
+    "passive": {
+      "name": "Pijakan Kering",
+      "description": "Mengurangi kerusakan saat memiliki perisai."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Mira Karangpijak; Guardian, element Tanah (Air means water), rarity 4/5, from Karang Biru. Visual identity: Perisai karang persegi, pelindung bahu pasir, sabuk kerang batu. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Mira Karangpijak; Guardian, element Tanah (Air means water), rarity 4/5, from Karang Biru. Visual identity: Perisai karang persegi, pelindung bahu pasir, sabuk kerang batu. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_015",
+    "name": "Suri Mutiara",
+    "rarity": 5,
+    "role": "Ranger",
+    "element": "Cahaya",
+    "region_id": "r03",
+    "visual": "Busur cangkang krem, rambut biru berkepang mutiara, mantel jala bercahaya.",
+    "personality": "Penyelam yang menyimpan mutiara retak; setiap retak adalah catatan arus yang pernah ia selamatkan.",
+    "skill": {
+      "name": "Panah Kilau",
+      "description": "Serangan tepat satu sasaran; bonus terhadap musuh yang belum terluka."
+    },
+    "passive": {
+      "name": "Pantul Air",
+      "description": "Satu kali per gelombang, serangan tepat memberinya energi tambahan."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Suri Mutiara; Ranger, element Cahaya (Air means water), rarity 5/5, from Karang Biru. Visual identity: Busur cangkang krem, rambut biru berkepang mutiara, mantel jala bercahaya. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Suri Mutiara; Ranger, element Cahaya (Air means water), rarity 5/5, from Karang Biru. Visual identity: Busur cangkang krem, rambut biru berkepang mutiara, mantel jala bercahaya. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_016",
+    "name": "Nelu Palung",
+    "rarity": 1,
+    "role": "Arcanist",
+    "element": "Bayangan",
+    "region_id": "r03",
+    "visual": "Tongkat jangkar mini hitam, jubah tinta berumbai, kacamata bundar ungu.",
+    "personality": "Kartografer palung yang penuh rasa ingin tahu; menggambar ruang kosong di bawah laut terapung.",
+    "skill": {
+      "name": "Peta Gelap",
+      "description": "Menyerang seluruh musuh dan mengurangi akurasi sebentar."
+    },
+    "passive": {
+      "name": "Tinta Menetap",
+      "description": "Efek pengurangan akurasi buatannya sedikit lebih kuat."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Nelu Palung; Arcanist, element Bayangan (Air means water), rarity 1/5, from Karang Biru. Visual identity: Tongkat jangkar mini hitam, jubah tinta berumbai, kacamata bundar ungu. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Nelu Palung; Arcanist, element Bayangan (Air means water), rarity 1/5, from Karang Biru. Visual identity: Tongkat jangkar mini hitam, jubah tinta berumbai, kacamata bundar ungu. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_017",
+    "name": "Rava Tungkukerang",
+    "rarity": 2,
+    "role": "Medic",
+    "element": "Api",
+    "region_id": "r03",
+    "visual": "Panci kerang di punggung, sarung tangan merah, rambut seperti dua gulung asap.",
+    "personality": "Juru masak kapal yang pemurah; percaya makanan hangat adalah alat navigasi terbaik.",
+    "skill": {
+      "name": "Sup Bara Laut",
+      "description": "Memulihkan kelompok sedikit demi sedikit selama 2 giliran."
+    },
+    "passive": {
+      "name": "Porsi Cadangan",
+      "description": "Pemulihan pertama pada sekutu kritis memperoleh bonus."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Rava Tungkukerang; Medic, element Api (Air means water), rarity 2/5, from Karang Biru. Visual identity: Panci kerang di punggung, sarung tangan merah, rambut seperti dua gulung asap. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Rava Tungkukerang; Medic, element Api (Air means water), rarity 2/5, from Karang Biru. Visual identity: Panci kerang di punggung, sarung tangan merah, rambut seperti dua gulung asap. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_018",
+    "name": "Piko Buih",
+    "rarity": 3,
+    "role": "Trickster",
+    "element": "Air",
+    "region_id": "r03",
+    "visual": "Sepatu sirip pendek, jaket gelembung sian, belati kerang transparan.",
+    "personality": "Pengantar surat bawah air yang usil; belum pernah membuka surat meski hafal seluruh gosip pelabuhan.",
+    "skill": {
+      "name": "Tukar Buih",
+      "description": "Menyerang satu sasaran dan mencuri satu penguatan kecil yang dapat dihapus."
+    },
+    "passive": {
+      "name": "Lolos Jaring",
+      "description": "Efek Lambat pertama pada dirinya setiap gelombang gagal menempel."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Piko Buih; Trickster, element Air (Air means water), rarity 3/5, from Karang Biru. Visual identity: Sepatu sirip pendek, jaket gelembung sian, belati kerang transparan. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Piko Buih; Trickster, element Air (Air means water), rarity 3/5, from Karang Biru. Visual identity: Sepatu sirip pendek, jaket gelembung sian, belati kerang transparan. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_019",
+    "name": "Arsa Kacapalu",
+    "rarity": 4,
+    "role": "Vanguard",
+    "element": "Tanah",
+    "region_id": "r04",
+    "visual": "Palu kaca buram berinti batu, mantel pasir, bekas retak emas pada sarung tangan.",
+    "personality": "Pemecah jalan karavan yang teliti; mengumpulkan serpihan agar anak-anak tidak melukai kaki.",
+    "skill": {
+      "name": "Pecah Dataran",
+      "description": "Serangan berat satu sasaran; bonus terhadap perisai."
+    },
+    "passive": {
+      "name": "Butir Kukuh",
+      "description": "Mendapat perisai kecil setelah memecahkan perisai lawan."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Arsa Kacapalu; Vanguard, element Tanah (Air means water), rarity 4/5, from Gurun Kaca. Visual identity: Palu kaca buram berinti batu, mantel pasir, bekas retak emas pada sarung tangan. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Arsa Kacapalu; Vanguard, element Tanah (Air means water), rarity 4/5, from Gurun Kaca. Visual identity: Palu kaca buram berinti batu, mantel pasir, bekas retak emas pada sarung tangan. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_020",
+    "name": "Nima Sinarpayung",
+    "rarity": 5,
+    "role": "Guardian",
+    "element": "Cahaya",
+    "region_id": "r04",
+    "visual": "Perisai payung cermin kusam, turban putih, mata tertutup pita amber.",
+    "personality": "Penjaga sumur yang sabar; menolak menjual air meski seluruh jalur karavan kering.",
+    "skill": {
+      "name": "Naung Siang",
+      "description": "Melindungi satu sekutu dan mengurangi kerusakan area berikutnya."
+    },
+    "passive": {
+      "name": "Pantul Lembut",
+      "description": "Saat menjaga sekutu, memulihkan HP diri sedikit."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Nima Sinarpayung; Guardian, element Cahaya (Air means water), rarity 5/5, from Gurun Kaca. Visual identity: Perisai payung cermin kusam, turban putih, mata tertutup pita amber. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Nima Sinarpayung; Guardian, element Cahaya (Air means water), rarity 5/5, from Gurun Kaca. Visual identity: Perisai payung cermin kusam, turban putih, mata tertutup pita amber. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_021",
+    "name": "Tero Bayangpasir",
+    "rarity": 1,
+    "role": "Ranger",
+    "element": "Bayangan",
+    "region_id": "r04",
+    "visual": "Busur prisma hitam, kain ungu panjang, satu lensa mata berbentuk belah ketupat.",
+    "personality": "Pelacak malam yang bicara pelan; mengikuti jejak bayangan yang terlepas dari pemiliknya.",
+    "skill": {
+      "name": "Bidik Fatamorgana",
+      "description": "Serangan satu sasaran; mengabaikan sebagian bonus penghindaran."
+    },
+    "passive": {
+      "name": "Jejak Terbaca",
+      "description": "Kerusakan meningkat sedikit terhadap musuh berakurasi turun."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Tero Bayangpasir; Ranger, element Bayangan (Air means water), rarity 1/5, from Gurun Kaca. Visual identity: Busur prisma hitam, kain ungu panjang, satu lensa mata berbentuk belah ketupat. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Tero Bayangpasir; Ranger, element Bayangan (Air means water), rarity 1/5, from Gurun Kaca. Visual identity: Busur prisma hitam, kain ungu panjang, satu lensa mata berbentuk belah ketupat. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_022",
+    "name": "Liri Baraindeks",
+    "rarity": 2,
+    "role": "Arcanist",
+    "element": "Api",
+    "region_id": "r04",
+    "visual": "Buku lempeng kaca, sarung jari tembaga, jilbab merah dengan simpul kotak.",
+    "personality": "Pengarsip suhu yang tak suka tebakan; mencatat kapan pasir berubah agar karavan bisa lewat.",
+    "skill": {
+      "name": "Halaman Hangus",
+      "description": "Serangan area; Bara bertahan dua giliran pada sasaran utama."
+    },
+    "passive": {
+      "name": "Catatan Panas",
+      "description": "Sekali tiap giliran, musuh yang menerima Bara mengisi energinya."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Liri Baraindeks; Arcanist, element Api (Air means water), rarity 2/5, from Gurun Kaca. Visual identity: Buku lempeng kaca, sarung jari tembaga, jilbab merah dengan simpul kotak. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Liri Baraindeks; Arcanist, element Api (Air means water), rarity 2/5, from Gurun Kaca. Visual identity: Buku lempeng kaca, sarung jari tembaga, jilbab merah dengan simpul kotak. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_023",
+    "name": "Wanu Telagakaca",
+    "rarity": 3,
+    "role": "Medic",
+    "element": "Air",
+    "region_id": "r04",
+    "visual": "Tongkat kendi turkuois, mantel berlapis kain basah, kalung tetes kaca.",
+    "personality": "Perawat kafilah yang mudah tertawa; mencari telaga tanpa bayangan dalam kisah neneknya.",
+    "skill": {
+      "name": "Teguk Teduh",
+      "description": "Memulihkan satu sekutu dan memberi ketahanan Bara dua giliran."
+    },
+    "passive": {
+      "name": "Air Disisihkan",
+      "description": "Pemulihan berlebih menjadi perisai kecil dengan batas."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Wanu Telagakaca; Medic, element Air (Air means water), rarity 3/5, from Gurun Kaca. Visual identity: Tongkat kendi turkuois, mantel berlapis kain basah, kalung tetes kaca. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Wanu Telagakaca; Medic, element Air (Air means water), rarity 3/5, from Gurun Kaca. Visual identity: Tongkat kendi turkuois, mantel berlapis kain basah, kalung tetes kaca. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_024",
+    "name": "Zeli Debupita",
+    "rarity": 4,
+    "role": "Trickster",
+    "element": "Angin",
+    "region_id": "r04",
+    "visual": "Pita angin putih di kedua lengan, pisau kipas, kacamata debu kuning.",
+    "personality": "Pesulap pasar yang jujur soal tipuannya; mengalihkan patroli dari pengungsi gurun.",
+    "skill": {
+      "name": "Pita Menyilang",
+      "description": "Menyerang satu sasaran dan memperlambat pengisian energinya sebentar."
+    },
+    "passive": {
+      "name": "Tipu Terang",
+      "description": "Menghindari satu serangan terarah setelah skill pertama, sekali per pertempuran."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Zeli Debupita; Trickster, element Angin (Air means water), rarity 4/5, from Gurun Kaca. Visual identity: Pita angin putih di kedua lengan, pisau kipas, kacamata debu kuning. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Zeli Debupita; Trickster, element Angin (Air means water), rarity 4/5, from Gurun Kaca. Visual identity: Pita angin putih di kedua lengan, pisau kipas, kacamata debu kuning. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_025",
+    "name": "Banu Kilatsumbu",
+    "rarity": 5,
+    "role": "Vanguard",
+    "element": "Cahaya",
+    "region_id": "r05",
+    "visual": "Tombak paku petir dengan kaca kuning, jaket hijau, rambut zigzag putih.",
+    "personality": "Penambat petir yang ceroboh pada diri sendiri; selalu memeriksa tali orang lain dua kali.",
+    "skill": {
+      "name": "Lontar Pijar",
+      "description": "Serangan satu sasaran; serangan sekutu berikutnya pada sasaran memperoleh bonus."
+    },
+    "passive": {
+      "name": "Arus Bersama",
+      "description": "Memperoleh energi kecil setelah sekutu memberi perisai."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Banu Kilatsumbu; Vanguard, element Cahaya (Air means water), rarity 5/5, from Rimba Petir. Visual identity: Tombak paku petir dengan kaca kuning, jaket hijau, rambut zigzag putih. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Banu Kilatsumbu; Vanguard, element Cahaya (Air means water), rarity 5/5, from Rimba Petir. Visual identity: Tombak paku petir dengan kaca kuning, jaket hijau, rambut zigzag putih. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_026",
+    "name": "Rumi Teduhhitam",
+    "rarity": 1,
+    "role": "Guardian",
+    "element": "Bayangan",
+    "region_id": "r05",
+    "visual": "Perisai daun logam hitam, tudung violet, sarung kaki akar tinggi.",
+    "personality": "Penjaga sarang yang tampak galak; menghafal nama semua hewan yang diselamatkannya.",
+    "skill": {
+      "name": "Naungan Badai",
+      "description": "Menjaga kelompok dari sebagian kerusakan area selama satu giliran."
+    },
+    "passive": {
+      "name": "Akar Malam",
+      "description": "Saat HP rendah, menerima lebih sedikit kerusakan area."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Rumi Teduhhitam; Guardian, element Bayangan (Air means water), rarity 1/5, from Rimba Petir. Visual identity: Perisai daun logam hitam, tudung violet, sarung kaki akar tinggi. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Rumi Teduhhitam; Guardian, element Bayangan (Air means water), rarity 1/5, from Rimba Petir. Visual identity: Perisai daun logam hitam, tudung violet, sarung kaki akar tinggi. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_027",
+    "name": "Sano Merahdahan",
+    "rarity": 2,
+    "role": "Ranger",
+    "element": "Api",
+    "region_id": "r05",
+    "visual": "Busur tembaga bercabang tiga, mantel merah pendek, anak panah dengan penutup resin.",
+    "personality": "Pemburu bara liar yang kompetitif; tak pernah menembak dahan tempat burung bersarang.",
+    "skill": {
+      "name": "Panah Arang",
+      "description": "Serangan sasaran belakang; menambah durasi Bara satu giliran dengan batas."
+    },
+    "passive": {
+      "name": "Bidik Membara",
+      "description": "Bonus kecil terhadap sasaran yang memiliki Bara."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Sano Merahdahan; Ranger, element Api (Air means water), rarity 2/5, from Rimba Petir. Visual identity: Busur tembaga bercabang tiga, mantel merah pendek, anak panah dengan penutup resin. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Sano Merahdahan; Ranger, element Api (Air means water), rarity 2/5, from Rimba Petir. Visual identity: Busur tembaga bercabang tiga, mantel merah pendek, anak panah dengan penutup resin. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_028",
+    "name": "Ila Hujanurat",
+    "rarity": 3,
+    "role": "Arcanist",
+    "element": "Air",
+    "region_id": "r05",
+    "visual": "Tongkat penampung hujan, jubah sian bercorak urat daun, anting tetes besi.",
+    "personality": "Peneliti badai yang tak tahan kesunyian; mendengar irama pada tetes hujan yang tersangkut.",
+    "skill": {
+      "name": "Taut Hujan",
+      "description": "Menyerang dua sasaran dan memberi Lambat singkat."
+    },
+    "passive": {
+      "name": "Urat Terhubung",
+      "description": "Skill mengenai beberapa sasaran mengisi sedikit energi, sekali per giliran."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Ila Hujanurat; Arcanist, element Air (Air means water), rarity 3/5, from Rimba Petir. Visual identity: Tongkat penampung hujan, jubah sian bercorak urat daun, anting tetes besi. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Ila Hujanurat; Arcanist, element Air (Air means water), rarity 3/5, from Rimba Petir. Visual identity: Tongkat penampung hujan, jubah sian bercorak urat daun, anting tetes besi. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_029",
+    "name": "Meli Anginsulam",
+    "rarity": 4,
+    "role": "Medic",
+    "element": "Angin",
+    "region_id": "r05",
+    "visual": "Jarum obat berbentuk bulu, syal mint, tas kain penuh daun melingkar.",
+    "personality": "Penyulam luka yang berbicara melalui nyanyian; menenangkan pasien saat guntur datang.",
+    "skill": {
+      "name": "Jahit Hembus",
+      "description": "Memulihkan satu sekutu dan mempercepat pengisian energi singkat."
+    },
+    "passive": {
+      "name": "Napas Panjang",
+      "description": "Pemulihan berkelanjutan yang ia berikan memperoleh bonus kecil."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Meli Anginsulam; Medic, element Angin (Air means water), rarity 4/5, from Rimba Petir. Visual identity: Jarum obat berbentuk bulu, syal mint, tas kain penuh daun melingkar. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Meli Anginsulam; Medic, element Angin (Air means water), rarity 4/5, from Rimba Petir. Visual identity: Jarum obat berbentuk bulu, syal mint, tas kain penuh daun melingkar. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_030",
+    "name": "Deka Pakuakar",
+    "rarity": 5,
+    "role": "Trickster",
+    "element": "Tanah",
+    "region_id": "r05",
+    "visual": "Sepatu cakar akar, rompi cokelat berpaku aman, gasing batu di sabuk.",
+    "personality": "Pemasang penangkal petir yang suka teka-teki; menyamarkan jebakan supaya hewan bisa melintas.",
+    "skill": {
+      "name": "Gasing Tambat",
+      "description": "Menyerang satu musuh dan mengurangi kecepatannya dua giliran."
+    },
+    "passive": {
+      "name": "Simpul Kuat",
+      "description": "Efek Lambat buatannya memberi penurunan serangan kecil juga."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Deka Pakuakar; Trickster, element Tanah (Air means water), rarity 5/5, from Rimba Petir. Visual identity: Sepatu cakar akar, rompi cokelat berpaku aman, gasing batu di sabuk. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Deka Pakuakar; Trickster, element Tanah (Air means water), rarity 5/5, from Rimba Petir. Visual identity: Sepatu cakar akar, rompi cokelat berpaku aman, gasing batu di sabuk. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_031",
+    "name": "Oran Jelaga",
+    "rarity": 1,
+    "role": "Vanguard",
+    "element": "Bayangan",
+    "region_id": "r06",
+    "visual": "Pedang cerobong berongga, mantel hitam arang, pelindung wajah satu sisi ungu.",
+    "personality": "Pekerja tungku yang tak banyak bicara; menulis surat untuk adik di pulau yang hilang.",
+    "skill": {
+      "name": "Belah Abu",
+      "description": "Serangan satu sasaran; bonus saat pengguna memiliki perisai."
+    },
+    "passive": {
+      "name": "Sisa Bara",
+      "description": "Mendapat bonus kecil serangan setelah perisainya habis."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Oran Jelaga; Vanguard, element Bayangan (Air means water), rarity 1/5, from Puncak Bara. Visual identity: Pedang cerobong berongga, mantel hitam arang, pelindung wajah satu sisi ungu. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Oran Jelaga; Vanguard, element Bayangan (Air means water), rarity 1/5, from Puncak Bara. Visual identity: Pedang cerobong berongga, mantel hitam arang, pelindung wajah satu sisi ungu. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_032",
+    "name": "Tala Besitungku",
+    "rarity": 2,
+    "role": "Guardian",
+    "element": "Api",
+    "region_id": "r06",
+    "visual": "Perisai pintu tungku merah, kepang pendek abu-abu, apron baja bercorak bunga.",
+    "personality": "Pandai besi yang hangat; menolak membuat senjata sebelum memahami orang yang akan dilindungi.",
+    "skill": {
+      "name": "Pintu Membara",
+      "description": "Memberi perisai diri dan Bara pada penyerang berikutnya."
+    },
+    "passive": {
+      "name": "Tempa Ulang",
+      "description": "Perisai pertama setiap gelombang lebih kuat."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Tala Besitungku; Guardian, element Api (Air means water), rarity 2/5, from Puncak Bara. Visual identity: Perisai pintu tungku merah, kepang pendek abu-abu, apron baja bercorak bunga. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Tala Besitungku; Guardian, element Api (Air means water), rarity 2/5, from Puncak Bara. Visual identity: Perisai pintu tungku merah, kepang pendek abu-abu, apron baja bercorak bunga. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_033",
+    "name": "Viko Uapbidik",
+    "rarity": 3,
+    "role": "Ranger",
+    "element": "Air",
+    "region_id": "r06",
+    "visual": "Senapan panah pompa air, tabung biru di punggung, kacamata uap bundar.",
+    "personality": "Pengukur tekanan yang mudah gugup; akurasinya justru terbaik ketika seluruh menara bergetar.",
+    "skill": {
+      "name": "Anak Panah Uap",
+      "description": "Serangan satu sasaran; menghapus satu penguatan pertahanan yang dapat dihapus."
+    },
+    "passive": {
+      "name": "Katup Tenang",
+      "description": "Setelah menghapus penguatan, mendapat bonus akurasi singkat."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Viko Uapbidik; Ranger, element Air (Air means water), rarity 3/5, from Puncak Bara. Visual identity: Senapan panah pompa air, tabung biru di punggung, kacamata uap bundar. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Viko Uapbidik; Ranger, element Air (Air means water), rarity 3/5, from Puncak Bara. Visual identity: Senapan panah pompa air, tabung biru di punggung, kacamata uap bundar. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_034",
+    "name": "Rena Angincerobong",
+    "rarity": 4,
+    "role": "Arcanist",
+    "element": "Angin",
+    "region_id": "r06",
+    "visual": "Tongkat kipas besi, jubah abu dengan sisi hijau, rambut panjang melayang vertikal.",
+    "personality": "Pengatur ventilasi yang menyukai ketinggian; membaca doa pekerja dari arah asap.",
+    "skill": {
+      "name": "Koridor Asap",
+      "description": "Serangan area; mengurangi kecepatan kelompok musuh singkat."
+    },
+    "passive": {
+      "name": "Cerobong Bersih",
+      "description": "Sekali per pertempuran, menghapus Lambat pada diri saat menggunakan skill."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Rena Angincerobong; Arcanist, element Angin (Air means water), rarity 4/5, from Puncak Bara. Visual identity: Tongkat kipas besi, jubah abu dengan sisi hijau, rambut panjang melayang vertikal. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Rena Angincerobong; Arcanist, element Angin (Air means water), rarity 4/5, from Puncak Bara. Visual identity: Tongkat kipas besi, jubah abu dengan sisi hijau, rambut panjang melayang vertikal. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_035",
+    "name": "Umi Batuhangat",
+    "rarity": 5,
+    "role": "Medic",
+    "element": "Tanah",
+    "region_id": "r06",
+    "visual": "Tas batu pijat oranye, tunik cokelat krem, tongkat berkepala geode.",
+    "personality": "Tabib pemandian yang blak-blakan; mengobati penambang sebelum bertanya apakah mereka bisa membayar.",
+    "skill": {
+      "name": "Rekah Hangat",
+      "description": "Memulihkan satu sekutu dan memberinya perisai kecil."
+    },
+    "passive": {
+      "name": "Panas Tersimpan",
+      "description": "Pemulihan meningkat saat sekutu memiliki perisai."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Umi Batuhangat; Medic, element Tanah (Air means water), rarity 5/5, from Puncak Bara. Visual identity: Tas batu pijat oranye, tunik cokelat krem, tongkat berkepala geode. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Umi Batuhangat; Medic, element Tanah (Air means water), rarity 5/5, from Puncak Bara. Visual identity: Tas batu pijat oranye, tunik cokelat krem, tongkat berkepala geode. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_036",
+    "name": "Jera Pijarpaku",
+    "rarity": 1,
+    "role": "Trickster",
+    "element": "Cahaya",
+    "region_id": "r06",
+    "visual": "Sepasang belati paku emas, kacamata satu lensa putih, jubah pendek bersudut.",
+    "personality": "Pemeriksa rantai pulau yang gemar tantangan; mencuri paku rusak untuk memaksa mandor menggantinya.",
+    "skill": {
+      "name": "Kilau Palsu",
+      "description": "Menyerang satu sasaran dan menghapus satu penguatan serangan yang dapat dihapus."
+    },
+    "passive": {
+      "name": "Mata Retak",
+      "description": "Kerusakan kecil tambahan pada sasaran yang baru kehilangan penguatan."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Jera Pijarpaku; Trickster, element Cahaya (Air means water), rarity 1/5, from Puncak Bara. Visual identity: Sepasang belati paku emas, kacamata satu lensa putih, jubah pendek bersudut. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Jera Pijarpaku; Trickster, element Cahaya (Air means water), rarity 1/5, from Puncak Bara. Visual identity: Sepasang belati paku emas, kacamata satu lensa putih, jubah pendek bersudut. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_037",
+    "name": "Sera Loncengbara",
+    "rarity": 2,
+    "role": "Vanguard",
+    "element": "Api",
+    "region_id": "r07",
+    "visual": "Pedang bandul merah, seragam penjaga biru gelap, telinga dilindungi kain emas.",
+    "personality": "Penjaga jam yang rindu suara kota; menyampaikan waktu melalui gerak pedang.",
+    "skill": {
+      "name": "Dentang Merah",
+      "description": "Serangan satu sasaran; Bara dan penurunan serangan singkat."
+    },
+    "passive": {
+      "name": "Irama Tegas",
+      "description": "Mendapat serangan kecil tambahan setelah giliran tanpa memakai skill."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Sera Loncengbara; Vanguard, element Api (Air means water), rarity 2/5, from Kota Senyap. Visual identity: Pedang bandul merah, seragam penjaga biru gelap, telinga dilindungi kain emas. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Sera Loncengbara; Vanguard, element Api (Air means water), rarity 2/5, from Kota Senyap. Visual identity: Pedang bandul merah, seragam penjaga biru gelap, telinga dilindungi kain emas. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_038",
+    "name": "Navo Kanal",
+    "rarity": 3,
+    "role": "Guardian",
+    "element": "Air",
+    "region_id": "r07",
+    "visual": "Perisai pintu kanal biru, jubah pekerja saluran, lentera botol bulat di bahu.",
+    "personality": "Pembersih kanal yang menyimpan surat hanyut; ingin menemukan pemiliknya sebelum musim hujan.",
+    "skill": {
+      "name": "Palang Kanal",
+      "description": "Memberi perisai dua sekutu dengan HP terendah."
+    },
+    "passive": {
+      "name": "Aliran Pulih",
+      "description": "Sekutu yang perisainya habis menerima pemulihan kecil sekali per giliran."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Navo Kanal; Guardian, element Air (Air means water), rarity 3/5, from Kota Senyap. Visual identity: Perisai pintu kanal biru, jubah pekerja saluran, lentera botol bulat di bahu. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Navo Kanal; Guardian, element Air (Air means water), rarity 3/5, from Kota Senyap. Visual identity: Perisai pintu kanal biru, jubah pekerja saluran, lentera botol bulat di bahu. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_039",
+    "name": "Iru Anginpos",
+    "rarity": 4,
+    "role": "Ranger",
+    "element": "Angin",
+    "region_id": "r07",
+    "visual": "Busur antena tipis, tas surat hijau kelabu, mantel bersayap kertas.",
+    "personality": "Kurir yang hafal gerak bibir warga; belum pernah terlambat mengantar kabar baik maupun buruk.",
+    "skill": {
+      "name": "Surat Menembus",
+      "description": "Serangan satu sasaran; sebagian kerusakan melewati perisai."
+    },
+    "passive": {
+      "name": "Alamat Tepat",
+      "description": "Bonus kecil terhadap sasaran dengan perisai."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Iru Anginpos; Ranger, element Angin (Air means water), rarity 4/5, from Kota Senyap. Visual identity: Busur antena tipis, tas surat hijau kelabu, mantel bersayap kertas. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Iru Anginpos; Ranger, element Angin (Air means water), rarity 4/5, from Kota Senyap. Visual identity: Busur antena tipis, tas surat hijau kelabu, mantel bersayap kertas. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_040",
+    "name": "Wesa Batuaksara",
+    "rarity": 5,
+    "role": "Arcanist",
+    "element": "Tanah",
+    "region_id": "r07",
+    "visual": "Lempeng mantra berhuruf timbul, jubah abu berbentuk bata, tongkat kapur.",
+    "personality": "Guru yang mengajar tanpa suara; menulis kisah kota pada jalan agar tak ada yang bisa membakarnya.",
+    "skill": {
+      "name": "Aksara Berat",
+      "description": "Serangan area; peluang Lambat pada sasaran yang sudah terluka."
+    },
+    "passive": {
+      "name": "Pelajaran Kedua",
+      "description": "Skill berikutnya sedikit lebih kuat setelah serangan biasa."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Wesa Batuaksara; Arcanist, element Tanah (Air means water), rarity 5/5, from Kota Senyap. Visual identity: Lempeng mantra berhuruf timbul, jubah abu berbentuk bata, tongkat kapur. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Wesa Batuaksara; Arcanist, element Tanah (Air means water), rarity 5/5, from Kota Senyap. Visual identity: Lempeng mantra berhuruf timbul, jubah abu berbentuk bata, tongkat kapur. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_041",
+    "name": "Lani Pitaemas",
+    "rarity": 1,
+    "role": "Medic",
+    "element": "Cahaya",
+    "region_id": "r07",
+    "visual": "Pita cahaya melingkar tangan, mantel perawat gading, rambut hitam diikat kotak.",
+    "personality": "Penerjemah isyarat yang perhatian; melihat setiap percakapan sebagai jembatan kecil.",
+    "skill": {
+      "name": "Isyarat Pulang",
+      "description": "Memulihkan satu sekutu dan menghapus satu efek kontrol yang dapat dihapus."
+    },
+    "passive": {
+      "name": "Tangan Terbuka",
+      "description": "Sekutu yang ia bebaskan dari kontrol mendapat perisai kecil."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Lani Pitaemas; Medic, element Cahaya (Air means water), rarity 1/5, from Kota Senyap. Visual identity: Pita cahaya melingkar tangan, mantel perawat gading, rambut hitam diikat kotak. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Lani Pitaemas; Medic, element Cahaya (Air means water), rarity 1/5, from Kota Senyap. Visual identity: Pita cahaya melingkar tangan, mantel perawat gading, rambut hitam diikat kotak. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_042",
+    "name": "Toma Bayangjam",
+    "rarity": 2,
+    "role": "Trickster",
+    "element": "Bayangan",
+    "region_id": "r07",
+    "visual": "Topi jarum jam miring, jas ungu gelap, belati berbentuk kunci lonceng.",
+    "personality": "Tukang jam yang pura-pura lupa umur; menyimpan detik-detik terakhir sebelum kota membisu.",
+    "skill": {
+      "name": "Curi Detik",
+      "description": "Menyerang satu musuh dan mengurangi energinya sedikit."
+    },
+    "passive": {
+      "name": "Saku Waktu",
+      "description": "Sekali per giliran, pengurangan energi memberi bonus energi diri kecil."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Toma Bayangjam; Trickster, element Bayangan (Air means water), rarity 2/5, from Kota Senyap. Visual identity: Topi jarum jam miring, jas ungu gelap, belati berbentuk kunci lonceng. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Toma Bayangjam; Trickster, element Bayangan (Air means water), rarity 2/5, from Kota Senyap. Visual identity: Topi jarum jam miring, jas ungu gelap, belati berbentuk kunci lonceng. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_043",
+    "name": "Elu Hujanlayar",
+    "rarity": 3,
+    "role": "Vanguard",
+    "element": "Air",
+    "region_id": "r08",
+    "visual": "Pedang lunas biru, mantel layar putih, rambut pendek dengan penjepit tetes.",
+    "personality": "Kapten rakit awan yang optimistis; selalu menyisakan tempat bagi penumpang tak terduga.",
+    "skill": {
+      "name": "Belah Hujan",
+      "description": "Serangan satu sasaran; menurunkan pertahanan jika sasaran memiliki penguatan."
+    },
+    "passive": {
+      "name": "Lunas Seimbang",
+      "description": "Menerima lebih sedikit kerusakan setelah menggunakan skill."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Elu Hujanlayar; Vanguard, element Air (Air means water), rarity 3/5, from Kepulauan Awan. Visual identity: Pedang lunas biru, mantel layar putih, rambut pendek dengan penjepit tetes. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Elu Hujanlayar; Vanguard, element Air (Air means water), rarity 3/5, from Kepulauan Awan. Visual identity: Pedang lunas biru, mantel layar putih, rambut pendek dengan penjepit tetes. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_044",
+    "name": "Raisa Anyamlangit",
+    "rarity": 4,
+    "role": "Guardian",
+    "element": "Angin",
+    "region_id": "r08",
+    "visual": "Perisai layang-layang besar, zirah tali hijau, dua kepang seperti simpul tambat.",
+    "personality": "Penjaga tambatan yang sulit percaya janji; percaya penuh pada simpul yang dibuat bersama.",
+    "skill": {
+      "name": "Simpul Awan",
+      "description": "Memberi perisai kelompok dan ketahanan pergeseran giliran singkat."
+    },
+    "passive": {
+      "name": "Tali Bersama",
+      "description": "Perisai lebih kuat bila setidaknya dua sekutu masih bertahan."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Raisa Anyamlangit; Guardian, element Angin (Air means water), rarity 4/5, from Kepulauan Awan. Visual identity: Perisai layang-layang besar, zirah tali hijau, dua kepang seperti simpul tambat. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Raisa Anyamlangit; Guardian, element Angin (Air means water), rarity 4/5, from Kepulauan Awan. Visual identity: Perisai layang-layang besar, zirah tali hijau, dua kepang seperti simpul tambat. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_045",
+    "name": "Moru Batuapung",
+    "rarity": 5,
+    "role": "Ranger",
+    "element": "Tanah",
+    "region_id": "r08",
+    "visual": "Busur dua batu melayang, ponco oker pendek, kantong pemberat berlabel.",
+    "personality": "Pemburu serpih pulau yang cermat; menimbang setiap batu sebelum mengembalikannya ke langit.",
+    "skill": {
+      "name": "Panah Pemberat",
+      "description": "Serangan satu sasaran dan Lambat; bonus pada musuh berkecepatan tinggi."
+    },
+    "passive": {
+      "name": "Berat Terukur",
+      "description": "Serangan biasa pada musuh Lambat memberi energi kecil."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Moru Batuapung; Ranger, element Tanah (Air means water), rarity 5/5, from Kepulauan Awan. Visual identity: Busur dua batu melayang, ponco oker pendek, kantong pemberat berlabel. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Moru Batuapung; Ranger, element Tanah (Air means water), rarity 5/5, from Kepulauan Awan. Visual identity: Busur dua batu melayang, ponco oker pendek, kantong pemberat berlabel. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_046",
+    "name": "Yali Halo",
+    "rarity": 1,
+    "role": "Arcanist",
+    "element": "Cahaya",
+    "region_id": "r08",
+    "visual": "Tongkat lingkar awan putih, mantel emas tembus cahaya, rambut biru pucat bersudut.",
+    "personality": "Pengamat cuaca yang puitis; menamai awan menurut orang yang pernah menolongnya.",
+    "skill": {
+      "name": "Halo Terbelah",
+      "description": "Serangan area dan Tanda pada sasaran ber-HP tertinggi."
+    },
+    "passive": {
+      "name": "Cahaya Tepi",
+      "description": "Tanda buatannya memperkuat serangan sekutu berikutnya sedikit lebih besar."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Yali Halo; Arcanist, element Cahaya (Air means water), rarity 1/5, from Kepulauan Awan. Visual identity: Tongkat lingkar awan putih, mantel emas tembus cahaya, rambut biru pucat bersudut. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Yali Halo; Arcanist, element Cahaya (Air means water), rarity 1/5, from Kepulauan Awan. Visual identity: Tongkat lingkar awan putih, mantel emas tembus cahaya, rambut biru pucat bersudut. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_047",
+    "name": "Pena Malamlayar",
+    "rarity": 2,
+    "role": "Medic",
+    "element": "Bayangan",
+    "region_id": "r08",
+    "visual": "Payung hitam berbintik bintang, tas obat violet, sepatu dengan pengait tali.",
+    "personality": "Perawat penerbangan yang tenang; berjaga ketika para pelaut bermimpi tentang daratan.",
+    "skill": {
+      "name": "Teduh Bintang",
+      "description": "Memulihkan kelompok sedikit dan mengurangi kerusakan berikutnya."
+    },
+    "passive": {
+      "name": "Jaga Malam",
+      "description": "Pemulihan pada sekutu ber-HP rendah bertambah sedikit."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Pena Malamlayar; Medic, element Bayangan (Air means water), rarity 2/5, from Kepulauan Awan. Visual identity: Payung hitam berbintik bintang, tas obat violet, sepatu dengan pengait tali. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Pena Malamlayar; Medic, element Bayangan (Air means water), rarity 2/5, from Kepulauan Awan. Visual identity: Payung hitam berbintik bintang, tas obat violet, sepatu dengan pengait tali. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_048",
+    "name": "Kavo Baraudara",
+    "rarity": 3,
+    "role": "Trickster",
+    "element": "Api",
+    "region_id": "r08",
+    "visual": "Belati baling-baling merah, jaket pilot tembaga, ekor syal berbentuk api.",
+    "personality": "Pengendara balon yang suka bertaruh dengan cuaca; mengirim suku cadang lewat rute terlarang.",
+    "skill": {
+      "name": "Luncur Bara",
+      "description": "Serangan satu sasaran; memberi Bara dan meningkatkan penghindaran diri singkat."
+    },
+    "passive": {
+      "name": "Panas Naik",
+      "description": "Saat musuh menerima kerusakan Bara, bonus kecepatan kecil sekali tiap giliran."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Kavo Baraudara; Trickster, element Api (Air means water), rarity 3/5, from Kepulauan Awan. Visual identity: Belati baling-baling merah, jaket pilot tembaga, ekor syal berbentuk api. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Kavo Baraudara; Trickster, element Api (Air means water), rarity 3/5, from Kepulauan Awan. Visual identity: Belati baling-baling merah, jaket pilot tembaga, ekor syal berbentuk api. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_049",
+    "name": "Danu Ambang",
+    "rarity": 4,
+    "role": "Vanguard",
+    "element": "Angin",
+    "region_id": "r09",
+    "visual": "Pedang palang gerbang batu, mantel cokelat violet, gelang pemberat kembar.",
+    "personality": "Penjaga perbatasan yang mendengarkan sebelum menilai; membiarkan kenangan sedih lewat tanpa pajak.",
+    "skill": {
+      "name": "Tebas Ambang",
+      "description": "Serangan satu sasaran; bonus kerusakan saat HP sasaran lebih tinggi dari pengguna."
+    },
+    "passive": {
+      "name": "Kaki di Batas",
+      "description": "Ketika HP rendah, penurunan serangan pertama yang diterima dipersingkat."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Danu Ambang; Vanguard, element Angin (Air means water), rarity 4/5, from Gerbang Senja. Visual identity: Pedang palang gerbang batu, mantel cokelat violet, gelang pemberat kembar. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Danu Ambang; Vanguard, element Angin (Air means water), rarity 4/5, from Gerbang Senja. Visual identity: Pedang palang gerbang batu, mantel cokelat violet, gelang pemberat kembar. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_050",
+    "name": "Neri Senjakaca",
+    "rarity": 5,
+    "role": "Guardian",
+    "element": "Tanah",
+    "region_id": "r09",
+    "visual": "Perisai dua jendela amber, zirah putih kusam, rambut pendek berujung emas.",
+    "personality": "Penjaga gerbang yang suka merawat kaca; melihat keberanian pada retak yang sengaja dibiarkan tampak.",
+    "skill": {
+      "name": "Jendela Senja",
+      "description": "Memberi perisai satu sekutu dan memantulkan sebagian kecil kerusakan berikutnya."
+    },
+    "passive": {
+      "name": "Retak Terang",
+      "description": "Saat perisai pecah, memberi energi kecil pada sekutu yang dilindungi."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Neri Senjakaca; Guardian, element Tanah (Air means water), rarity 5/5, from Gerbang Senja. Visual identity: Perisai dua jendela amber, zirah putih kusam, rambut pendek berujung emas. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Neri Senjakaca; Guardian, element Tanah (Air means water), rarity 5/5, from Gerbang Senja. Visual identity: Perisai dua jendela amber, zirah putih kusam, rambut pendek berujung emas. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_051",
+    "name": "Vasa Sisaalam",
+    "rarity": 1,
+    "role": "Ranger",
+    "element": "Cahaya",
+    "region_id": "r09",
+    "visual": "Busur cabang bayangan, tudung marun, anak panah dengan bulu hitam bermata perak.",
+    "personality": "Pelacak gema yang selalu meminta izin sebelum membaca jejak kenangan orang lain.",
+    "skill": {
+      "name": "Panah Kenangan",
+      "description": "Serangan satu sasaran; bonus terhadap musuh dengan setidaknya dua efek lemah."
+    },
+    "passive": {
+      "name": "Jejak Tersisa",
+      "description": "Efek lemah sasaran utama bertahan setelah satu penguatan dihapus."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Vasa Sisaalam; Ranger, element Cahaya (Air means water), rarity 1/5, from Gerbang Senja. Visual identity: Busur cabang bayangan, tudung marun, anak panah dengan bulu hitam bermata perak. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Vasa Sisaalam; Ranger, element Cahaya (Air means water), rarity 1/5, from Gerbang Senja. Visual identity: Busur cabang bayangan, tudung marun, anak panah dengan bulu hitam bermata perak. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_052",
+    "name": "Reko Tungkusenja",
+    "rarity": 2,
+    "role": "Arcanist",
+    "element": "Bayangan",
+    "region_id": "r09",
+    "visual": "Tongkat tungku lonjong, selendang jingga arang, buku dengan tepi hangus.",
+    "personality": "Penjaga api perpisahan yang lembut; membakar salinan surat, tak pernah aslinya.",
+    "skill": {
+      "name": "Surat Membara",
+      "description": "Serangan area; Bara pada musuh tanpa perisai."
+    },
+    "passive": {
+      "name": "Abu Terbaca",
+      "description": "Bara buatannya memberi penurunan pertahanan kecil selama aktif."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Reko Tungkusenja; Arcanist, element Bayangan (Air means water), rarity 2/5, from Gerbang Senja. Visual identity: Tongkat tungku lonjong, selendang jingga arang, buku dengan tepi hangus. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Reko Tungkusenja; Arcanist, element Bayangan (Air means water), rarity 2/5, from Gerbang Senja. Visual identity: Tongkat tungku lonjong, selendang jingga arang, buku dengan tepi hangus. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_053",
+    "name": "Mava Airkenang",
+    "rarity": 3,
+    "role": "Medic",
+    "element": "Api",
+    "region_id": "r09",
+    "visual": "Kendi berkaca ungu biru, jubah panjang berpola sungai, rambut diikat simpul tetes.",
+    "personality": "Pendamping pelintas yang jarang memberi nasihat; menyediakan air dan waktu untuk memilih.",
+    "skill": {
+      "name": "Basuh Ambang",
+      "description": "Memulihkan satu sekutu dan menghapus sampai dua efek lemah non-kontrol."
+    },
+    "passive": {
+      "name": "Ingatan Jernih",
+      "description": "Menghapus efek lemah mengisi sedikit energi, sekali per giliran."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Mava Airkenang; Medic, element Api (Air means water), rarity 3/5, from Gerbang Senja. Visual identity: Kendi berkaca ungu biru, jubah panjang berpola sungai, rambut diikat simpul tetes. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Mava Airkenang; Medic, element Api (Air means water), rarity 3/5, from Gerbang Senja. Visual identity: Kendi berkaca ungu biru, jubah panjang berpola sungai, rambut diikat simpul tetes. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_054",
+    "name": "Telu Anginbalik",
+    "rarity": 4,
+    "role": "Trickster",
+    "element": "Air",
+    "region_id": "r09",
+    "visual": "Kipas dua arah hijau kelabu, masker kain senja, sepatu dengan pita menghadap terbalik.",
+    "personality": "Penunjuk jalan yang gemar berjalan mundur; membantu orang berpamitan tanpa kehilangan arah pulang.",
+    "skill": {
+      "name": "Langkah Balik",
+      "description": "Menyerang satu sasaran dan memberi bonus prioritas giliran pada sekutu paling lambat."
+    },
+    "passive": {
+      "name": "Arah Kedua",
+      "description": "Setelah sekutu pulih dari Lambat, bonus penghindaran kecil pada diri."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Telu Anginbalik; Trickster, element Air (Air means water), rarity 4/5, from Gerbang Senja. Visual identity: Kipas dua arah hijau kelabu, masker kain senja, sepatu dengan pita menghadap terbalik. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Telu Anginbalik; Trickster, element Air (Air means water), rarity 4/5, from Gerbang Senja. Visual identity: Kipas dua arah hijau kelabu, masker kain senja, sepatu dengan pita menghadap terbalik. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_055",
+    "name": "Aru Sumberpijar",
+    "rarity": 5,
+    "role": "Vanguard",
+    "element": "Tanah",
+    "region_id": "r10",
+    "visual": "Pedang lentera retak berinti fajar, jubah putih emas sederhana, rambut hitam bertali amber.",
+    "personality": "Penjaga sumbu terakhir yang menolak gelar raja; ingin membagikan cahaya kepada pulau paling bawah.",
+    "skill": {
+      "name": "Belah Fajar",
+      "description": "Serangan satu sasaran; memperkuat serangan biasa sekutu berikutnya."
+    },
+    "passive": {
+      "name": "Sumbu Bersama",
+      "description": "Bonus serangan kecil untuk diri setelah menerima penguatan sekutu."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Aru Sumberpijar; Vanguard, element Tanah (Air means water), rarity 5/5, from Takhta Fajar. Visual identity: Pedang lentera retak berinti fajar, jubah putih emas sederhana, rambut hitam bertali amber. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Aru Sumberpijar; Vanguard, element Tanah (Air means water), rarity 5/5, from Takhta Fajar. Visual identity: Pedang lentera retak berinti fajar, jubah putih emas sederhana, rambut hitam bertali amber. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_056",
+    "name": "Sova Ruanghening",
+    "rarity": 1,
+    "role": "Guardian",
+    "element": "Cahaya",
+    "region_id": "r10",
+    "visual": "Perisai sabit kosong berbingkai ungu, zirah malam, jubah dengan lapisan putih.",
+    "personality": "Pemelihara ruang takhta yang berhati-hati; menjaga hak setiap orang untuk menolak mahkota.",
+    "skill": {
+      "name": "Ruang Aman",
+      "description": "Melindungi sekutu terlemah dan mengurangi kerusakan kritis berikutnya."
+    },
+    "passive": {
+      "name": "Mahkota Kosong",
+      "description": "Pertahanan bertambah sedikit saat tidak memiliki penguatan serangan."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Sova Ruanghening; Guardian, element Cahaya (Air means water), rarity 1/5, from Takhta Fajar. Visual identity: Perisai sabit kosong berbingkai ungu, zirah malam, jubah dengan lapisan putih. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Sova Ruanghening; Guardian, element Cahaya (Air means water), rarity 1/5, from Takhta Fajar. Visual identity: Perisai sabit kosong berbingkai ungu, zirah malam, jubah dengan lapisan putih. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_057",
+    "name": "Nalu Baraasal",
+    "rarity": 2,
+    "role": "Ranger",
+    "element": "Bayangan",
+    "region_id": "r10",
+    "visual": "Busur sumbu bercabang emas merah, ponco putih berjelaga, tabung panah tembaga.",
+    "personality": "Pemanah menara awal yang terus belajar; menganggap setiap tembakan janji yang harus diperiksa.",
+    "skill": {
+      "name": "Panah Sumbu",
+      "description": "Serangan satu sasaran; menguatkan Bara aktif dengan batas."
+    },
+    "passive": {
+      "name": "Pijar Pertama",
+      "description": "Bara pertama yang diberikannya tiap gelombang bertahan satu giliran lebih lama."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Nalu Baraasal; Ranger, element Bayangan (Air means water), rarity 2/5, from Takhta Fajar. Visual identity: Busur sumbu bercabang emas merah, ponco putih berjelaga, tabung panah tembaga. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Nalu Baraasal; Ranger, element Bayangan (Air means water), rarity 2/5, from Takhta Fajar. Visual identity: Busur sumbu bercabang emas merah, ponco putih berjelaga, tabung panah tembaga. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_058",
+    "name": "Ivara Tirtacakra",
+    "rarity": 3,
+    "role": "Arcanist",
+    "element": "Api",
+    "region_id": "r10",
+    "visual": "Cakra air biru melingkari tongkat, jubah gading, rambut berpilin seperti arus.",
+    "personality": "Ahli aliran cahaya yang sabar; membuktikan lentera juga memerlukan air agar kacanya tak pecah.",
+    "skill": {
+      "name": "Lingkar Asal",
+      "description": "Serangan area dan penurunan serangan singkat pada musuh bertanda."
+    },
+    "passive": {
+      "name": "Aliran Setara",
+      "description": "Sekali per giliran, skill area memberi energi kecil pada sekutu berenergi terendah."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Ivara Tirtacakra; Arcanist, element Api (Air means water), rarity 3/5, from Takhta Fajar. Visual identity: Cakra air biru melingkari tongkat, jubah gading, rambut berpilin seperti arus. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Ivara Tirtacakra; Arcanist, element Api (Air means water), rarity 3/5, from Takhta Fajar. Visual identity: Cakra air biru melingkari tongkat, jubah gading, rambut berpilin seperti arus. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_059",
+    "name": "Tesa Napasawal",
+    "rarity": 4,
+    "role": "Medic",
+    "element": "Air",
+    "region_id": "r10",
+    "visual": "Tongkat seruling hijau pucat, mantel sayap kain, rambut putih dengan satu helai hitam.",
+    "personality": "Penjaga napas yang berani mengakui takut; mengiringi pendaki sampai mereka dapat bernyanyi kembali.",
+    "skill": {
+      "name": "Napas Arunika",
+      "description": "Memulihkan kelompok dan menghapus satu Lambat pada sekutu paling terluka."
+    },
+    "passive": {
+      "name": "Nada Bertahan",
+      "description": "Sekali per pertempuran, pemulihan pada sekutu kritis memberi perisai tambahan."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Tesa Napasawal; Medic, element Air (Air means water), rarity 4/5, from Takhta Fajar. Visual identity: Tongkat seruling hijau pucat, mantel sayap kain, rambut putih dengan satu helai hitam. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Tesa Napasawal; Medic, element Air (Air means water), rarity 4/5, from Takhta Fajar. Visual identity: Tongkat seruling hijau pucat, mantel sayap kain, rambut putih dengan satu helai hitam. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  },
+  {
+    "id": "char_060",
+    "name": "Kinu Retakasal",
+    "rarity": 5,
+    "role": "Trickster",
+    "element": "Angin",
+    "region_id": "r10",
+    "visual": "Belati batu fajar berpasangan, jaket tanah putih, topeng retak digantung di pinggang.",
+    "personality": "Pemungut pecahan yang jenaka; mencari bagian lentera yang diabaikan karena dianggap terlalu kecil.",
+    "skill": {
+      "name": "Celah Takhta",
+      "description": "Serangan satu sasaran; mengabaikan sebagian pertahanan ketika sasaran bertanda."
+    },
+    "passive": {
+      "name": "Pecahan Berguna",
+      "description": "Setelah menyerang sasaran bertanda, mendapat perisai kecil sekali tiap giliran."
+    },
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Kinu Retakasal; Trickster, element Angin (Air means water), rarity 5/5, from Takhta Fajar. Visual identity: Belati batu fajar berpasangan, jaket tanah putih, topeng retak digantung di pinggang. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin, weapon completely visible; hero stands on RIGHT of battlefield and faces LEFT; three-quarter side view, neutral ready stance, feet on baseline y=58, no ground shadow baked in. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet.",
+      "portrait_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One character, Kinu Retakasal; Trickster, element Angin (Air means water), rarity 5/5, from Takhta Fajar. Visual identity: Belati batu fajar berpasangan, jaket tanah putih, topeng retak digantung di pinggang. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Character portrait, 128x128 logical canvas, head and upper torso, three-quarter gaze gently left, clear face and signature accessory, transparent background, 8 px safe margin; no frame, no rarity stars. Export PNG; nearest-neighbor upscale to 256x256 for UI."
+    }
+  }
+]

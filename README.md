@@ -242,3 +242,7 @@ func init() {
 ## License
 
 Lihat `LICENSE`.
+
+## RPG — HARA: Gema Arunika
+
+Battle browser dan gacha tersambung ke profil WhatsApp melalui `.rpg`. Lihat [konfigurasi RPG dan SQLite](docs/rpg.md). Fitur default mati sampai env RPG diisi.

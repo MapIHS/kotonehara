@@ -16,6 +16,7 @@ import (
 	dbInfra "github.com/MapIHS/kotonehara/internal/infra/db"
 	"github.com/MapIHS/kotonehara/internal/infra/store"
 	"github.com/MapIHS/kotonehara/internal/quota"
+	"github.com/MapIHS/kotonehara/internal/rpg"
 	"github.com/mdp/qrterminal"
 	"github.com/subosito/gotenv"
 
@@ -86,6 +87,26 @@ func main() {
 	quota.Init(db, cfg.FreeDailyLimit, cfg.Owners)
 	commands.SetQuotaCheck(quota.Global().CheckIdentity)
 	log.Printf("quota: free daily limit = %d", cfg.FreeDailyLimit)
+
+	if cfg.RPGEnabled {
+		rpgConfig := rpg.HTTPConfig{PublicURL: cfg.RPGPublicURL, GatewaySecret: cfg.RPGGatewaySecret, ListenAddr: cfg.RPGListenAddr}
+		if err := rpgConfig.Validate(); err != nil {
+			log.Fatal("RPG config: ", err)
+		}
+		rpgCtx, cancelRPG := context.WithTimeout(ctx, 30*time.Second)
+		game, err := rpg.New(rpgCtx, db)
+		cancelRPG()
+		if err != nil {
+			log.Fatal("RPG init: ", err)
+		}
+		server, err := rpg.StartHTTP(game, rpgConfig)
+		if err != nil {
+			log.Fatal("RPG HTTP: ", err)
+		}
+		defer rpg.ShutdownHTTP(server)
+		rpg.SetDefault(game)
+		log.Printf("RPG enabled: internal API listening on %s", cfg.RPGListenAddr)
+	}
 
 	d := devices.New(container, cfg, ctx)
 	dev, err := d.GetDefaultDevice(ctx)

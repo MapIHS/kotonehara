@@ -1,0 +1,132 @@
+[
+  {
+    "id": "r01",
+    "name": "Padang Embun",
+    "min_level": 1,
+    "max_level": 99,
+    "palette": [
+      "#203C45",
+      "#72BAA8",
+      "#DAE7B7",
+      "#EFC578"
+    ],
+    "lore": "Pulau padang rumput terendah menampung embun dari pulau di atasnya. Warganya merawat lentera fajar retak dengan sumbu anyaman gelagah."
+  },
+  {
+    "id": "r02",
+    "name": "Hutan Lentera",
+    "min_level": 100,
+    "max_level": 199,
+    "palette": [
+      "#172F38",
+      "#477765",
+      "#B7C98C",
+      "#F0AA61"
+    ],
+    "lore": "Akar hutan mengikat pulau-pulau kecil. Lentera tumbuh di rongga pohon, tetapi cahaya yang padam meninggalkan gema penunjuk jalan palsu."
+  },
+  {
+    "id": "r03",
+    "name": "Karang Biru",
+    "min_level": 200,
+    "max_level": 299,
+    "palette": [
+      "#153952",
+      "#327F99",
+      "#8BCAC2",
+      "#F5D4A1"
+    ],
+    "lore": "Laut dangkal menggantung di cekungan karang terapung. Penyelam mengumpulkan serpih lentera sebelum arus menjatuhkannya ke langit bawah."
+  },
+  {
+    "id": "r04",
+    "name": "Gurun Kaca",
+    "min_level": 300,
+    "max_level": 399,
+    "palette": [
+      "#3D344C",
+      "#A47168",
+      "#E9BB84",
+      "#C5E2DB"
+    ],
+    "lore": "Pasir membeku menjadi kaca saat fajar pecah. Karavan mengikuti bayangan menara untuk menghindari pantulan matahari yang tak pernah terbit."
+  },
+  {
+    "id": "r05",
+    "name": "Rimba Petir",
+    "min_level": 400,
+    "max_level": 499,
+    "palette": [
+      "#21344D",
+      "#4B7461",
+      "#C3C96C",
+      "#B89FE2"
+    ],
+    "lore": "Dahan logam menyimpan badai di atas akar terapung. Penjaga rimba menyalurkan petir ke lentera yang kehilangan bara pertamanya."
+  },
+  {
+    "id": "r06",
+    "name": "Puncak Bara",
+    "min_level": 500,
+    "max_level": 599,
+    "palette": [
+      "#352E42",
+      "#8F4B49",
+      "#DA8551",
+      "#F6D29A"
+    ],
+    "lore": "Gunung berongga mengapung karena udara panas dari tungku tua. Setiap erupsi mengangkat pecahan pulau sekaligus mengancam rantai tambatnya."
+  },
+  {
+    "id": "r07",
+    "name": "Kota Senyap",
+    "min_level": 600,
+    "max_level": 699,
+    "palette": [
+      "#252D46",
+      "#616B91",
+      "#AAA5BB",
+      "#E0C69D"
+    ],
+    "lore": "Kota menutup lonceng setelah gema fajar meniru suara penduduknya. Pesan dipertukarkan melalui pita cahaya di jembatan yang sunyi."
+  },
+  {
+    "id": "r08",
+    "name": "Kepulauan Awan",
+    "min_level": 700,
+    "max_level": 799,
+    "palette": [
+      "#374B75",
+      "#84A5C2",
+      "#E1DFD7",
+      "#EDCDA8"
+    ],
+    "lore": "Pulau-pulau tipis berpindah mengikuti arus awan. Pelaut langit mencatat peta pada kain karena jarak daratan berubah setiap malam."
+  },
+  {
+    "id": "r09",
+    "name": "Gerbang Senja",
+    "min_level": 800,
+    "max_level": 899,
+    "palette": [
+      "#342B4E",
+      "#855978",
+      "#CB857B",
+      "#EACA93"
+    ],
+    "lore": "Dua gerbang mengapit jurang tempat siang dan malam tersangkut. Penjaganya menimbang kenangan agar lentera tidak membakar masa lalu."
+  },
+  {
+    "id": "r10",
+    "name": "Takhta Fajar",
+    "min_level": 900,
+    "max_level": 999,
+    "palette": [
+      "#30314D",
+      "#797797",
+      "#DBBDA1",
+      "#FFF0BC"
+    ],
+    "lore": "Pulau tertinggi memelihara rumah lentera pertama. Takhtanya kosong; fajar hanya kembali jika serpih cahaya dibagikan, bukan dikuasai."
+  }
+]

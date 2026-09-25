@@ -10,6 +10,10 @@ import (
 )
 
 type Config struct {
+	RPGEnabled           bool
+	RPGPublicURL         string
+	RPGGatewaySecret     string
+	RPGListenAddr        string
 	AppEnv               string
 	Prefix               string
 	LoginMethod          string
@@ -90,7 +94,15 @@ func Load() Config {
 		}
 	}
 
+	rpgListen := strings.TrimSpace(os.Getenv("RPG_LISTEN_ADDR"))
+	if rpgListen == "" {
+		rpgListen = "127.0.0.1:8089"
+	}
 	return Config{
+		RPGEnabled:           parseBool(os.Getenv("RPG_ENABLED")),
+		RPGPublicURL:         strings.TrimRight(strings.TrimSpace(os.Getenv("RPG_PUBLIC_URL")), "/"),
+		RPGGatewaySecret:     strings.TrimSpace(os.Getenv("RPG_GATEWAY_SECRET")),
+		RPGListenAddr:        rpgListen,
 		AppEnv:               env,
 		Prefix:               prefix,
 		LoginMethod:          loginMethod,
