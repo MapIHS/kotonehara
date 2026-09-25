@@ -11,8 +11,15 @@ import (
 )
 
 func TestHTTPSessionBoundaries(t *testing.T) {
+	for _, origin := range []string{"https://game.example.com", "http://100.89.85.96:1338"} {
+		t.Run(origin, func(t *testing.T) { testSessionBoundaries(t, origin) })
+	}
+}
+
+func testSessionBoundaries(t *testing.T, origin string) {
+	t.Helper()
 	_, s, p := fixture(t)
-	cfg := HTTPConfig{PublicURL: "https://game.example.com", GatewaySecret: strings.Repeat("x", 32), ListenAddr: "127.0.0.1:0"}
+	cfg := HTTPConfig{PublicURL: origin, GatewaySecret: strings.Repeat("x", 32), ListenAddr: "127.0.0.1:0"}
 	handler, err := NewHTTPHandler(s, cfg)
 	if err != nil {
 		t.Fatal(err)
@@ -57,7 +64,12 @@ func TestHTTPSessionBoundaries(t *testing.T) {
 		t.Fatal(cookies)
 	}
 	cookie := cookies[0]
-	if !cookie.Secure || !cookie.HttpOnly || cookie.Path != "/rpg/api" || cookie.SameSite != http.SameSiteLaxMode {
+	secure := strings.HasPrefix(origin, "https://")
+	wantCookieName := "hara_rpg_local"
+	if secure {
+		wantCookieName = "__Secure-hara_rpg"
+	}
+	if cookie.Secure != secure || cookie.Name != wantCookieName || !cookie.HttpOnly || cookie.Path != "/rpg/api" || cookie.SameSite != http.SameSiteLaxMode {
 		t.Fatal("unsafe cookie", cookie)
 	}
 	var exchange struct {
@@ -110,12 +122,12 @@ func TestHTTPSessionBoundaries(t *testing.T) {
 	}
 }
 func TestPublicOriginConfiguration(t *testing.T) {
-	for _, origin := range []string{"http://game.example.com", "https://game.example.com/rpg", "https://user:pass@game.example.com", "https://game.example.com/?ticket=x", "javascript:alert(1)"} {
+	for _, origin := range []string{"http://game.example.com", "http://8.8.8.8:1338", "http://192.168.1.2:1338", "http://100.63.255.255:1338", "http://100.128.0.0:1338", "http://100.89.85.96.example.com:1338", "http://[fd7a:115c:a1e1::1]:1338", "https://game.example.com/rpg", "https://user:pass@game.example.com", "https://game.example.com/?ticket=x", "javascript:alert(1)"} {
 		if err := (HTTPConfig{PublicURL: origin, GatewaySecret: strings.Repeat("x", 32), ListenAddr: "127.0.0.1:0"}).Validate(); err == nil {
 			t.Fatal("accepted", origin)
 		}
 	}
-	for _, origin := range []string{"http://127.0.0.1:3000", "http://localhost:8088", "https://game.example.com"} {
+	for _, origin := range []string{"http://127.0.0.1:3000", "http://localhost:8088", "http://[::1]:1338", "http://100.89.85.96:1338", "http://100.64.0.1:1338", "http://100.127.255.254:1338", "http://[fd7a:115c:a1e0::1]:1338", "https://game.example.com"} {
 		if err := (HTTPConfig{PublicURL: origin, GatewaySecret: strings.Repeat("x", 32), ListenAddr: "127.0.0.1:0"}).Validate(); err != nil {
 			t.Fatal(origin, err)
 		}

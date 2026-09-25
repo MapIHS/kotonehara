@@ -13,6 +13,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/netip"
 	"net/url"
 	"regexp"
 	"strings"
@@ -28,11 +29,10 @@ type HTTPConfig struct {
 func (c HTTPConfig) Validate() error {
 	u, err := url.Parse(c.PublicURL)
 	if err != nil || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || (u.Path != "" && u.Path != "/") {
-		return fmt.Errorf("RPG_PUBLIC_URL must be an HTTPS origin without path/query/credentials")
+		return fmt.Errorf("RPG_PUBLIC_URL must be an HTTP(S) origin without path/query/credentials")
 	}
-	local := u.Hostname() == "localhost" || u.Hostname() == "127.0.0.1" || u.Hostname() == "::1"
-	if u.Scheme != "https" && !(u.Scheme == "http" && local) {
-		return fmt.Errorf("RPG_PUBLIC_URL requires HTTPS (HTTP allowed only on loopback)")
+	if u.Scheme != "https" && !(u.Scheme == "http" && allowHTTPOrigin(u.Hostname())) {
+		return fmt.Errorf("RPG_PUBLIC_URL requires HTTPS (HTTP allowed only on loopback or a Tailscale IP)")
 	}
 	if len(c.GatewaySecret) < 32 || strings.ContainsAny(c.GatewaySecret, "\r\n\t ") {
 		return fmt.Errorf("RPG_GATEWAY_SECRET must contain at least 32 characters without spaces")
@@ -41,6 +41,20 @@ func (c HTTPConfig) Validate() error {
 		return fmt.Errorf("RPG_LISTEN_ADDR is required")
 	}
 	return nil
+}
+
+// HTTP on a configured Tailscale address relies on the tailnet transport.
+// Do not extend this exception to public hosts or arbitrary private networks.
+func allowHTTPOrigin(host string) bool {
+	if strings.EqualFold(host, "localhost") {
+		return true
+	}
+	ip, err := netip.ParseAddr(host)
+	if err != nil {
+		return false
+	}
+	return ip.IsLoopback() || netip.MustParsePrefix("100.64.0.0/10").Contains(ip) ||
+		netip.MustParsePrefix("fd7a:115c:a1e0::/48").Contains(ip)
 }
 
 var tokenPattern = regexp.MustCompile(`^[a-f0-9]{64}$`)
