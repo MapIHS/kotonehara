@@ -70,4 +70,12 @@ func TestRPGPrivateLinkAndSharedGacha(t *testing.T) {
 	if !strings.Contains(replies[len(replies)-1], "Embun: 0") {
 		t.Fatal("profile not synchronized")
 	}
+	if !strings.Contains(replies[len(replies)-1], "Lv.1") {
+		t.Fatal("character levels missing from bot summary")
+	}
+	m.Query = "tas"
+	handleRPG(ctx, m, s, "https://game.example.com", send)
+	if !strings.Contains(replies[len(replies)-1], "XP latihan: 0") || !strings.Contains(replies[len(replies)-1], "Belum ada equipment") {
+		t.Fatal("inventory command not synchronized")
+	}
 }

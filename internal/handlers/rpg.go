@@ -64,6 +64,24 @@ func handleRPG(ctx context.Context, m *message.Message, s *rpg.Service, publicUR
 		}
 	case "profil", "tim":
 		reply(rpgSummary(p, s.Catalog()) + "\n\n.rpg lanjut — buka peta, battle, dan atur tim")
+	case "tas":
+		lines := []string{fmt.Sprintf("🎒 *Tas Penjaga*\nKoin: %d · XP latihan: %d", p.Coins, p.TrainingXP)}
+		for _, item := range s.Catalog().Equipment {
+			if count := p.Inventory[item.ID]; count > 0 {
+				used := 0
+				for _, slots := range p.Loadouts {
+					if slots[item.Slot] == item.ID {
+						used++
+					}
+				}
+				lines = append(lines, fmt.Sprintf("%s ×%d · dipasang %d", item.Name, count, used))
+			}
+		}
+		if len(lines) == 1 {
+			lines = append(lines, "Belum ada equipment.")
+		}
+		lines = append(lines, "\n.rpg lanjut → Karakter → pilih kartu untuk latihan dan bengkel.")
+		reply(strings.Join(lines, "\n"))
 	case "gacha":
 		if len(parts) != 2 || (parts[1] != "1" && parts[1] != "10") {
 			reply("Gunakan .rpg gacha 1 atau .rpg gacha 10. Biaya 160 Embun Bintang per tarikan.")
@@ -123,7 +141,7 @@ func handleRPG(ctx context.Context, m *message.Message, s *rpg.Service, publicUR
 		}
 		reply(strings.Join(lines, "\n"))
 	default:
-		reply("*HARA: Gema Arunika*\n.rpg mulai — buat profil dan buka game\n.rpg profil — saldo dan progres\n.rpg lanjut — link pribadi untuk bermain\n.rpg tim — lihat tim\n.rpg gacha 1 / 10 — panggil karakter\n.rpg peluang — aturan pemanggilan\n.rpg riwayat — hasil terakhir")
+		reply("*HARA: Gema Arunika*\n.rpg mulai — buat profil dan buka game\n.rpg profil — saldo dan progres\n.rpg lanjut — link pribadi untuk bermain\n.rpg tim — lihat tim\n.rpg tas — XP latihan dan equipment\n.rpg gacha 1 / 10 — panggil karakter\n.rpg peluang — aturan pemanggilan\n.rpg riwayat — hasil terakhir")
 	}
 }
 func rpgSummary(p rpg.Profile, c rpg.Catalog) string {
@@ -131,12 +149,12 @@ func rpgSummary(p rpg.Profile, c rpg.Catalog) string {
 	for _, id := range p.Party {
 		for _, ch := range c.Characters {
 			if ch.ID == id {
-				names = append(names, ch.Name)
+				names = append(names, fmt.Sprintf("%s Lv.%d", ch.Name, max(1, p.Growth[id].Level)))
 				break
 			}
 		}
 	}
-	return fmt.Sprintf("🌄 *HARA: Gema Arunika*\nPenjaga: %s\nJalur terbuka: level %d / 999\nTim: %s\nKarakter: %d / 60\nEmbun: %d · Koin: %d · Debu: %d\nPity ★5: %d/80 · ★4+: %d/10", p.Name, p.Unlocked+1, strings.Join(names, " · "), len(p.Collection), p.Shards, p.Coins, p.Dust, p.Pity5, p.Pity4)
+	return fmt.Sprintf("🌄 *HARA: Gema Arunika*\nPenjaga: %s\nJalur terbuka: level %d / 999\nTim: %s\nKarakter: %d / 60\nEmbun: %d · Koin: %d · Debu: %d\nXP latihan: %d · Batas level: %d\nPity ★5: %d/80 · ★4+: %d/10", p.Name, p.Unlocked+1, strings.Join(names, " · "), len(p.Collection), p.Shards, p.Coins, p.Dust, p.TrainingXP, p.LevelCap, p.Pity5, p.Pity4)
 }
 func rpgError(err error) string {
 	var e *rpg.Error

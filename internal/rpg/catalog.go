@@ -9,7 +9,7 @@ import (
 //go:embed catalog/*.json
 var catalogFiles embed.FS
 
-const RulesVersion = "arunika-v1"
+const RulesVersion = "arunika-v2"
 
 type Ability struct {
 	Name        string `json:"name"`
@@ -68,10 +68,11 @@ type Catalog struct {
 	Regions    []Region    `json:"regions"`
 	Stages     []Stage     `json:"stages"`
 	Featured   string      `json:"featured"`
+	Equipment  []Equipment `json:"equipment"`
 }
 
 func loadCatalog() (Catalog, error) {
-	c := Catalog{Version: RulesVersion, Featured: "char_005"}
+	c := Catalog{Version: RulesVersion, Featured: "char_005", Equipment: equipmentCatalog}
 	for name, out := range map[string]any{"characters": &c.Characters, "enemies": &c.Enemies, "regions": &c.Regions} {
 		raw, err := catalogFiles.ReadFile("catalog/" + name + ".json")
 		if err != nil {
@@ -83,6 +84,13 @@ func loadCatalog() (Catalog, error) {
 	}
 	if len(c.Characters) != 60 || len(c.Enemies) != 100 || len(c.Regions) != 10 {
 		return c, fmt.Errorf("invalid RPG catalog")
+	}
+	for i := range c.Characters {
+		kit, ok := skillKits[c.Characters[i].ID]
+		if !ok {
+			return c, fmt.Errorf("missing skill kit for %s", c.Characters[i].ID)
+		}
+		c.Characters[i].Skill.Description = kit.Description
 	}
 	for level := 1; level <= 999; level++ {
 		found := false

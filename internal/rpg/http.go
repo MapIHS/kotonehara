@@ -89,6 +89,16 @@ func NewHTTPHandler(s *Service, c HTTPConfig) (http.Handler, error) {
 	}
 	h.mux.HandleFunc("POST /rpg/api/session/exchange", h.exchange)
 	h.mux.HandleFunc("POST /rpg/api/session/logout", h.authorized(h.logout))
+	for route, operation := range map[string]string{"POST /rpg/api/characters/train": "train", "POST /rpg/api/equipment/buy": "buy", "PUT /rpg/api/equipment/equip": "equip"} {
+		h.mux.HandleFunc(route, h.authorized(func(w http.ResponseWriter, r *http.Request, player, _ string) error {
+			var a ProgressRequest
+			if err := decode(w, r, &a); err != nil {
+				return err
+			}
+			out, err := s.Progress(r.Context(), player, operation, a)
+			return respond(w, out, err)
+		}))
+	}
 	h.mux.HandleFunc("GET /rpg/api/profile", h.authorized(func(w http.ResponseWriter, r *http.Request, player, session string) error {
 		snapshot, err := s.Snapshot(r.Context(), player)
 		if err != nil {

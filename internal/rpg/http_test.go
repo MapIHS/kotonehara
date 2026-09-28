@@ -96,6 +96,16 @@ func testSessionBoundaries(t *testing.T, origin string) {
 	if profile.Profile.ID != p.ID || profile.CSRF != exchange.CSRF {
 		t.Fatal("profile/CSRF mismatch")
 	}
+	for _, route := range []struct{ method, path string }{{"POST", "/rpg/api/characters/train"}, {"POST", "/rpg/api/equipment/buy"}, {"PUT", "/rpg/api/equipment/equip"}} {
+		w = send(route.method, route.path, map[string]any{"request_id": "progress-request"}, cookie, "", cfg.PublicURL, cfg.GatewaySecret)
+		if w.Code != 403 {
+			t.Fatal("progression CSRF bypass", route.path, w.Code)
+		}
+	}
+	w = send("POST", "/rpg/api/equipment/buy", map[string]any{"request_id": "forged-shop-price", "item_id": "blade_dawn", "price": 0}, cookie, exchange.CSRF, cfg.PublicURL, cfg.GatewaySecret)
+	if w.Code != 400 {
+		t.Fatal("client supplied equipment price", w.Code)
+	}
 	body := map[string]any{"request_id": "http-battle-start", "stage": 0}
 	for _, test := range []struct{ csrf, origin string }{{"", cfg.PublicURL}, {exchange.CSRF, "https://attacker.example"}} {
 		w = send("POST", "/rpg/api/battles", body, cookie, test.csrf, test.origin, cfg.GatewaySecret)

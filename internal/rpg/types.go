@@ -15,21 +15,26 @@ func conflict() error {
 }
 
 type Profile struct {
-	ID         string         `json:"id"`
-	Name       string         `json:"name"`
-	Revision   int64          `json:"revision"`
-	Version    int            `json:"version"`
-	Shards     int            `json:"shards"`
-	Coins      int            `json:"coins"`
-	Dust       int            `json:"dust"`
-	Pity5      int            `json:"pity5"`
-	Pity4      int            `json:"pity4"`
-	Guarantee  bool           `json:"guarantee"`
-	Unlocked   int            `json:"unlocked"`
-	Cleared    []int          `json:"cleared"`
-	Party      []string       `json:"party"`
-	Collection map[string]int `json:"collection"`
-	LastBattle string         `json:"last_battle"`
+	ID         string                       `json:"id"`
+	Name       string                       `json:"name"`
+	Revision   int64                        `json:"revision"`
+	Version    int                          `json:"version"`
+	Shards     int                          `json:"shards"`
+	Coins      int                          `json:"coins"`
+	Dust       int                          `json:"dust"`
+	Pity5      int                          `json:"pity5"`
+	Pity4      int                          `json:"pity4"`
+	Guarantee  bool                         `json:"guarantee"`
+	Unlocked   int                          `json:"unlocked"`
+	Cleared    []int                        `json:"cleared"`
+	Party      []string                     `json:"party"`
+	Collection map[string]int               `json:"collection"`
+	LastBattle string                       `json:"last_battle"`
+	Growth     map[string]Growth            `json:"growth"`
+	TrainingXP int                          `json:"training_xp"`
+	LevelCap   int                          `json:"level_cap"`
+	Inventory  map[string]int               `json:"inventory"`
+	Loadouts   map[string]map[string]string `json:"loadouts"`
 }
 type Hero struct {
 	Character
@@ -40,33 +45,50 @@ type Hero struct {
 	Energy  int  `json:"energy"`
 	Acted   bool `json:"acted"`
 	Guard   bool `json:"guard"`
+	Level   int  `json:"level"`
+	Shield  int  `json:"shield"`
+	Taunt   bool `json:"taunt"`
+	Regen   int  `json:"regen"`
+	Reflect bool `json:"reflect"`
+	Evade   bool `json:"evade"`
+	Empower bool `json:"empower"`
 }
 type Opponent struct {
 	Enemy
-	HP      int    `json:"hp"`
-	Max     int    `json:"max"`
-	Attack  int    `json:"attack"`
-	Defense int    `json:"defense"`
-	Kind    string `json:"kind"`
-	Charged bool   `json:"charged"`
+	HP        int    `json:"hp"`
+	Max       int    `json:"max"`
+	Attack    int    `json:"attack"`
+	Defense   int    `json:"defense"`
+	Kind      string `json:"kind"`
+	Charged   bool   `json:"charged"`
+	Burn      int    `json:"burn"`
+	BurnPower int    `json:"burn_power"`
+	Weaken    int    `json:"weaken"`
+	Expose    int    `json:"expose"`
+	Slow      int    `json:"slow"`
+	Blind     int    `json:"blind"`
+	Mark      bool   `json:"mark"`
+	Shield    int    `json:"shield"`
 }
 type Battle struct {
-	ID           string     `json:"id"`
-	Revision     int64      `json:"revision"`
-	Rules        string     `json:"rules"`
-	Stage        int        `json:"stage"`
-	Round        int        `json:"round"`
-	Active       int        `json:"active"`
-	Target       int        `json:"target"`
-	Phase        string     `json:"phase"`
-	Done         bool       `json:"done"`
-	Result       string     `json:"result"`
-	FirstClear   bool       `json:"first_clear"`
-	RewardShards int        `json:"reward_shards"`
-	RewardCoins  int        `json:"reward_coins"`
-	Heroes       []Hero     `json:"heroes"`
-	Enemies      []Opponent `json:"enemies"`
-	Logs         []string   `json:"logs"`
+	ID               string     `json:"id"`
+	Revision         int64      `json:"revision"`
+	Rules            string     `json:"rules"`
+	Stage            int        `json:"stage"`
+	Round            int        `json:"round"`
+	Active           int        `json:"active"`
+	Target           int        `json:"target"`
+	Phase            string     `json:"phase"`
+	Done             bool       `json:"done"`
+	Result           string     `json:"result"`
+	FirstClear       bool       `json:"first_clear"`
+	RewardShards     int        `json:"reward_shards"`
+	RewardCoins      int        `json:"reward_coins"`
+	RewardXP         int        `json:"reward_xp"`
+	RewardTrainingXP int        `json:"reward_training_xp"`
+	Heroes           []Hero     `json:"heroes"`
+	Enemies          []Opponent `json:"enemies"`
+	Logs             []string   `json:"logs"`
 }
 
 func (b *Battle) log(message string) {

@@ -139,6 +139,7 @@ func (s *Service) EnsurePlayer(ctx context.Context, aliases []string, name strin
 		for _, id := range party {
 			p.Collection[id] = 1
 		}
+		normalizeProgress(&p)
 		raw, _ := json.Marshal(p)
 		if _, err = tx.ExecContext(ctx, `INSERT INTO rpg_players(id,state,revision,created_at) VALUES(?,?,0,?)`, id, string(raw), s.now().Unix()); err != nil {
 			return p, err
@@ -170,6 +171,9 @@ func loadPlayer(ctx context.Context, tx *sqlx.Tx, id string) (Profile, error) {
 		return p, err
 	}
 	err = json.Unmarshal([]byte(raw), &p)
+	if err == nil {
+		normalizeProgress(&p)
+	}
 	return p, err
 }
 func loadBattle(ctx context.Context, tx *sqlx.Tx, player, id string) (*Battle, error) {
@@ -188,7 +192,7 @@ func loadBattle(ctx context.Context, tx *sqlx.Tx, player, id string) (*Battle, e
 	if err = json.Unmarshal([]byte(raw), &b); err != nil {
 		return nil, err
 	}
-	if b.Rules != RulesVersion {
+	if b.Rules != RulesVersion && b.Rules != "arunika-v1" {
 		return nil, fail(409, "rules_changed", "Versi battle ini belum didukung server. Hubungi pemilik bot.")
 	}
 	return &b, nil
@@ -268,6 +272,7 @@ func (s *Service) mutate(ctx context.Context, player, requestID, kind string, pa
 	if err != nil {
 		return Snapshot{}, err
 	}
+	normalizeProgress(&p)
 	p.Revision++
 	raw, err = json.Marshal(p)
 	if err != nil {

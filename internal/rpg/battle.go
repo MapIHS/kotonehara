@@ -42,15 +42,25 @@ func (s *Service) StartBattle(ctx context.Context, player, request string, stage
 		for _, id := range p.Party {
 			c := s.chars[id]
 			base := bases[c.Role]
+			heroLevel := float64(p.Growth[id].Level)
 			rarity := []float64{1, 1.04, 1.08, 1.14, 1.20}[c.Rarity-1]
-			hp := rounded(base[0] * (1 + (level-1)*.022) * rarity)
+			hp := rounded(base[0] * (1 + (heroLevel-1)*.022) * rarity)
 			// Art and design prose are served once in the catalog, not copied into every battle snapshot.
 			c.Art = Art{}
 			c.Visual = ""
 			c.Personality = ""
 			c.Passive = Ability{}
 			c.Skill.Description = ""
-			b.Heroes = append(b.Heroes, Hero{Character: c, HP: hp, Max: hp, Attack: rounded(base[1] * (1 + (level-1)*.0105) * rarity), Defense: rounded(base[2] * (1 + (level-1)*.008) * rarity), Energy: 3})
+			hero := Hero{Character: c, Level: int(heroLevel), HP: hp, Max: hp, Attack: rounded(base[1] * (1 + (heroLevel-1)*.0105) * rarity), Defense: rounded(base[2] * (1 + (heroLevel-1)*.008) * rarity), Energy: 3}
+			for _, itemID := range p.Loadouts[id] {
+				if item, ok := findEquipment(itemID); ok {
+					hero.Max += item.HP
+					hero.Attack += item.Attack
+					hero.Defense += item.Defense
+				}
+			}
+			hero.HP = hero.Max
+			b.Heroes = append(b.Heroes, hero)
 		}
 		var species Enemy
 		for _, e := range s.catalog.Enemies {
@@ -85,6 +95,9 @@ func (s *Service) StartBattle(ctx context.Context, player, request string, stage
 			}
 			hp := rounded((110 + float64(i)*15) * (1 + (level-1)*.022) * hpFactor)
 			b.Enemies = append(b.Enemies, Opponent{Enemy: e, HP: hp, Max: hp, Attack: rounded(28 * (1 + (level-1)*.0105) * atkFactor), Defense: rounded(14 * (1 + (level-1)*.008) * defFactor), Kind: kind})
+			if e.Archetype == "construct" || e.Archetype == "giant_construct" || e.Archetype == "crustacean" {
+				b.Enemies[len(b.Enemies)-1].Shield = hp / 5
+			}
 		}
 		b.log("Pilih target dan aksi. Setiap anggota tim bertindak sekali per ronde.")
 		p.LastBattle = id
@@ -126,72 +139,78 @@ func (s *Service) Act(ctx context.Context, player, battleID string, a Action) (S
 		}
 		h.Acted = true
 		b.Target = a.Target
-		switch a.Action {
-		case "guard":
-			h.Guard = true
-			h.Energy = min(5, h.Energy+2)
-			b.log(h.Name + " bertahan sampai fase musuh berakhir.")
-		case "ultimate":
-			h.Energy = 0
-			if h.Role == "Medic" {
-				for i := range b.Heroes {
-					ally := &b.Heroes[i]
-					if ally.HP > 0 {
-						ally.HP = min(ally.Max, ally.HP+rounded(float64(ally.Max)*.55))
+		if b.Rules == RulesVersion && a.Action == "skill" {
+			if err := s.useSkill(b, a.Actor, a.Target); err != nil {
+				return nil, nil, err
+			}
+		} else {
+			switch a.Action {
+			case "guard":
+				h.Guard = true
+				h.Energy = min(5, h.Energy+2)
+				b.log(h.Name + " bertahan sampai fase musuh berakhir.")
+			case "ultimate":
+				h.Energy = 0
+				if h.Role == "Medic" {
+					for i := range b.Heroes {
+						ally := &b.Heroes[i]
+						if ally.HP > 0 {
+							ally.HP = min(ally.Max, ally.HP+rounded(float64(ally.Max)*.55))
+						}
 					}
+					b.log(h.Name + " memulihkan seluruh tim.")
+				} else {
+					for i := range b.Enemies {
+						e := &b.Enemies[i]
+						if e.HP <= 0 {
+							continue
+						}
+						n, err := s.heroHit(b, h, e, 2.8, false)
+						if err != nil {
+							return nil, nil, err
+						}
+						damageOpponent(e, n, false)
+					}
+					b.log(h.Name + " melepaskan Ultimate ke semua musuh.")
 				}
-				b.log(h.Name + " memulihkan seluruh tim.")
-			} else {
-				for i := range b.Enemies {
-					e := &b.Enemies[i]
-					if e.HP <= 0 {
-						continue
+			default:
+				if a.Action == "skill" && h.Role == "Medic" {
+					h.Energy -= 2
+					index := -1
+					for i, v := range b.Heroes {
+						if v.HP > 0 && (index < 0 || float64(v.HP)/float64(v.Max) < float64(b.Heroes[index].HP)/float64(b.Heroes[index].Max)) {
+							index = i
+						}
 					}
-					n, err := s.hit(h.Attack, e.Defense, b.Stage+1, 2.8, h.Element, e.Element, false)
+					ally := &b.Heroes[index]
+					heal := min(ally.Max-ally.HP, rounded(float64(ally.Max)*.38))
+					ally.HP += heal
+					b.log(fmt.Sprintf("%s memulihkan %s: +%d HP.", h.Name, ally.Name, heal))
+				} else if a.Action == "skill" && h.Role == "Guardian" {
+					h.Energy -= 2
+					for i := range b.Heroes {
+						if b.Heroes[i].HP > 0 {
+							b.Heroes[i].Guard = true
+						}
+					}
+					b.log(h.Name + " melindungi seluruh tim sampai fase musuh berakhir.")
+				} else {
+					coefficient := 1.0
+					verb := "menyerang"
+					if a.Action == "skill" {
+						h.Energy -= 2
+						coefficient = 1.85
+						verb = "menyerang kuat"
+					} else {
+						h.Energy = min(5, h.Energy+1)
+					}
+					n, err := s.heroHit(b, h, target, coefficient, false)
 					if err != nil {
 						return nil, nil, err
 					}
-					e.HP = max(0, e.HP-n)
+					damageOpponent(target, n, false)
+					b.log(fmt.Sprintf("%s %s → %s: %d damage.", h.Name, verb, target.Name, n))
 				}
-				b.log(h.Name + " melepaskan Ultimate ke semua musuh.")
-			}
-		default:
-			if a.Action == "skill" && h.Role == "Medic" {
-				h.Energy -= 2
-				index := -1
-				for i, v := range b.Heroes {
-					if v.HP > 0 && (index < 0 || float64(v.HP)/float64(v.Max) < float64(b.Heroes[index].HP)/float64(b.Heroes[index].Max)) {
-						index = i
-					}
-				}
-				ally := &b.Heroes[index]
-				heal := min(ally.Max-ally.HP, rounded(float64(ally.Max)*.38))
-				ally.HP += heal
-				b.log(fmt.Sprintf("%s memulihkan %s: +%d HP.", h.Name, ally.Name, heal))
-			} else if a.Action == "skill" && h.Role == "Guardian" {
-				h.Energy -= 2
-				for i := range b.Heroes {
-					if b.Heroes[i].HP > 0 {
-						b.Heroes[i].Guard = true
-					}
-				}
-				b.log(h.Name + " melindungi seluruh tim sampai fase musuh berakhir.")
-			} else {
-				coefficient := 1.0
-				verb := "menyerang"
-				if a.Action == "skill" {
-					h.Energy -= 2
-					coefficient = 1.85
-					verb = "menyerang kuat"
-				} else {
-					h.Energy = min(5, h.Energy+1)
-				}
-				n, err := s.hit(h.Attack, target.Defense, b.Stage+1, coefficient, h.Element, target.Element, false)
-				if err != nil {
-					return nil, nil, err
-				}
-				target.HP = max(0, target.HP-n)
-				b.log(fmt.Sprintf("%s %s → %s: %d damage.", h.Name, verb, target.Name, n))
 			}
 		}
 		if livingEnemies(b) == 0 {
@@ -214,10 +233,28 @@ func (s *Service) Act(ctx context.Context, player, battleID string, a Action) (S
 					if e.HP <= 0 {
 						continue
 					}
+					if b.Rules == RulesVersion {
+						if e.Burn > 0 {
+							e.HP = max(0, e.HP-e.BurnPower)
+							e.Burn--
+							b.log(fmt.Sprintf("%s terkena Bara: %d damage.", e.Name, e.BurnPower))
+						}
+						if e.HP <= 0 {
+							continue
+						}
+					}
 					living := []int{}
 					for j, h := range b.Heroes {
 						if h.HP > 0 {
 							living = append(living, j)
+						}
+					}
+					if b.Rules == RulesVersion {
+						for _, j := range living {
+							if b.Heroes[j].Taunt {
+								living = []int{j}
+								break
+							}
 						}
 					}
 					roll, err := s.roll(len(living))
@@ -229,9 +266,46 @@ func (s *Service) Act(ctx context.Context, player, battleID string, a Action) (S
 					if e.Charged {
 						factor = 1.7
 					}
-					n, err := s.hit(e.Attack, ally.Defense, b.Stage+1, factor, e.Element, ally.Element, ally.Guard)
+					attack := e.Attack
+					if b.Rules == RulesVersion {
+						if e.Weaken > 0 {
+							attack = rounded(float64(attack) * .8)
+							e.Weaken--
+						}
+						if e.Slow > 0 {
+							factor *= .8
+							e.Slow--
+						}
+						if e.Expose > 0 {
+							e.Expose--
+						}
+					}
+					n, err := s.hit(attack, ally.Defense, b.Stage+1, factor, e.Element, ally.Element, ally.Guard)
 					if err != nil {
 						return nil, nil, err
+					}
+					if b.Rules == RulesVersion {
+						if e.Blind > 0 {
+							e.Blind--
+							miss, err := s.roll(100)
+							if err != nil {
+								return nil, nil, err
+							}
+							if miss < 35 {
+								n = 0
+							}
+						}
+						if ally.Evade {
+							n = 0
+							ally.Evade = false
+						}
+						if ally.Reflect && n > 0 {
+							damageOpponent(e, max(1, n/4), false)
+							ally.Reflect = false
+						}
+						absorbed := min(ally.Shield, n)
+						ally.Shield -= absorbed
+						n -= absorbed
 					}
 					ally.HP = max(0, ally.HP-n)
 					b.log(fmt.Sprintf("%s menyerang %s: %d damage.", e.Name, ally.Name, n))
@@ -249,17 +323,36 @@ func (s *Service) Act(ctx context.Context, player, battleID string, a Action) (S
 						break
 					}
 				}
+				if !b.Done && livingEnemies(b) == 0 {
+					if err := s.complete(ctx, tx, p, b, "win"); err != nil {
+						return nil, nil, err
+					}
+				}
 				if !b.Done {
 					b.Round++
 					for i := range b.Heroes {
 						b.Heroes[i].Acted = false
 						b.Heroes[i].Guard = false
+						b.Heroes[i].Taunt = false
+						if b.Heroes[i].HP > 0 && b.Heroes[i].Regen > 0 {
+							h := &b.Heroes[i]
+							h.HP = min(h.Max, h.HP+rounded(float64(h.Max)*.12))
+							h.Regen--
+						}
 					}
 					next = nextHero(b)
 				}
 			}
 			if next >= 0 {
 				b.Active = next
+			}
+		}
+		if !b.Done && b.Enemies[b.Target].HP <= 0 {
+			for i, e := range b.Enemies {
+				if e.HP > 0 {
+					b.Target = i
+					break
+				}
 			}
 		}
 		b.Revision++
@@ -332,6 +425,12 @@ func (s *Service) complete(ctx context.Context, tx *sqlx.Tx, p *Profile, b *Batt
 			}
 			p.Shards += b.RewardShards
 			p.Coins += b.RewardCoins
+			normalizeProgress(p)
+			b.RewardXP, b.RewardTrainingXP = 100, 100
+			p.TrainingXP += b.RewardTrainingXP
+			for _, h := range b.Heroes {
+				grantXP(p, h.ID, b.RewardXP)
+			}
 			if _, err := tx.ExecContext(ctx, `INSERT INTO rpg_ledger(player_id,event_key,shards,coins,created_at) VALUES(?,?,?,?,?)`, p.ID, fmt.Sprintf("clear:%d", b.Stage), b.RewardShards, b.RewardCoins, s.now().Unix()); err != nil {
 				return err
 			}

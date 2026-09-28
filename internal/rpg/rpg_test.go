@@ -399,6 +399,9 @@ func TestAllLevelsCatalogAndBossScaling(t *testing.T) {
 	}
 	for _, level := range []int{1, 99, 100, 499, 999} {
 		p.Unlocked = level - 1
+		for _, id := range p.Party {
+			p.Growth[id] = Growth{Level: level}
+		}
 		patchProfile(t, db, p)
 		out, err := s.StartBattle(context.Background(), p.ID, fmt.Sprintf("level-start-%d", level), level-1)
 		if err != nil {
