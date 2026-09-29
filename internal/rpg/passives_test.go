@@ -299,3 +299,24 @@ func TestMedicPassiveAddsEnergyBeyondActiveSkill(t *testing.T) {
 		t.Fatal("medic passive gave no additional energy")
 	}
 }
+
+func TestExtendingBurnDoesNotShortenPassiveDuration(t *testing.T) {
+	_, s, _ := fixture(t)
+	b := passiveBattle("char_057")
+	b.Heroes[0].Character = s.chars["char_057"]
+	b.Heroes[0].Energy = 3
+	if err := s.useSkill(b, 0, 0); err != nil {
+		t.Fatal(err)
+	}
+	if b.Enemies[0].Burn != 4 {
+		t.Fatal("first passive extension missing")
+	}
+	b.Heroes[1].Character = s.chars["char_027"]
+	b.Heroes[1].Energy = 3
+	if err := s.useSkill(b, 1, 0); err != nil {
+		t.Fatal(err)
+	}
+	if b.Enemies[0].Burn != 4 {
+		t.Fatal("ally extension shortened stronger burn")
+	}
+}

@@ -261,7 +261,7 @@ func (s *Service) useSkill(b *Battle, actor, target int) error {
 					e.BurnPower = max(e.BurnPower, min(rounded(float64(e.Max)*.04), rounded(float64(h.Attack)*.4)))
 				case "extend_burn", "boost_burn":
 					if e.Burn > 0 {
-						e.Burn = min(3, e.Burn+1)
+						e.Burn = max(e.Burn, min(3, e.Burn+1))
 						if effect == "boost_burn" {
 							e.BurnPower = min(rounded(float64(e.Max)*.12), rounded(float64(e.BurnPower)*1.25))
 						}
