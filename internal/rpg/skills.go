@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// The active kit is explicit per character. Design-only passives are not applied.
+// The active kit is explicit per character. V3 passives are applied by battle hooks.
 // Rounds are player phase + enemy phase; Slow reduces the next enemy attack by 20%.
 type skillKit struct {
 	Power       float64
@@ -93,7 +93,11 @@ func damageOpponent(e *Opponent, n int, pierce bool) {
 
 func (s *Service) heroHit(b *Battle, h *Hero, e *Opponent, power float64, ignoreDefense bool) (int, error) {
 	level, def := b.Stage+1, e.Defense
-	if b.Rules == RulesVersion {
+	power *= passivePower(b, h, e)
+	if passivesEnabled(b) && e.BurnExpose && e.Burn > 0 {
+		def = rounded(float64(def) * .9)
+	}
+	if modernBattle(b) {
 		level = h.Level
 		if e.Expose > 0 {
 			def = rounded(float64(def) * .75)
@@ -102,7 +106,12 @@ func (s *Service) heroHit(b *Battle, h *Hero, e *Opponent, power float64, ignore
 			def /= 2
 		}
 		if e.Mark {
-			power *= 1.25
+			bonus := 25
+			if passivesEnabled(b) {
+				bonus = max(bonus, e.MarkBonus)
+			}
+			power *= 1 + float64(bonus)/100
+			e.MarkBonus = 0
 			e.Mark = false
 		}
 		if h.Empower {
@@ -134,7 +143,10 @@ func (s *Service) useSkill(b *Battle, actor, target int) error {
 	if !ok {
 		return fmt.Errorf("missing active kit")
 	}
+	h.CurrentAction = "skill"
+	defer func() { h.CurrentAction = "" }()
 	h.Energy -= 2
+	hitCount := 0
 	effects := strings.Split(k.Effects, ",")
 	has := func(v string) bool { return slices.Contains(effects, v) }
 	allies := weakestHeroes(b)
@@ -151,10 +163,10 @@ func (s *Service) useSkill(b *Battle, actor, target int) error {
 		for _, i := range selected {
 			a := &b.Heroes[i]
 			if k.Heal > 0 {
-				a.HP = min(a.Max, a.HP+rounded(float64(a.Max)*k.Heal))
+				healHero(b, h, a, rounded(float64(a.Max)*k.Heal), true)
 			}
 			if k.Shield > 0 {
-				shieldHero(a, k.Shield)
+				giveShield(b, h, a, k.Shield)
 			}
 			if has("guard") {
 				a.Guard = true
@@ -181,6 +193,7 @@ func (s *Service) useSkill(b *Battle, actor, target int) error {
 			if e.HP <= 0 {
 				continue
 			}
+			hitCount++
 			power := k.Power
 			marked, charged, hurt, shielded := e.Mark, e.Charged, e.HP < e.Max, e.Shield > 0
 			switch k.Bonus {
@@ -240,6 +253,10 @@ func (s *Service) useSkill(b *Battle, actor, target int) error {
 					if effect == "burn_unshielded" && shielded {
 						continue
 					}
+					if e.Burn == 0 {
+						e.BurnExpose = false
+						e.BurnSource = ""
+					}
 					e.Burn = max(e.Burn, 2)
 					e.BurnPower = max(e.BurnPower, min(rounded(float64(e.Max)*.04), rounded(float64(h.Attack)*.4)))
 				case "extend_burn", "boost_burn":
@@ -262,6 +279,9 @@ func (s *Service) useSkill(b *Battle, actor, target int) error {
 						e.Expose = max(2, e.Expose)
 					}
 				case "blind":
+					if e.Blind == 0 {
+						e.BlindChance = 0
+					}
 					e.Blind = max(1, e.Blind)
 				case "slow":
 					e.Slow = max(1, e.Slow)
@@ -279,6 +299,7 @@ func (s *Service) useSkill(b *Battle, actor, target int) error {
 					e.Charged = false
 				}
 			}
+			passiveSkillTarget(b, h, e, shielded)
 			b.log(fmt.Sprintf("%s · %s → %s: %d damage.", h.Name, h.Skill.Name, e.Name, n))
 		}
 	}
@@ -292,10 +313,10 @@ func (s *Service) useSkill(b *Battle, actor, target int) error {
 		h.Guard = true
 	}
 	if has("shield_self") {
-		shieldHero(h, .12)
+		giveShield(b, h, h, .12)
 	}
 	if has("heal_self") {
-		h.HP = min(h.Max, h.HP+rounded(float64(h.Max)*.12))
+		healHero(b, h, h, rounded(float64(h.Max)*.12), false)
 	}
 	if has("protect") {
 		b.Heroes[allies[0]].Guard = true
@@ -326,8 +347,12 @@ func (s *Service) useSkill(b *Battle, actor, target int) error {
 		}
 		if index >= 0 {
 			b.Enemies[index].Mark = true
+			if passivesEnabled(b) && h.ID == "char_046" {
+				b.Enemies[index].MarkBonus = 40
+			}
 		}
 	}
+	passiveAfterAction(b, h, "skill", hitCount)
 	b.log(h.Name + " memakai " + h.Skill.Name + ".")
 	return nil
 }

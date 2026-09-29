@@ -15,28 +15,38 @@ func conflict() error {
 }
 
 type Profile struct {
-	ID         string                       `json:"id"`
-	Name       string                       `json:"name"`
-	Revision   int64                        `json:"revision"`
-	Version    int                          `json:"version"`
-	Shards     int                          `json:"shards"`
-	Coins      int                          `json:"coins"`
-	Dust       int                          `json:"dust"`
-	Pity5      int                          `json:"pity5"`
-	Pity4      int                          `json:"pity4"`
-	Guarantee  bool                         `json:"guarantee"`
-	Unlocked   int                          `json:"unlocked"`
-	Cleared    []int                        `json:"cleared"`
-	Party      []string                     `json:"party"`
-	Collection map[string]int               `json:"collection"`
-	LastBattle string                       `json:"last_battle"`
-	Growth     map[string]Growth            `json:"growth"`
-	TrainingXP int                          `json:"training_xp"`
-	LevelCap   int                          `json:"level_cap"`
-	Inventory  map[string]int               `json:"inventory"`
-	Loadouts   map[string]map[string]string `json:"loadouts"`
+	ID           string                       `json:"id"`
+	Name         string                       `json:"name"`
+	Revision     int64                        `json:"revision"`
+	Version      int                          `json:"version"`
+	Shards       int                          `json:"shards"`
+	Coins        int                          `json:"coins"`
+	Dust         int                          `json:"dust"`
+	Pity5        int                          `json:"pity5"`
+	Pity4        int                          `json:"pity4"`
+	Guarantee    bool                         `json:"guarantee"`
+	Unlocked     int                          `json:"unlocked"`
+	Cleared      []int                        `json:"cleared"`
+	Party        []string                     `json:"party"`
+	Collection   map[string]int               `json:"collection"`
+	Awakening    map[string]int               `json:"awakening"`
+	Enhancements map[string]int               `json:"enhancements"`
+	LastBattle   string                       `json:"last_battle"`
+	Growth       map[string]Growth            `json:"growth"`
+	TrainingXP   int                          `json:"training_xp"`
+	LevelCap     int                          `json:"level_cap"`
+	Inventory    map[string]int               `json:"inventory"`
+	Loadouts     map[string]map[string]string `json:"loadouts"`
 }
 type Hero struct {
+	Awakening        int     `json:"awakening"`
+	CurrentAction    string  `json:"-"`
+	ShieldBreakRound int     `json:"shield_break_round,omitempty"`
+	PassiveUsed      bool    `json:"passive_used,omitempty"`
+	PassiveRound     int     `json:"passive_round,omitempty"`
+	PassiveBoost     float64 `json:"passive_boost,omitempty"`
+	SkillBoost       bool    `json:"skill_boost,omitempty"`
+	ShieldSource     string  `json:"shield_source,omitempty"`
 	Character
 	HP      int  `json:"hp"`
 	Max     int  `json:"max"`
@@ -54,6 +64,10 @@ type Hero struct {
 	Empower bool `json:"empower"`
 }
 type Opponent struct {
+	MarkBonus   int    `json:"mark_bonus,omitempty"`
+	BlindChance int    `json:"blind_chance,omitempty"`
+	BurnExpose  bool   `json:"burn_expose,omitempty"`
+	BurnSource  string `json:"burn_source,omitempty"`
 	Enemy
 	HP        int    `json:"hp"`
 	Max       int    `json:"max"`

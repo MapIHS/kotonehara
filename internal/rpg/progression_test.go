@@ -116,6 +116,8 @@ func TestLegacyProfileAndBattleRemainPlayable(t *testing.T) {
 	ctx := context.Background()
 	p.Unlocked = 98
 	p.Version = 1
+	p.Awakening = nil
+	p.Enhancements = nil
 	p.Growth = nil
 	p.Inventory = nil
 	p.Loadouts = nil
@@ -165,7 +167,7 @@ func TestAllCharacterKitsAreUsable(t *testing.T) {
 			if err := s.useSkill(b, 0, 0); err != nil {
 				t.Fatal(err)
 			}
-			if b.Heroes[0].Energy > 2 || b.Heroes[0].Energy < 1 {
+			if b.Heroes[0].Energy > 3 || b.Heroes[0].Energy < 1 {
 				t.Fatal("energy outside expected range", b.Heroes[0].Energy)
 			}
 			if c.Role == "Medic" || c.Role == "Guardian" {

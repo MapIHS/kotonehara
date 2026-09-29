@@ -52,11 +52,16 @@ func (s *Service) StartBattle(ctx context.Context, player, request string, stage
 			c.Passive = Ability{}
 			c.Skill.Description = ""
 			hero := Hero{Character: c, Level: int(heroLevel), HP: hp, Max: hp, Attack: rounded(base[1] * (1 + (heroLevel-1)*.0105) * rarity), Defense: rounded(base[2] * (1 + (heroLevel-1)*.008) * rarity), Energy: 3}
+			hero.Awakening = p.Awakening[id]
+			factor := 1 + float64(hero.Awakening*progressionRules.AwakeningPercent)/100
+			hero.Max = rounded(float64(hero.Max) * factor)
+			hero.Attack = rounded(float64(hero.Attack) * factor)
+			hero.Defense = rounded(float64(hero.Defense) * factor)
 			for _, itemID := range p.Loadouts[id] {
 				if item, ok := findEquipment(itemID); ok {
-					hero.Max += item.HP
-					hero.Attack += item.Attack
-					hero.Defense += item.Defense
+					hero.Max += enhancedStat(item.HP, p.Enhancements[itemID])
+					hero.Attack += enhancedStat(item.Attack, p.Enhancements[itemID])
+					hero.Defense += enhancedStat(item.Defense, p.Enhancements[itemID])
 				}
 			}
 			hero.HP = hero.Max
@@ -99,6 +104,7 @@ func (s *Service) StartBattle(ctx context.Context, player, request string, stage
 				b.Enemies[len(b.Enemies)-1].Shield = hp / 5
 			}
 		}
+		startPassives(b)
 		b.log("Pilih target dan aksi. Setiap anggota tim bertindak sekali per ronde.")
 		p.LastBattle = id
 		return b, nil, saveBattle(ctx, tx, player, b, true)
@@ -139,7 +145,7 @@ func (s *Service) Act(ctx context.Context, player, battleID string, a Action) (S
 		}
 		h.Acted = true
 		b.Target = a.Target
-		if b.Rules == RulesVersion && a.Action == "skill" {
+		if modernBattle(b) && a.Action == "skill" {
 			if err := s.useSkill(b, a.Actor, a.Target); err != nil {
 				return nil, nil, err
 			}
@@ -155,7 +161,7 @@ func (s *Service) Act(ctx context.Context, player, battleID string, a Action) (S
 					for i := range b.Heroes {
 						ally := &b.Heroes[i]
 						if ally.HP > 0 {
-							ally.HP = min(ally.Max, ally.HP+rounded(float64(ally.Max)*.55))
+							healHero(b, h, ally, rounded(float64(ally.Max)*.55), false)
 						}
 					}
 					b.log(h.Name + " memulihkan seluruh tim.")
@@ -213,6 +219,9 @@ func (s *Service) Act(ctx context.Context, player, battleID string, a Action) (S
 				}
 			}
 		}
+		if a.Action != "skill" {
+			passiveAfterAction(b, h, a.Action, 0)
+		}
 		if livingEnemies(b) == 0 {
 			if err = s.complete(ctx, tx, p, b, "win"); err != nil {
 				return nil, nil, err
@@ -233,9 +242,17 @@ func (s *Service) Act(ctx context.Context, player, battleID string, a Action) (S
 					if e.HP <= 0 {
 						continue
 					}
-					if b.Rules == RulesVersion {
+					if modernBattle(b) {
 						if e.Burn > 0 {
 							e.HP = max(0, e.HP-e.BurnPower)
+							if passivesEnabled(b) && e.BurnSource == "char_048" {
+								for j := range b.Heroes {
+									ally := &b.Heroes[j]
+									if ally.ID == e.BurnSource && ally.HP > 0 {
+										passiveEnergy(b, ally)
+									}
+								}
+							}
 							e.Burn--
 							b.log(fmt.Sprintf("%s terkena Bara: %d damage.", e.Name, e.BurnPower))
 						}
@@ -249,7 +266,7 @@ func (s *Service) Act(ctx context.Context, player, battleID string, a Action) (S
 							living = append(living, j)
 						}
 					}
-					if b.Rules == RulesVersion {
+					if modernBattle(b) {
 						for _, j := range living {
 							if b.Heroes[j].Taunt {
 								living = []int{j}
@@ -267,7 +284,7 @@ func (s *Service) Act(ctx context.Context, player, battleID string, a Action) (S
 						factor = 1.7
 					}
 					attack := e.Attack
-					if b.Rules == RulesVersion {
+					if modernBattle(b) {
 						if e.Weaken > 0 {
 							attack = rounded(float64(attack) * .8)
 							e.Weaken--
@@ -284,21 +301,33 @@ func (s *Service) Act(ctx context.Context, player, battleID string, a Action) (S
 					if err != nil {
 						return nil, nil, err
 					}
-					if b.Rules == RulesVersion {
+					hadShield := ally.Shield > 0
+					if modernBattle(b) {
 						if e.Blind > 0 {
 							e.Blind--
 							miss, err := s.roll(100)
 							if err != nil {
 								return nil, nil, err
 							}
-							if miss < 35 {
+							chance := 35
+							if passivesEnabled(b) {
+								chance = max(chance, e.BlindChance)
+							}
+							if miss < chance {
 								n = 0
+								if passivesEnabled(b) && ally.ID == "char_006" {
+									ally.PassiveBoost = max(ally.PassiveBoost, .2)
+								}
 							}
 						}
 						if ally.Evade {
 							n = 0
 							ally.Evade = false
+							if passivesEnabled(b) && ally.ID == "char_006" {
+								ally.PassiveBoost = max(ally.PassiveBoost, .2)
+							}
 						}
+						n = passiveIncoming(b, ally, e, n)
 						if ally.Reflect && n > 0 {
 							damageOpponent(e, max(1, n/4), false)
 							ally.Reflect = false
@@ -308,6 +337,9 @@ func (s *Service) Act(ctx context.Context, player, battleID string, a Action) (S
 						n -= absorbed
 					}
 					ally.HP = max(0, ally.HP-n)
+					if modernBattle(b) && hadShield && ally.Shield == 0 {
+						passiveShieldBroken(b, ally)
+					}
 					b.log(fmt.Sprintf("%s menyerang %s: %d damage.", e.Name, ally.Name, n))
 					e.Charged = (b.Round+1)%3 == 0
 					alive := false
@@ -336,7 +368,7 @@ func (s *Service) Act(ctx context.Context, player, battleID string, a Action) (S
 						b.Heroes[i].Taunt = false
 						if b.Heroes[i].HP > 0 && b.Heroes[i].Regen > 0 {
 							h := &b.Heroes[i]
-							h.HP = min(h.Max, h.HP+rounded(float64(h.Max)*.12))
+							healHero(b, nil, h, rounded(float64(h.Max)*.12), false)
 							h.Regen--
 						}
 					}

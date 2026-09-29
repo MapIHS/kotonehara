@@ -38,6 +38,12 @@ var equipmentCatalog = []Equipment{
 // Lazy, additive profile upgrade. Old wallets, collections and battles are kept.
 // Existing characters retain the level they previously had through stage scaling.
 func normalizeProgress(p *Profile) {
+	if p.Awakening == nil {
+		p.Awakening = map[string]int{}
+	}
+	if p.Enhancements == nil {
+		p.Enhancements = map[string]int{}
+	}
 	if p.Growth == nil {
 		p.Growth = map[string]Growth{}
 	}
@@ -53,7 +59,7 @@ func normalizeProgress(p *Profile) {
 			p.Growth[id] = Growth{Level: min(999, max(1, p.Unlocked+1))}
 		}
 	}
-	p.Version = 2
+	p.Version = 3
 }
 
 func grantXP(p *Profile, id string, amount int) {
@@ -102,11 +108,40 @@ func (s *Service) Progress(ctx context.Context, player, operation string, a Prog
 		if b != nil && !b.Done {
 			return nil, nil, fail(409, "battle_active", "Selesaikan atau mundur dari battle sebelum mengatur latihan dan equipment.")
 		}
-		if operation != "buy" && p.Collection[a.CharacterID] < 1 {
+		if operation != "buy" && operation != "enhance" && p.Collection[a.CharacterID] < 1 {
 			return nil, nil, fail(403, "character_unowned", "Karakter belum dimiliki.")
 		}
-		cost := 0
+		cost, dust := 0, 0
 		switch operation {
+		case "awaken":
+			rank := p.Awakening[a.CharacterID] + 1
+			if rank > progressionRules.AwakeningMax {
+				return nil, nil, fail(409, "awakening_max", "Awakening sudah maksimum.")
+			}
+			cost = progressionRules.AwakeningCoins * rank
+			dust = progressionRules.AwakeningDust * s.chars[a.CharacterID].Rarity * rank
+			if p.Coins < cost || p.Dust < dust {
+				return nil, nil, fail(409, "funds", "Koin atau Debu Bintang belum cukup.")
+			}
+			p.Awakening[a.CharacterID] = rank
+		case "enhance":
+			item, ok := findEquipment(a.ItemID)
+			if !ok {
+				return nil, nil, fail(400, "equipment", "Equipment tidak ditemukan.")
+			}
+			if p.Inventory[item.ID] < 1 {
+				return nil, nil, fail(403, "equipment_unowned", "Equipment belum dimiliki.")
+			}
+			rank := p.Enhancements[item.ID] + 1
+			if rank > progressionRules.EnhancementMax {
+				return nil, nil, fail(409, "enhancement_max", "Upgrade equipment sudah maksimum.")
+			}
+			cost = item.Price * rank
+			dust = progressionRules.EnhancementDust * rank
+			if p.Coins < cost || p.Dust < dust {
+				return nil, nil, fail(409, "funds", "Koin atau Debu Bintang belum cukup.")
+			}
+			p.Enhancements[item.ID] = rank
 		case "train":
 			if a.Levels != 1 && a.Levels != 10 {
 				return nil, nil, fail(400, "levels", "Pilih latihan satu atau sepuluh level.")
@@ -168,9 +203,28 @@ func (s *Service) Progress(ctx context.Context, player, operation string, a Prog
 			return nil, nil, fail(400, "operation", "Pengaturan tidak dikenal.")
 		}
 		p.Coins -= cost
+		p.Dust -= dust
 		if cost > 0 {
 			_, err = tx.ExecContext(ctx, `INSERT INTO rpg_ledger(player_id,event_key,shards,coins,created_at) VALUES(?,?,0,?,?)`, p.ID, fmt.Sprintf("%s:%s", operation, a.RequestID), -cost, s.now().Unix())
 		}
 		return b, nil, err
 	})
+}
+
+// Costs are sent in the catalog so clients display the same deterministic rules.
+type ProgressionRules struct {
+	AwakeningMax       int `json:"awakening_max"`
+	AwakeningCoins     int `json:"awakening_coins"`
+	AwakeningDust      int `json:"awakening_dust"`
+	AwakeningPercent   int `json:"awakening_percent"`
+	EnhancementMax     int `json:"enhancement_max"`
+	EnhancementDust    int `json:"enhancement_dust"`
+	EnhancementPercent int `json:"enhancement_percent"`
+}
+
+var progressionRules = ProgressionRules{5, 100, 20, 5, 5, 5, 10}
+
+func enhancedStat(base, rank int) int {
+	// Preserve zero stats; rounded() intentionally clamps damage, not equipment.
+	return (base*(100+progressionRules.EnhancementPercent*rank) + 50) / 100
 }

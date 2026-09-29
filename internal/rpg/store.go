@@ -192,7 +192,7 @@ func loadBattle(ctx context.Context, tx *sqlx.Tx, player, id string) (*Battle, e
 	if err = json.Unmarshal([]byte(raw), &b); err != nil {
 		return nil, err
 	}
-	if b.Rules != RulesVersion && b.Rules != "arunika-v1" {
+	if !modernBattle(&b) && b.Rules != "arunika-v1" {
 		return nil, fail(409, "rules_changed", "Versi battle ini belum didukung server. Hubungi pemilik bot.")
 	}
 	return &b, nil

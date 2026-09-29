@@ -9,7 +9,9 @@ import (
 //go:embed catalog/*.json
 var catalogFiles embed.FS
 
-const RulesVersion = "arunika-v2"
+const RulesVersion = "arunika-v3"
+
+func modernBattle(b *Battle) bool { return b.Rules == "arunika-v2" || b.Rules == RulesVersion }
 
 type Ability struct {
 	Name        string `json:"name"`
@@ -62,17 +64,18 @@ type Stage struct {
 	Elite  bool   `json:"elite"`
 }
 type Catalog struct {
-	Version    string      `json:"version"`
-	Characters []Character `json:"characters"`
-	Enemies    []Enemy     `json:"enemies"`
-	Regions    []Region    `json:"regions"`
-	Stages     []Stage     `json:"stages"`
-	Featured   string      `json:"featured"`
-	Equipment  []Equipment `json:"equipment"`
+	Version     string           `json:"version"`
+	Characters  []Character      `json:"characters"`
+	Enemies     []Enemy          `json:"enemies"`
+	Regions     []Region         `json:"regions"`
+	Stages      []Stage          `json:"stages"`
+	Featured    string           `json:"featured"`
+	Equipment   []Equipment      `json:"equipment"`
+	Progression ProgressionRules `json:"progression"`
 }
 
 func loadCatalog() (Catalog, error) {
-	c := Catalog{Version: RulesVersion, Featured: "char_005", Equipment: equipmentCatalog}
+	c := Catalog{Version: RulesVersion, Featured: "char_005", Equipment: equipmentCatalog, Progression: progressionRules}
 	for name, out := range map[string]any{"characters": &c.Characters, "enemies": &c.Enemies, "regions": &c.Regions} {
 		raw, err := catalogFiles.ReadFile("catalog/" + name + ".json")
 		if err != nil {
@@ -91,6 +94,11 @@ func loadCatalog() (Catalog, error) {
 			return c, fmt.Errorf("missing skill kit for %s", c.Characters[i].ID)
 		}
 		c.Characters[i].Skill.Description = kit.Description
+		desc, ok := passiveDescriptions[c.Characters[i].ID]
+		if !ok {
+			return c, fmt.Errorf("missing passive for %s", c.Characters[i].ID)
+		}
+		c.Characters[i].Passive.Description = desc
 	}
 	for level := 1; level <= 999; level++ {
 		found := false

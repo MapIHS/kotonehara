@@ -18,8 +18,21 @@ func TestBrowserFixture(t *testing.T) {
 	if dir == "" {
 		t.Skip("browser fixture is opt-in")
 	}
-	_, s := openTest(t, filepath.Join(dir, "game.db"))
+	db, s := openTest(t, filepath.Join(dir, "game.db"))
 	p, err := s.EnsurePlayer(context.Background(), []string{"100000@lid"}, "Browser tester")
+	if err != nil {
+		t.Fatal(err)
+	}
+	rich, err := s.EnsurePlayer(context.Background(), []string{"100001@lid"}, "Upgrade tester")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rich.Revision == 0 && rich.Coins == 0 {
+		rich.Coins = 500
+		rich.Dust = 500
+		patchProfile(t, db, rich)
+	}
+	upgradeTicket, err := s.IssueTicket(context.Background(), rich.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,7 +52,7 @@ func TestBrowserFixture(t *testing.T) {
 	server := &http.Server{Handler: handler, ReadHeaderTimeout: 5 * time.Second}
 	defer server.Close()
 	go server.Serve(listener)
-	data, _ := json.Marshal(map[string]string{"upstream": "http://" + listener.Addr().String(), "ticket": ticket})
+	data, _ := json.Marshal(map[string]string{"upstream": "http://" + listener.Addr().String(), "ticket": ticket, "upgrade_ticket": upgradeTicket})
 	ready := filepath.Join(dir, "ready.json")
 	if err = os.WriteFile(ready, data, 0600); err != nil {
 		t.Fatal(err)

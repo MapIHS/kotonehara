@@ -21,19 +21,25 @@ Versi1 memerlukan `DB_DRIVER=sqlite`. Pastikan **database yang sudah berisi data
 
 - `.rpg mulai`, `.rpg`, `.rpg jelajah`, `.rpg lanjut`: profil + link login pribadi, berlaku2 menit dan sekali pakai.
 - `.rpg profil`, `.rpg tim`: progres dan komposisi.
-- `.rpg tas`: koin, XP latihan, inventori dan jumlah equipment yang dipasang.
+- `.rpg tas`: koin, Debu Bintang, XP latihan, tingkat upgrade dan jumlah equipment yang dipasang.
 - `.rpg gacha 1` / `.rpg gacha 10`: wallet/pity sama dengan web; ID pesan melindungi terhadap replay.
 - `.rpg peluang`, `.rpg riwayat`: aturan dan hasil.
 
 Profil awal mendapatkan empat karakter dan1.600 Embun Bintang sekali. Ada60 karakter,100 spesies,999 jalur berurutan pada10 wilayah. First-clear biasa20 Embun, boss200; replay tanpa hadiah. Battle disimpan setiap aksi dan berlanjut setelah restart. Gacha160 per tarikan, pity4+ ke10, soft pity5 mulai61, hard pity80, unggulan50/50 dan guarantee setelah gagal.
 
-Battle baru memakai aturan `arunika-v2`: 60 skill aktif per karakter, Bara, perisai, Tanda, pelemahan ATK/DEF, Lambat, Kabut, regenerasi dan refleksi. Lambat mengurangi damage serangan musuh 20%, bukan mengubah urutan fase. Deskripsi skill runtime berasal dari `skills.go`; pasif pada katalog masih rancangan dan ditandai demikian di UI. Battle `arunika-v1` yang sudah tersimpan tetap dapat dilanjutkan dengan aturan lama.
+Battle baru memakai aturan `arunika-v3`: 60 skill aktif per karakter, Bara, perisai, Tanda, pelemahan ATK/DEF, Lambat, Kabut, regenerasi dan refleksi. Lambat mengurangi damage serangan musuh 20%, bukan mengubah urutan fase. Deskripsi skill runtime berasal dari `skills.go`. Seluruh 60 karakter memiliki passive aktif otomatis, tanpa syarat awakening; efek dan angka runtime berasal dari `passives.go`. Sebagian rancangan lama memakai kontrol/kecepatan yang belum ada dalam engine; passive tersebut diterjemahkan menjadi perisai, energi atau pengurangan damage dengan deskripsi konkret pada katalog web. Battle `arunika-v1` dan `arunika-v2` yang sudah tersimpan tetap memakai aturan sebelumnya sampai selesai; passive tidak diterapkan pada battle lama.
 
 Level tersimpan per karakter. Kemenangan pertama memberi 100 XP kepada setiap anggota tim (termasuk yang gugur), 100 XP latihan cadangan, serta hadiah koin/Embun yang sama seperti sebelumnya. 100 XP menaikkan satu level. Latihan manual memakai 100 XP cadangan +10 koin per level, dengan pilihan +1/+10. Batas level adalah `min(999, max(10, unlocked+1))`. Replay, kalah, dan mundur tidak memberikan XP/koin tambahan. Profil lama di-upgrade secara aditif; level karakter lama dan karakter baru dari gacha dimulai pada level jalur yang terbuka. Saldo, koleksi, dan battle tidak direset.
 
 Bengkel menjual 9 equipment menggunakan koin: tiga slot (weapon, armor, charm), tiga tier (awal, setelah jalur99, setelah jalur399). Semua role dapat memakainya. Satu salinan hanya boleh terpasang pada satu karakter; salinan tambahan dibeli terpisah, maksimum60 per jenis. Equipment menambah HP/ATK/DEF saat battle dimulai. Latihan, pembelian dan pergantian equipment ditolak saat battle aktif, menggunakan revision + request ID untuk mencegah debit ganda. Endpoint baru: `POST /rpg/api/characters/train`, `POST /rpg/api/equipment/buy`, `PUT /rpg/api/equipment/equip`; semuanya memakai sesi, Origin dan CSRF yang sama.
 
-Frontend aktif berada di `public/rpg/` Hararest, sedangkan demo `docs/rpg/prototype/preview.html` tidak terhubung ke akun. Aset pertama mencakup latar Padang Embun, empat karakter starter, dan Gumpal Embun. Karakter/musuh lain memakai sketsa sampai aset berikutnya tersedia. Awakening, pasif, dan upgrade equipment belum aktif.
+Awakening A0–A5 memakai Debu Bintang dari duplikat gacha dan koin. Untuk naik ke tahap `n`, biaya adalah `20 × rarity × n` Debu dan `100 × n` koin. Setiap tahap menambah 5% HP/ATK/DEF dasar karakter (maksimum 25%), sebelum bonus equipment; jumlah salinan dan kepemilikan karakter tidak dikurangi. Tidak mengubah rarity atau level. Endpoint: `POST /rpg/api/characters/awaken`.
+
+Upgrade equipment +0–+5 bersifat **per jenis equipment**, sehingga berlaku untuk seluruh salinan yang dimiliki maupun dibeli kemudian. Untuk naik ke `n`, biaya `harga dasar item × n` koin dan `5 × n` Debu. Tiap tahap menambah 10% stat dasar equipment (maksimum 50%), dibulatkan ke integer terdekat, stat nol tetap nol. Item harus dimiliki; tidak ada peluang gagal atau konsumsi salinan. Endpoint: `POST /rpg/api/equipment/enhance`. UI mengambil aturan biaya/batas dari katalog server. Awakening dan upgrade ditolak saat battle aktif, memakai transaksi revision + request ID yang sama untuk retry aman. Profil v3 menambah map `awakening` dan `enhancements` tanpa mengubah saldo lama.
+
+Passive dengan batas sekali per battle/ronde menyimpan penanda dalam snapshot; reload tidak mereset batasnya. Perisai tidak ditumpuk: ambil nilai terbesar, maksimum 50% HP. Pemulihan dari perisai pecah tidak menghidupkan karakter gugur. Bonus Tanda khusus menggantikan bonus dasar; peningkatan energi tetap dibatasi 5.
+
+Frontend aktif berada di `public/rpg/` Hararest, sedangkan demo `docs/rpg/prototype/preview.html` tidak terhubung ke akun. Aset pertama mencakup latar Padang Embun, empat karakter starter, dan Gumpal Embun. Karakter/musuh lain memakai sketsa sampai aset berikutnya tersedia. Paket gambar lanjutan masih diperlukan untuk melengkapi seluruh koleksi.
 
 ## Pengujian
 

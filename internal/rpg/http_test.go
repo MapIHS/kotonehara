@@ -96,7 +96,7 @@ func testSessionBoundaries(t *testing.T, origin string) {
 	if profile.Profile.ID != p.ID || profile.CSRF != exchange.CSRF {
 		t.Fatal("profile/CSRF mismatch")
 	}
-	for _, route := range []struct{ method, path string }{{"POST", "/rpg/api/characters/train"}, {"POST", "/rpg/api/equipment/buy"}, {"PUT", "/rpg/api/equipment/equip"}} {
+	for _, route := range []struct{ method, path string }{{"POST", "/rpg/api/characters/awaken"}, {"POST", "/rpg/api/equipment/enhance"}, {"POST", "/rpg/api/characters/train"}, {"POST", "/rpg/api/equipment/buy"}, {"PUT", "/rpg/api/equipment/equip"}} {
 		w = send(route.method, route.path, map[string]any{"request_id": "progress-request"}, cookie, "", cfg.PublicURL, cfg.GatewaySecret)
 		if w.Code != 403 {
 			t.Fatal("progression CSRF bypass", route.path, w.Code)
@@ -105,6 +105,12 @@ func testSessionBoundaries(t *testing.T, origin string) {
 	w = send("POST", "/rpg/api/equipment/buy", map[string]any{"request_id": "forged-shop-price", "item_id": "blade_dawn", "price": 0}, cookie, exchange.CSRF, cfg.PublicURL, cfg.GatewaySecret)
 	if w.Code != 400 {
 		t.Fatal("client supplied equipment price", w.Code)
+	}
+	for _, path := range []string{"/rpg/api/characters/awaken", "/rpg/api/equipment/enhance"} {
+		w = send("POST", path, map[string]any{"request_id": "forged-upgrade-cost", "character_id": "char_001", "item_id": "blade_dawn", "dust": 0, "rank": 5}, cookie, exchange.CSRF, cfg.PublicURL, cfg.GatewaySecret)
+		if w.Code != 400 {
+			t.Fatal("client forged advancement cost/rank", path, w.Code)
+		}
 	}
 	body := map[string]any{"request_id": "http-battle-start", "stage": 0}
 	for _, test := range []struct{ csrf, origin string }{{"", cfg.PublicURL}, {exchange.CSRF, "https://attacker.example"}} {

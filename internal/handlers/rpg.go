@@ -65,7 +65,7 @@ func handleRPG(ctx context.Context, m *message.Message, s *rpg.Service, publicUR
 	case "profil", "tim":
 		reply(rpgSummary(p, s.Catalog()) + "\n\n.rpg lanjut — buka peta, battle, dan atur tim")
 	case "tas":
-		lines := []string{fmt.Sprintf("🎒 *Tas Penjaga*\nKoin: %d · XP latihan: %d", p.Coins, p.TrainingXP)}
+		lines := []string{fmt.Sprintf("🎒 *Tas Penjaga*\nKoin: %d · Debu: %d · XP latihan: %d", p.Coins, p.Dust, p.TrainingXP)}
 		for _, item := range s.Catalog().Equipment {
 			if count := p.Inventory[item.ID]; count > 0 {
 				used := 0
@@ -74,7 +74,7 @@ func handleRPG(ctx context.Context, m *message.Message, s *rpg.Service, publicUR
 						used++
 					}
 				}
-				lines = append(lines, fmt.Sprintf("%s ×%d · dipasang %d", item.Name, count, used))
+				lines = append(lines, fmt.Sprintf("%s +%d ×%d · dipasang %d", item.Name, p.Enhancements[item.ID], count, used))
 			}
 		}
 		if len(lines) == 1 {
@@ -149,7 +149,7 @@ func rpgSummary(p rpg.Profile, c rpg.Catalog) string {
 	for _, id := range p.Party {
 		for _, ch := range c.Characters {
 			if ch.ID == id {
-				names = append(names, fmt.Sprintf("%s Lv.%d", ch.Name, max(1, p.Growth[id].Level)))
+				names = append(names, fmt.Sprintf("%s Lv.%d A%d", ch.Name, max(1, p.Growth[id].Level), p.Awakening[id]))
 				break
 			}
 		}
