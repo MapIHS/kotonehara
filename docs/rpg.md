@@ -39,7 +39,7 @@ Upgrade equipment +0–+5 bersifat **per jenis equipment**, sehingga berlaku unt
 
 Passive dengan batas sekali per battle/ronde menyimpan penanda dalam snapshot; reload tidak mereset batasnya. Perisai tidak ditumpuk: ambil nilai terbesar, maksimum 50% HP. Pemulihan dari perisai pecah tidak menghidupkan karakter gugur. Bonus Tanda khusus menggantikan bonus dasar; peningkatan energi tetap dibatasi 5.
 
-Frontend aktif berada di `public/rpg/` Hararest, sedangkan demo `docs/rpg/prototype/preview.html` tidak terhubung ke akun. Aset pertama mencakup latar Padang Embun, empat karakter starter, dan Gumpal Embun. Karakter/musuh lain memakai sketsa sampai aset berikutnya tersedia. Paket gambar lanjutan masih diperlukan untuk melengkapi seluruh koleksi.
+Frontend aktif berada di `public/rpg/` Hararest, sedangkan demo `docs/rpg/prototype/preview.html` tidak terhubung ke akun. Hararest menyediakan gambar untuk 60 karakter, 100 spesies musuh, dan 10 arena wilayah melalui `public/rpg/assets/index.json`. Gambar dipakai di battle, koleksi, gacha, detail karakter, dan peta. Prompt serta catatan generasi tersedia di `public/rpg/assets/manifest.json` dan folder `provenance` Hararest. Berkas gambar menggunakan path versi dengan cache immutable; index selalu diperbarui tanpa cache.
 
 ## Pengujian
 
