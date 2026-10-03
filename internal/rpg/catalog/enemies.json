@@ -1,0 +1,1402 @@
+[
+  {
+    "id": "enemy_001",
+    "name": "Gumpal Embun",
+    "region_id": "r01",
+    "element": "Air",
+    "archetype": "slime",
+    "min_level": 1,
+    "max_level": 9,
+    "visual": "Gumpal air bundar dengan daun sebagai alis dan satu biji di dalam tubuh.",
+    "ability": "Percik Pagi: kerusakan ringan satu sasaran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Gumpal Embun; slime; element Air (Air means water), from Padang Embun; visual identity: Gumpal air bundar dengan daun sebagai alis dan satu biji di dalam tubuh. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_002",
+    "name": "Kutu Sumbu",
+    "region_id": "r01",
+    "element": "Api",
+    "archetype": "insect",
+    "min_level": 10,
+    "max_level": 19,
+    "visual": "Kumbang merah kecil dengan sumbu padam sebagai tanduk.",
+    "ability": "Gigit Hangat: peluang Bara singkat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kutu Sumbu; insect; element Api (Air means water), from Padang Embun; visual identity: Kumbang merah kecil dengan sumbu padam sebagai tanduk. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_003",
+    "name": "Pipit Gelagah",
+    "region_id": "r01",
+    "element": "Angin",
+    "archetype": "avian",
+    "min_level": 20,
+    "max_level": 29,
+    "visual": "Burung rumput berparuh pipa, ekor panjang berbentuk pita hijau.",
+    "ability": "Patuk Lintas: serangan cepat pada sasaran belakang.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Pipit Gelagah; avian; element Angin (Air means water), from Padang Embun; visual identity: Burung rumput berparuh pipa, ekor panjang berbentuk pita hijau. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_004",
+    "name": "Kepiting Pematang",
+    "region_id": "r01",
+    "element": "Tanah",
+    "archetype": "crustacean",
+    "min_level": 30,
+    "max_level": 39,
+    "visual": "Kepiting tanah berkaki akar dengan rumah gundukan sawah.",
+    "ability": "Capit Lumpur: memberi Lambat singkat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kepiting Pematang; crustacean; element Tanah (Air means water), from Padang Embun; visual identity: Kepiting tanah berkaki akar dengan rumah gundukan sawah. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_005",
+    "name": "Kunang Retak",
+    "region_id": "r01",
+    "element": "Cahaya",
+    "archetype": "insect",
+    "min_level": 40,
+    "max_level": 49,
+    "visual": "Kunang-kunang bersayap pecahan kaca amber, inti lentera miring.",
+    "ability": "Kilau Sela: mengurangi akurasi satu giliran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kunang Retak; insect; element Cahaya (Air means water), from Padang Embun; visual identity: Kunang-kunang bersayap pecahan kaca amber, inti lentera miring. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_006",
+    "name": "Musang Bayangrumput",
+    "region_id": "r01",
+    "element": "Bayangan",
+    "archetype": "beast",
+    "min_level": 50,
+    "max_level": 59,
+    "visual": "Musang ungu pipih dengan ekor menyerupai bayangan ilalang.",
+    "ability": "Sergap Rumput: bonus serangan dari kondisi tersembunyi.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Musang Bayangrumput; beast; element Bayangan (Air means water), from Padang Embun; visual identity: Musang ungu pipih dengan ekor menyerupai bayangan ilalang. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_007",
+    "name": "Kambing Batuembun",
+    "region_id": "r01",
+    "element": "Tanah",
+    "archetype": "beast",
+    "min_level": 60,
+    "max_level": 69,
+    "visual": "Kambing kecil bertanduk batu berongga penuh tetes air.",
+    "ability": "Tanduk Pematang: serangan berat satu sasaran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kambing Batuembun; beast; element Tanah (Air means water), from Padang Embun; visual identity: Kambing kecil bertanduk batu berongga penuh tetes air. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_008",
+    "name": "Belut Awanrendah",
+    "region_id": "r01",
+    "element": "Air",
+    "archetype": "serpent",
+    "min_level": 70,
+    "max_level": 79,
+    "visual": "Belut sian berenang pada kabut setinggi tanah, sirip transparan kotak.",
+    "ability": "Belit Kabut: menurunkan kecepatan satu sasaran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Belut Awanrendah; serpent; element Air (Air means water), from Padang Embun; visual identity: Belut sian berenang pada kabut setinggi tanah, sirip transparan kotak. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_009",
+    "name": "Penjaga Jerami",
+    "region_id": "r01",
+    "element": "Angin",
+    "archetype": "construct",
+    "min_level": 80,
+    "max_level": 89,
+    "visual": "Boneka jerami berkepala keranjang, lengan kincir, mata daun hijau.",
+    "ability": "Putar Ladang: kerusakan ringan area.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Penjaga Jerami; construct; element Angin (Air means water), from Padang Embun; visual identity: Boneka jerami berkepala keranjang, lengan kincir, mata daun hijau. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_010",
+    "name": "Rusa Lentera Patah",
+    "region_id": "r01",
+    "element": "Cahaya",
+    "archetype": "lantern_beast",
+    "min_level": 90,
+    "max_level": 99,
+    "visual": "Rusa bertanduk dua rangka lentera retak dan surai rumput emas.",
+    "ability": "Tanduk Fajar: serangan area dengan jeda satu giliran yang terlihat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Rusa Lentera Patah; lantern_beast; element Cahaya (Air means water), from Padang Embun; visual identity: Rusa bertanduk dua rangka lentera retak dan surai rumput emas. Regional color anchors: #203C45, #72BAA8, #DAE7B7, #EFC578. Battle sprite, 128x128 logical canvas, full body, transparent background, 8 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=116; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_011",
+    "name": "Siput Lumutbunyi",
+    "region_id": "r02",
+    "element": "Air",
+    "archetype": "mollusk",
+    "min_level": 100,
+    "max_level": 109,
+    "visual": "Siput hijau dengan cangkang bergalur seperti corong kayu.",
+    "ability": "Lendir Redam: menurunkan serangan singkat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Siput Lumutbunyi; mollusk; element Air (Air means water), from Hutan Lentera; visual identity: Siput hijau dengan cangkang bergalur seperti corong kayu. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_012",
+    "name": "Ranting Berjalan",
+    "region_id": "r02",
+    "element": "Tanah",
+    "archetype": "plant",
+    "min_level": 110,
+    "max_level": 119,
+    "visual": "Cabang berkaki tiga membawa satu daun berbentuk telapak.",
+    "ability": "Tusuk Akar: kerusakan dan Lambat singkat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Ranting Berjalan; plant; element Tanah (Air means water), from Hutan Lentera; visual identity: Cabang berkaki tiga membawa satu daun berbentuk telapak. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_013",
+    "name": "Ngengat Sumbubiru",
+    "region_id": "r02",
+    "element": "Api",
+    "archetype": "insect",
+    "min_level": 120,
+    "max_level": 129,
+    "visual": "Ngengat gelap dengan api biru kecil di antena dan sayap jerami.",
+    "ability": "Debu Bara: Bara pada satu sasaran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Ngengat Sumbubiru; insect; element Api (Air means water), from Hutan Lentera; visual identity: Ngengat gelap dengan api biru kecil di antena dan sayap jerami. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_014",
+    "name": "Katak Ronggadaun",
+    "region_id": "r02",
+    "element": "Angin",
+    "archetype": "amphibian",
+    "min_level": 130,
+    "max_level": 139,
+    "visual": "Katak daun berongga dengan kantong leher seperti balon mint.",
+    "ability": "Pekik Angin: serangan area ringan.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Katak Ronggadaun; amphibian; element Angin (Air means water), from Hutan Lentera; visual identity: Katak daun berongga dengan kantong leher seperti balon mint. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_015",
+    "name": "Jamur Payungmalam",
+    "region_id": "r02",
+    "element": "Bayangan",
+    "archetype": "fungus",
+    "min_level": 140,
+    "max_level": 149,
+    "visual": "Jamur ungu bertutup miring dengan titik hitam seperti lubang.",
+    "ability": "Spora Ragu: mengurangi akurasi.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Jamur Payungmalam; fungus; element Bayangan (Air means water), from Hutan Lentera; visual identity: Jamur ungu bertutup miring dengan titik hitam seperti lubang. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_016",
+    "name": "Kijang Kunang",
+    "region_id": "r02",
+    "element": "Cahaya",
+    "archetype": "beast",
+    "min_level": 150,
+    "max_level": 159,
+    "visual": "Kijang hijau mungil membawa tiga kunang pada tanduk bercabang.",
+    "ability": "Lari Kilau: memperoleh penghindaran sementara.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kijang Kunang; beast; element Cahaya (Air means water), from Hutan Lentera; visual identity: Kijang hijau mungil membawa tiga kunang pada tanduk bercabang. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_017",
+    "name": "Ular Anyamakar",
+    "region_id": "r02",
+    "element": "Tanah",
+    "archetype": "serpent",
+    "min_level": 160,
+    "max_level": 169,
+    "visual": "Ular dari tiga akar terpilin dengan kepala batu cokelat.",
+    "ability": "Ikat Jalan: Lambat pada sasaran terdepan.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Ular Anyamakar; serpent; element Tanah (Air means water), from Hutan Lentera; visual identity: Ular dari tiga akar terpilin dengan kepala batu cokelat. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_018",
+    "name": "Kera Lentera Kosong",
+    "region_id": "r02",
+    "element": "Bayangan",
+    "archetype": "beast",
+    "min_level": 170,
+    "max_level": 179,
+    "visual": "Kera kurus dengan perut lentera kosong dan tangan daun lebar.",
+    "ability": "Curi Pijar: mengurangi sedikit energi.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kera Lentera Kosong; beast; element Bayangan (Air means water), from Hutan Lentera; visual identity: Kera kurus dengan perut lentera kosong dan tangan daun lebar. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_019",
+    "name": "Tawon Getahpanas",
+    "region_id": "r02",
+    "element": "Api",
+    "archetype": "insect",
+    "min_level": 180,
+    "max_level": 189,
+    "visual": "Tawon resin amber dengan sengat merah membara dan sayap gelap.",
+    "ability": "Sengat Getah: Bara yang bertahan dua giliran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Tawon Getahpanas; insect; element Api (Air means water), from Hutan Lentera; visual identity: Tawon resin amber dengan sengat merah membara dan sayap gelap. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_020",
+    "name": "Pohon Seribu Sumbu",
+    "region_id": "r02",
+    "element": "Cahaya",
+    "archetype": "ancient_plant",
+    "min_level": 190,
+    "max_level": 199,
+    "visual": "Pohon berjalan dengan banyak lentera kecil; satu rongga dada gelap.",
+    "ability": "Hujan Sumbu: serangan area setelah membuka seluruh rongga.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Pohon Seribu Sumbu; ancient_plant; element Cahaya (Air means water), from Hutan Lentera; visual identity: Pohon berjalan dengan banyak lentera kecil; satu rongga dada gelap. Regional color anchors: #172F38, #477765, #B7C98C, #F0AA61. Battle sprite, 128x128 logical canvas, full body, transparent background, 8 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=116; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_021",
+    "name": "Ubur Buihbiru",
+    "region_id": "r03",
+    "element": "Air",
+    "archetype": "jellyfish",
+    "min_level": 200,
+    "max_level": 209,
+    "visual": "Ubur-ubur transparan kotak dengan tentakel berupa rantai gelembung.",
+    "ability": "Sengat Buih: kerusakan satu sasaran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Ubur Buihbiru; jellyfish; element Air (Air means water), from Karang Biru; visual identity: Ubur-ubur transparan kotak dengan tentakel berupa rantai gelembung. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_022",
+    "name": "Kerang Matahari",
+    "region_id": "r03",
+    "element": "Cahaya",
+    "archetype": "mollusk",
+    "min_level": 210,
+    "max_level": 219,
+    "visual": "Kerang gading bersinar dari celah berbentuk mata, kaki pasir pendek.",
+    "ability": "Tutup Kilau: memperoleh perisai kecil.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kerang Matahari; mollusk; element Cahaya (Air means water), from Karang Biru; visual identity: Kerang gading bersinar dari celah berbentuk mata, kaki pasir pendek. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_023",
+    "name": "Ikan Layarkarang",
+    "region_id": "r03",
+    "element": "Angin",
+    "archetype": "fish",
+    "min_level": 220,
+    "max_level": 229,
+    "visual": "Ikan bersirip layar segitiga hijau dengan sisik koral biru.",
+    "ability": "Luncur Karang: serangan cepat satu sasaran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Ikan Layarkarang; fish; element Angin (Air means water), from Karang Biru; visual identity: Ikan bersirip layar segitiga hijau dengan sisik koral biru. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_024",
+    "name": "Bintang Aranglaut",
+    "region_id": "r03",
+    "element": "Api",
+    "archetype": "echinoderm",
+    "min_level": 230,
+    "max_level": 239,
+    "visual": "Bintang laut hitam berujung jingga dengan lubang uap di tengah.",
+    "ability": "Pijar Dasar: memberi Bara ringan.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Bintang Aranglaut; echinoderm; element Api (Air means water), from Karang Biru; visual identity: Bintang laut hitam berujung jingga dengan lubang uap di tengah. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_025",
+    "name": "Kepiting Dermagaruntuh",
+    "region_id": "r03",
+    "element": "Tanah",
+    "archetype": "crustacean",
+    "min_level": 240,
+    "max_level": 249,
+    "visual": "Kepiting biru membawa papan dermaga dan paku batu sebagai cangkang.",
+    "ability": "Papan Pelindung: perisai untuk sekutu musuh.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kepiting Dermagaruntuh; crustacean; element Tanah (Air means water), from Karang Biru; visual identity: Kepiting biru membawa papan dermaga dan paku batu sebagai cangkang. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_026",
+    "name": "Cumi Tintabisu",
+    "region_id": "r03",
+    "element": "Bayangan",
+    "archetype": "cephalopod",
+    "min_level": 250,
+    "max_level": 259,
+    "visual": "Cumi ungu dengan mantel seperti botol tinta dan satu mata pucat.",
+    "ability": "Awan Tinta: mengurangi akurasi kelompok.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Cumi Tintabisu; cephalopod; element Bayangan (Air means water), from Karang Biru; visual identity: Cumi ungu dengan mantel seperti botol tinta dan satu mata pucat. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_027",
+    "name": "Pari Kolamlangit",
+    "region_id": "r03",
+    "element": "Air",
+    "archetype": "fish",
+    "min_level": 260,
+    "max_level": 269,
+    "visual": "Pari bertepi transparan dengan pola pulau pada punggung.",
+    "ability": "Gelombang Kolam: kerusakan area.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Pari Kolamlangit; fish; element Air (Air means water), from Karang Biru; visual identity: Pari bertepi transparan dengan pola pulau pada punggung. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_028",
+    "name": "Bangau Karangtajam",
+    "region_id": "r03",
+    "element": "Angin",
+    "archetype": "avian",
+    "min_level": 270,
+    "max_level": 279,
+    "visual": "Bangau kelabu berkaki karang merah dan paruh seperti jangkar tipis.",
+    "ability": "Tombak Paruh: sebagian kerusakan melewati perisai.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Bangau Karangtajam; avian; element Angin (Air means water), from Karang Biru; visual identity: Bangau kelabu berkaki karang merah dan paruh seperti jangkar tipis. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_029",
+    "name": "Penyu Mutiara Retak",
+    "region_id": "r03",
+    "element": "Cahaya",
+    "archetype": "reptile",
+    "min_level": 280,
+    "max_level": 289,
+    "visual": "Penyu besar bercangkang mutiara pecah dengan garis cahaya amber.",
+    "ability": "Cangkang Pendar: mengurangi kerusakan berikutnya.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Penyu Mutiara Retak; reptile; element Cahaya (Air means water), from Karang Biru; visual identity: Penyu besar bercangkang mutiara pecah dengan garis cahaya amber. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_030",
+    "name": "Naga Palung Terapung",
+    "region_id": "r03",
+    "element": "Air",
+    "archetype": "sky_serpent",
+    "min_level": 290,
+    "max_level": 299,
+    "visual": "Ular laut biru panjang dengan karang melayang di sekitar leher.",
+    "ability": "Pasang Tertahan: serangan area berperingatan dan Lambat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Naga Palung Terapung; sky_serpent; element Air (Air means water), from Karang Biru; visual identity: Ular laut biru panjang dengan karang melayang di sekitar leher. Regional color anchors: #153952, #327F99, #8BCAC2, #F5D4A1. Battle sprite, 128x128 logical canvas, full body, transparent background, 8 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=116; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_031",
+    "name": "Kumbang Butirkaca",
+    "region_id": "r04",
+    "element": "Tanah",
+    "archetype": "insect",
+    "min_level": 300,
+    "max_level": 309,
+    "visual": "Kumbang pasir dengan punggung prisma buram berfaset besar.",
+    "ability": "Guling Butir: serangan satu sasaran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kumbang Butirkaca; insect; element Tanah (Air means water), from Gurun Kaca; visual identity: Kumbang pasir dengan punggung prisma buram berfaset besar. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_032",
+    "name": "Kadal Cerminkecil",
+    "region_id": "r04",
+    "element": "Cahaya",
+    "archetype": "reptile",
+    "min_level": 310,
+    "max_level": 319,
+    "visual": "Kadal krem berkepala cermin segitiga dan ekor kaca pendek.",
+    "ability": "Pantul Silau: akurasi sasaran turun singkat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kadal Cerminkecil; reptile; element Cahaya (Air means water), from Gurun Kaca; visual identity: Kadal krem berkepala cermin segitiga dan ekor kaca pendek. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_033",
+    "name": "Ulat Sumbukering",
+    "region_id": "r04",
+    "element": "Api",
+    "archetype": "insect",
+    "min_level": 320,
+    "max_level": 329,
+    "visual": "Ulat jingga bersegmen sumbu hangus dengan duri kain merah.",
+    "ability": "Gesek Panas: Bara pada satu sasaran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Ulat Sumbukering; insect; element Api (Air means water), from Gurun Kaca; visual identity: Ulat jingga bersegmen sumbu hangus dengan duri kain merah. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_034",
+    "name": "Kalajengking Fatamorgana",
+    "region_id": "r04",
+    "element": "Bayangan",
+    "archetype": "arachnid",
+    "min_level": 330,
+    "max_level": 339,
+    "visual": "Kalajengking ungu transparan dengan capit tampak bergeser satu petak.",
+    "ability": "Sengat Semu: serangan dan penghindaran sementara.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kalajengking Fatamorgana; arachnid; element Bayangan (Air means water), from Gurun Kaca; visual identity: Kalajengking ungu transparan dengan capit tampak bergeser satu petak. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_035",
+    "name": "Rubah Debukaca",
+    "region_id": "r04",
+    "element": "Angin",
+    "archetype": "beast",
+    "min_level": 340,
+    "max_level": 349,
+    "visual": "Rubah pucat berekor kipas pasir dengan telinga prisma hijau.",
+    "ability": "Hembus Serpih: kerusakan area ringan.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Rubah Debukaca; beast; element Angin (Air means water), from Gurun Kaca; visual identity: Rubah pucat berekor kipas pasir dengan telinga prisma hijau. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_036",
+    "name": "Kendi Merayap",
+    "region_id": "r04",
+    "element": "Air",
+    "archetype": "construct",
+    "min_level": 350,
+    "max_level": 359,
+    "visual": "Kendi turkuois berkaki empat dari pecahan gagang, air mengintip retakan.",
+    "ability": "Tumpah Dingin: serangan dan Lambat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kendi Merayap; construct; element Air (Air means water), from Gurun Kaca; visual identity: Kendi turkuois berkaki empat dari pecahan gagang, air mengintip retakan. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_037",
+    "name": "Unta Prismapunggung",
+    "region_id": "r04",
+    "element": "Tanah",
+    "archetype": "beast",
+    "min_level": 360,
+    "max_level": 369,
+    "visual": "Unta batu dengan dua punuk prisma amber dan mata cekung.",
+    "ability": "Langkah Berat: serangan besar sasaran depan.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Unta Prismapunggung; beast; element Tanah (Air means water), from Gurun Kaca; visual identity: Unta batu dengan dua punuk prisma amber dan mata cekung. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_038",
+    "name": "Elang Siangpalsu",
+    "region_id": "r04",
+    "element": "Cahaya",
+    "archetype": "avian",
+    "min_level": 370,
+    "max_level": 379,
+    "visual": "Elang cermin kusam dengan sayap berlapis jendela emas.",
+    "ability": "Sorot Palsu: menghapus satu penguatan penghindaran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Elang Siangpalsu; avian; element Cahaya (Air means water), from Gurun Kaca; visual identity: Elang cermin kusam dengan sayap berlapis jendela emas. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_039",
+    "name": "Prajurit Pasirbalik",
+    "region_id": "r04",
+    "element": "Bayangan",
+    "archetype": "construct",
+    "min_level": 380,
+    "max_level": 389,
+    "visual": "Zirah pasir kosong dengan jam pasir terbalik sebagai dada.",
+    "ability": "Balik Butir: mengurangi energi satu sasaran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Prajurit Pasirbalik; construct; element Bayangan (Air means water), from Gurun Kaca; visual identity: Zirah pasir kosong dengan jam pasir terbalik sebagai dada. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_040",
+    "name": "Menara Kaca Berjalan",
+    "region_id": "r04",
+    "element": "Cahaya",
+    "archetype": "giant_construct",
+    "min_level": 390,
+    "max_level": 399,
+    "visual": "Menara prisma bertumpu tiga kaki kaca, jendela retak seperti alis.",
+    "ability": "Mata Siang: sorot area berperingatan; perisai melemahkan dampaknya.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Menara Kaca Berjalan; giant_construct; element Cahaya (Air means water), from Gurun Kaca; visual identity: Menara prisma bertumpu tiga kaki kaca, jendela retak seperti alis. Regional color anchors: #3D344C, #A47168, #E9BB84, #C5E2DB. Battle sprite, 128x128 logical canvas, full body, transparent background, 8 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=116; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_041",
+    "name": "Ulat Kabeldaun",
+    "region_id": "r05",
+    "element": "Angin",
+    "archetype": "insect",
+    "min_level": 400,
+    "max_level": 409,
+    "visual": "Ulat hijau dengan ruas daun tembaga dan antena lilitan kabel.",
+    "ability": "Sentak Daun: serangan cepat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Ulat Kabeldaun; insect; element Angin (Air means water), from Rimba Petir; visual identity: Ulat hijau dengan ruas daun tembaga dan antena lilitan kabel. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_042",
+    "name": "Katak Tampungbadai",
+    "region_id": "r05",
+    "element": "Air",
+    "archetype": "amphibian",
+    "min_level": 410,
+    "max_level": 419,
+    "visual": "Katak biru dengan kantong hujan di punggung dan garis kilat putih.",
+    "ability": "Ludah Badai: Lambat singkat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Katak Tampungbadai; amphibian; element Air (Air means water), from Rimba Petir; visual identity: Katak biru dengan kantong hujan di punggung dan garis kilat putih. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_043",
+    "name": "Kumbang Arangurat",
+    "region_id": "r05",
+    "element": "Api",
+    "archetype": "insect",
+    "min_level": 420,
+    "max_level": 429,
+    "visual": "Kumbang hitam dengan urat merah berdenyut di cangkang.",
+    "ability": "Gigit Arang: memberi Bara.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kumbang Arangurat; insect; element Api (Air means water), from Rimba Petir; visual identity: Kumbang hitam dengan urat merah berdenyut di cangkang. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_044",
+    "name": "Pakis Jarumtanah",
+    "region_id": "r05",
+    "element": "Tanah",
+    "archetype": "plant",
+    "min_level": 430,
+    "max_level": 439,
+    "visual": "Pakis berjalan dengan pelepah seperti jarum besi dan akar cokelat.",
+    "ability": "Paku Akar: menurunkan pertahanan.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Pakis Jarumtanah; plant; element Tanah (Air means water), from Rimba Petir; visual identity: Pakis berjalan dengan pelepah seperti jarum besi dan akar cokelat. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_045",
+    "name": "Kelelawar Kilatputih",
+    "region_id": "r05",
+    "element": "Cahaya",
+    "archetype": "flying_beast",
+    "min_level": 440,
+    "max_level": 449,
+    "visual": "Kelelawar putih berujung sayap amber dan telinga seperti garpu petir.",
+    "ability": "Kilau Mendadak: akurasi sasaran turun.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kelelawar Kilatputih; flying_beast; element Cahaya (Air means water), from Rimba Petir; visual identity: Kelelawar putih berujung sayap amber dan telinga seperti garpu petir. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_046",
+    "name": "Macan Teduhlogam",
+    "region_id": "r05",
+    "element": "Bayangan",
+    "archetype": "beast",
+    "min_level": 450,
+    "max_level": 459,
+    "visual": "Macan arang berbelang celah ungu, cakar tembaga gelap.",
+    "ability": "Sergap Rindang: bonus terhadap sasaran ber-HP penuh.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Macan Teduhlogam; beast; element Bayangan (Air means water), from Rimba Petir; visual identity: Macan arang berbelang celah ungu, cakar tembaga gelap. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_047",
+    "name": "Kera Gunturhijau",
+    "region_id": "r05",
+    "element": "Angin",
+    "archetype": "beast",
+    "min_level": 460,
+    "max_level": 469,
+    "visual": "Kera hijau dengan tangan balon awan dan ekor kawat spiral.",
+    "ability": "Pukul Guntur: serangan area setelah menarik napas.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kera Gunturhijau; beast; element Angin (Air means water), from Rimba Petir; visual identity: Kera hijau dengan tangan balon awan dan ekor kawat spiral. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_048",
+    "name": "Anggrek Penampung",
+    "region_id": "r05",
+    "element": "Air",
+    "archetype": "plant",
+    "min_level": 470,
+    "max_level": 479,
+    "visual": "Anggrek sian berbentuk corong, tetes air besar menggantung di akar.",
+    "ability": "Teguk Hujan: memulihkan sekutu musuh sedikit.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Anggrek Penampung; plant; element Air (Air means water), from Rimba Petir; visual identity: Anggrek sian berbentuk corong, tetes air besar menggantung di akar. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_049",
+    "name": "Rangkong Pakuemas",
+    "region_id": "r05",
+    "element": "Cahaya",
+    "archetype": "avian",
+    "min_level": 480,
+    "max_level": 489,
+    "visual": "Rangkong berparuh paku amber, sayap hitam dengan garis putih.",
+    "ability": "Paku Kilau: serangan melewati sebagian perisai.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Rangkong Pakuemas; avian; element Cahaya (Air means water), from Rimba Petir; visual identity: Rangkong berparuh paku amber, sayap hitam dengan garis putih. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_050",
+    "name": "Banteng Mahkota Badai",
+    "region_id": "r05",
+    "element": "Angin",
+    "archetype": "storm_beast",
+    "min_level": 490,
+    "max_level": 499,
+    "visual": "Banteng hijau gelap dengan tanduk bercabang tembaga dan cincin awan.",
+    "ability": "Tabrak Badai: serangan area berperingatan dan penurunan prioritas giliran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Banteng Mahkota Badai; storm_beast; element Angin (Air means water), from Rimba Petir; visual identity: Banteng hijau gelap dengan tanduk bercabang tembaga dan cincin awan. Regional color anchors: #21344D, #4B7461, #C3C96C, #B89FE2. Battle sprite, 128x128 logical canvas, full body, transparent background, 8 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=116; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_051",
+    "name": "Cicak Arang",
+    "region_id": "r06",
+    "element": "Api",
+    "archetype": "reptile",
+    "min_level": 500,
+    "max_level": 509,
+    "visual": "Cicak hitam dengan kaki jingga dan ekor berbentuk bara persegi.",
+    "ability": "Gigit Tungku: Bara singkat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Cicak Arang; reptile; element Api (Air means water), from Puncak Bara; visual identity: Cicak hitam dengan kaki jingga dan ekor berbentuk bara persegi. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_052",
+    "name": "Siput Batuapung",
+    "region_id": "r06",
+    "element": "Tanah",
+    "archetype": "mollusk",
+    "min_level": 510,
+    "max_level": 519,
+    "visual": "Siput berkulit cokelat dengan cangkang batu berlubang merah.",
+    "ability": "Cangkang Berat: meningkatkan pertahanan.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Siput Batuapung; mollusk; element Tanah (Air means water), from Puncak Bara; visual identity: Siput berkulit cokelat dengan cangkang batu berlubang merah. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_053",
+    "name": "Pipit Uap",
+    "region_id": "r06",
+    "element": "Air",
+    "archetype": "avian",
+    "min_level": 520,
+    "max_level": 529,
+    "visual": "Burung biru kelabu berparuh katup dan ekor gumpal uap.",
+    "ability": "Sembur Katup: kerusakan satu sasaran dan Lambat kecil.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Pipit Uap; avian; element Air (Air means water), from Puncak Bara; visual identity: Burung biru kelabu berparuh katup dan ekor gumpal uap. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_054",
+    "name": "Kepiting Cerobong",
+    "region_id": "r06",
+    "element": "Angin",
+    "archetype": "crustacean",
+    "min_level": 530,
+    "max_level": 539,
+    "visual": "Kepiting besi bercangkang cerobong miring dengan capit kipas.",
+    "ability": "Putar Asap: akurasi kelompok turun sebentar.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kepiting Cerobong; crustacean; element Angin (Air means water), from Puncak Bara; visual identity: Kepiting besi bercangkang cerobong miring dengan capit kipas. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_055",
+    "name": "Anjing Jelagasenyap",
+    "region_id": "r06",
+    "element": "Bayangan",
+    "archetype": "beast",
+    "min_level": 540,
+    "max_level": 549,
+    "visual": "Anjing jelaga bertelinga segitiga, hanya jejak kaki berwarna ungu.",
+    "ability": "Jejak Hitam: serangan sasaran belakang.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Anjing Jelagasenyap; beast; element Bayangan (Air means water), from Puncak Bara; visual identity: Anjing jelaga bertelinga segitiga, hanya jejak kaki berwarna ungu. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_056",
+    "name": "Laba-laba Pijarkawat",
+    "region_id": "r06",
+    "element": "Cahaya",
+    "archetype": "arachnid",
+    "min_level": 550,
+    "max_level": 559,
+    "visual": "Laba-laba emas dengan kaki kawat pijar dan perut lentera kecil.",
+    "ability": "Jaring Kilau: Lambat dan Tanda singkat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Laba-laba Pijarkawat; arachnid; element Cahaya (Air means water), from Puncak Bara; visual identity: Laba-laba emas dengan kaki kawat pijar dan perut lentera kecil. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_057",
+    "name": "Golem Palungbara",
+    "region_id": "r06",
+    "element": "Api",
+    "archetype": "construct",
+    "min_level": 560,
+    "max_level": 569,
+    "visual": "Golem batu hitam dengan perut tungku terbuka dan lengan sekop.",
+    "ability": "Pukul Bara: serangan berat dengan Bara.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Golem Palungbara; construct; element Api (Air means water), from Puncak Bara; visual identity: Golem batu hitam dengan perut tungku terbuka dan lengan sekop. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_058",
+    "name": "Ular Rantai Tambat",
+    "region_id": "r06",
+    "element": "Tanah",
+    "archetype": "construct_serpent",
+    "min_level": 570,
+    "max_level": 579,
+    "visual": "Ular rantai batu dengan kepala jangkar dan ekor pasak lebar.",
+    "ability": "Belit Tambat: menurunkan kecepatan dan pertahanan.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Ular Rantai Tambat; construct_serpent; element Tanah (Air means water), from Puncak Bara; visual identity: Ular rantai batu dengan kepala jangkar dan ekor pasak lebar. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_059",
+    "name": "Elang Abuputar",
+    "region_id": "r06",
+    "element": "Angin",
+    "archetype": "avian",
+    "min_level": 580,
+    "max_level": 589,
+    "visual": "Elang abu dengan sayap kipas dan lingkar asap di punggung.",
+    "ability": "Pusaran Abu: serangan area.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Elang Abuputar; avian; element Angin (Air means water), from Puncak Bara; visual identity: Elang abu dengan sayap kipas dan lingkar asap di punggung. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_060",
+    "name": "Kura Tungku Purba",
+    "region_id": "r06",
+    "element": "Api",
+    "archetype": "ancient_beast",
+    "min_level": 590,
+    "max_level": 599,
+    "visual": "Kura raksasa bercangkang gunung tungku, satu pintu bara retak di dada.",
+    "ability": "Napas Tungku: serangan area berperingatan; menyisakan Bara singkat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kura Tungku Purba; ancient_beast; element Api (Air means water), from Puncak Bara; visual identity: Kura raksasa bercangkang gunung tungku, satu pintu bara retak di dada. Regional color anchors: #352E42, #8F4B49, #DA8551, #F6D29A. Battle sprite, 128x128 logical canvas, full body, transparent background, 8 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=116; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_061",
+    "name": "Tikus Pitasurat",
+    "region_id": "r07",
+    "element": "Angin",
+    "archetype": "beast",
+    "min_level": 600,
+    "max_level": 609,
+    "visual": "Tikus kelabu berekor pita surat hijau dengan telinga amplop.",
+    "ability": "Gigit Pesan: serangan cepat sasaran belakang.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Tikus Pitasurat; beast; element Angin (Air means water), from Kota Senyap; visual identity: Tikus kelabu berekor pita surat hijau dengan telinga amplop. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_062",
+    "name": "Genangan Kanal",
+    "region_id": "r07",
+    "element": "Air",
+    "archetype": "slime",
+    "min_level": 610,
+    "max_level": 619,
+    "visual": "Genangan biru berbentuk wajah terbalik dengan tutup kanal mengapung.",
+    "ability": "Tarik Kanal: Lambat pada satu sasaran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Genangan Kanal; slime; element Air (Air means water), from Kota Senyap; visual identity: Genangan biru berbentuk wajah terbalik dengan tutup kanal mengapung. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_063",
+    "name": "Merpati Loncengkecil",
+    "region_id": "r07",
+    "element": "Cahaya",
+    "archetype": "avian",
+    "min_level": 620,
+    "max_level": 629,
+    "visual": "Merpati gading berdada lonceng kaca tanpa bandul.",
+    "ability": "Kilau Bisu: mengurangi akurasi.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Merpati Loncengkecil; avian; element Cahaya (Air means water), from Kota Senyap; visual identity: Merpati gading berdada lonceng kaca tanpa bandul. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_064",
+    "name": "Boneka Kapurjalan",
+    "region_id": "r07",
+    "element": "Tanah",
+    "archetype": "construct",
+    "min_level": 630,
+    "max_level": 639,
+    "visual": "Boneka kapur putih beruas bata dengan coretan alis cokelat.",
+    "ability": "Garis Batas: memberi perisai sekutu musuh.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Boneka Kapurjalan; construct; element Tanah (Air means water), from Kota Senyap; visual identity: Boneka kapur putih beruas bata dengan coretan alis cokelat. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_065",
+    "name": "Kucing Bayangjendela",
+    "region_id": "r07",
+    "element": "Bayangan",
+    "archetype": "beast",
+    "min_level": 640,
+    "max_level": 649,
+    "visual": "Kucing hitam pipih dengan mata berupa dua jendela ungu.",
+    "ability": "Loncat Sela: serangan yang mengabaikan sebagian pertahanan.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kucing Bayangjendela; beast; element Bayangan (Air means water), from Kota Senyap; visual identity: Kucing hitam pipih dengan mata berupa dua jendela ungu. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_066",
+    "name": "Ngengat Lampumerah",
+    "region_id": "r07",
+    "element": "Api",
+    "archetype": "insect",
+    "min_level": 650,
+    "max_level": 659,
+    "visual": "Ngengat merah berbadan bohlam retak, sayap seperti poster lusuh.",
+    "ability": "Debu Hangus: memberi Bara pada dua sasaran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Ngengat Lampumerah; insect; element Api (Air means water), from Kota Senyap; visual identity: Ngengat merah berbadan bohlam retak, sayap seperti poster lusuh. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_067",
+    "name": "Patroli Kuncikosong",
+    "region_id": "r07",
+    "element": "Tanah",
+    "archetype": "construct",
+    "min_level": 660,
+    "max_level": 669,
+    "visual": "Zirah penjaga tanpa kepala dengan kunci batu besar di dada.",
+    "ability": "Palang Sunyi: menjaga sekutu musuh terlemah.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Patroli Kuncikosong; construct; element Tanah (Air means water), from Kota Senyap; visual identity: Zirah penjaga tanpa kepala dengan kunci batu besar di dada. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_068",
+    "name": "Gurita Tintakanal",
+    "region_id": "r07",
+    "element": "Air",
+    "archetype": "cephalopod",
+    "min_level": 670,
+    "max_level": 679,
+    "visual": "Gurita kanal biru tua memakai tutup saluran sebagai topi.",
+    "ability": "Sembur Kanal: serangan area dan akurasi turun.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Gurita Tintakanal; cephalopod; element Air (Air means water), from Kota Senyap; visual identity: Gurita kanal biru tua memakai tutup saluran sebagai topi. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_069",
+    "name": "Gema Pemain Biola",
+    "region_id": "r07",
+    "element": "Bayangan",
+    "archetype": "echo",
+    "min_level": 680,
+    "max_level": 689,
+    "visual": "Siluet ungu dengan biola tanpa senar, tubuh tersusun pita debu.",
+    "ability": "Nada Hilang: mengurangi energi kelompok sedikit.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Gema Pemain Biola; echo; element Bayangan (Air means water), from Kota Senyap; visual identity: Siluet ungu dengan biola tanpa senar, tubuh tersusun pita debu. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_070",
+    "name": "Lonceng Tanpa Suara",
+    "region_id": "r07",
+    "element": "Cahaya",
+    "archetype": "giant_construct",
+    "min_level": 690,
+    "max_level": 699,
+    "visual": "Lonceng putih raksasa berkaki jarum jam dan retakan berbentuk mata.",
+    "ability": "Dentang Hening: serangan area berperingatan yang menghapus satu penguatan.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Lonceng Tanpa Suara; giant_construct; element Cahaya (Air means water), from Kota Senyap; visual identity: Lonceng putih raksasa berkaki jarum jam dan retakan berbentuk mata. Regional color anchors: #252D46, #616B91, #AAA5BB, #E0C69D. Battle sprite, 128x128 logical canvas, full body, transparent background, 8 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=116; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_071",
+    "name": "Domba Awanrendah",
+    "region_id": "r08",
+    "element": "Angin",
+    "archetype": "beast",
+    "min_level": 700,
+    "max_level": 709,
+    "visual": "Domba awan putih dengan kaki simpul tali dan tanduk hijau kecil.",
+    "ability": "Dorong Awan: serangan satu sasaran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Domba Awanrendah; beast; element Angin (Air means water), from Kepulauan Awan; visual identity: Domba awan putih dengan kaki simpul tali dan tanduk hijau kecil. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_072",
+    "name": "Ubur Hujanlangit",
+    "region_id": "r08",
+    "element": "Air",
+    "archetype": "jellyfish",
+    "min_level": 710,
+    "max_level": 719,
+    "visual": "Ubur awan sian dengan tentakel tetes air panjang.",
+    "ability": "Gerimis Gantung: Lambat singkat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Ubur Hujanlangit; jellyfish; element Air (Air means water), from Kepulauan Awan; visual identity: Ubur awan sian dengan tentakel tetes air panjang. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_073",
+    "name": "Kumbang Tambatbatu",
+    "region_id": "r08",
+    "element": "Tanah",
+    "archetype": "insect",
+    "min_level": 720,
+    "max_level": 729,
+    "visual": "Kumbang oker bercangkang pemberat batu dan kaki pengait.",
+    "ability": "Tarik Tambat: serangan berat pada sasaran depan.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kumbang Tambatbatu; insect; element Tanah (Air means water), from Kepulauan Awan; visual identity: Kumbang oker bercangkang pemberat batu dan kaki pengait. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_074",
+    "name": "Ikan Pijarterbang",
+    "region_id": "r08",
+    "element": "Cahaya",
+    "archetype": "fish",
+    "min_level": 730,
+    "max_level": 739,
+    "visual": "Ikan gading bercahaya dengan sirip layar emas dan ekor pita.",
+    "ability": "Luncur Halo: serangan cepat yang mengurangi akurasi.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Ikan Pijarterbang; fish; element Cahaya (Air means water), from Kepulauan Awan; visual identity: Ikan gading bercahaya dengan sirip layar emas dan ekor pita. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_075",
+    "name": "Layang Malambermata",
+    "region_id": "r08",
+    "element": "Bayangan",
+    "archetype": "construct",
+    "min_level": 740,
+    "max_level": 749,
+    "visual": "Layang-layang violet bermata tunggal dengan ekor simpul bayangan.",
+    "ability": "Tali Gelap: mengurangi energi satu sasaran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Layang Malambermata; construct; element Bayangan (Air means water), from Kepulauan Awan; visual identity: Layang-layang violet bermata tunggal dengan ekor simpul bayangan. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_076",
+    "name": "Pipit Baraembus",
+    "region_id": "r08",
+    "element": "Api",
+    "archetype": "avian",
+    "min_level": 750,
+    "max_level": 759,
+    "visual": "Pipit tembaga dengan dada bara dan sayap asap pendek.",
+    "ability": "Hembus Panas: Bara pada sasaran belakang.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Pipit Baraembus; avian; element Api (Air means water), from Kepulauan Awan; visual identity: Pipit tembaga dengan dada bara dan sayap asap pendek. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_077",
+    "name": "Pari Awanlipat",
+    "region_id": "r08",
+    "element": "Angin",
+    "archetype": "sky_fish",
+    "min_level": 760,
+    "max_level": 769,
+    "visual": "Pari kain awan berlipat dengan tepian mint dan mata simpul tali.",
+    "ability": "Lipat Langit: penghindaran untuk kelompok musuh.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Pari Awanlipat; sky_fish; element Angin (Air means water), from Kepulauan Awan; visual identity: Pari kain awan berlipat dengan tepian mint dan mata simpul tali. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_078",
+    "name": "Paus Hujankecil",
+    "region_id": "r08",
+    "element": "Air",
+    "archetype": "sky_beast",
+    "min_level": 770,
+    "max_level": 779,
+    "visual": "Paus biru berukuran perahu dengan punggung penampung hujan putih.",
+    "ability": "Curah Punggung: pemulihan kecil dan perisai sekutu musuh.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Paus Hujankecil; sky_beast; element Air (Air means water), from Kepulauan Awan; visual identity: Paus biru berukuran perahu dengan punggung penampung hujan putih. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_079",
+    "name": "Rajawali Halopecah",
+    "region_id": "r08",
+    "element": "Cahaya",
+    "archetype": "avian",
+    "min_level": 780,
+    "max_level": 789,
+    "visual": "Rajawali putih bertanduk halo patah dan sayap berpetak emas.",
+    "ability": "Sorot Tepi: serangan area yang memperjelas sasaran tersembunyi.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Rajawali Halopecah; avian; element Cahaya (Air means water), from Kepulauan Awan; visual identity: Rajawali putih bertanduk halo patah dan sayap berpetak emas. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_080",
+    "name": "Naga Simpul Langit",
+    "region_id": "r08",
+    "element": "Angin",
+    "archetype": "sky_serpent",
+    "min_level": 790,
+    "max_level": 799,
+    "visual": "Naga panjang dari tali awan hijau, tanduk jangkar putih, dada lentera.",
+    "ability": "Tarikan Cakrawala: serangan area berperingatan dan Lambat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Naga Simpul Langit; sky_serpent; element Angin (Air means water), from Kepulauan Awan; visual identity: Naga panjang dari tali awan hijau, tanduk jangkar putih, dada lentera. Regional color anchors: #374B75, #84A5C2, #E1DFD7, #EDCDA8. Battle sprite, 128x128 logical canvas, full body, transparent background, 8 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=116; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_081",
+    "name": "Siput Jamkaca",
+    "region_id": "r09",
+    "element": "Tanah",
+    "archetype": "mollusk",
+    "min_level": 800,
+    "max_level": 809,
+    "visual": "Siput cokelat dengan cangkang jam pasir violet dan mata jarum.",
+    "ability": "Jejak Butir: menurunkan kecepatan.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Siput Jamkaca; mollusk; element Tanah (Air means water), from Gerbang Senja; visual identity: Siput cokelat dengan cangkang jam pasir violet dan mata jarum. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_082",
+    "name": "Ngengat Senjamerah",
+    "region_id": "r09",
+    "element": "Api",
+    "archetype": "insect",
+    "min_level": 810,
+    "max_level": 819,
+    "visual": "Ngengat marun dengan sayap setengah matahari jingga.",
+    "ability": "Debu Perpisahan: Bara singkat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Ngengat Senjamerah; insect; element Api (Air means water), from Gerbang Senja; visual identity: Ngengat marun dengan sayap setengah matahari jingga. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_083",
+    "name": "Ikan Sungai Kenang",
+    "region_id": "r09",
+    "element": "Air",
+    "archetype": "fish",
+    "min_level": 820,
+    "max_level": 829,
+    "visual": "Ikan biru pucat dengan potongan pemandangan abstrak di sisiknya.",
+    "ability": "Arus Kenang: mengurangi serangan satu sasaran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Ikan Sungai Kenang; fish; element Air (Air means water), from Gerbang Senja; visual identity: Ikan biru pucat dengan potongan pemandangan abstrak di sisiknya. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_084",
+    "name": "Gagak Pitaambang",
+    "region_id": "r09",
+    "element": "Angin",
+    "archetype": "avian",
+    "min_level": 830,
+    "max_level": 839,
+    "visual": "Gagak abu bersayap pita hijau dan paruh palang gerbang.",
+    "ability": "Kibas Ambang: menurunkan prioritas giliran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Gagak Pitaambang; avian; element Angin (Air means water), from Gerbang Senja; visual identity: Gagak abu bersayap pita hijau dan paruh palang gerbang. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_085",
+    "name": "Rusa Jendelaemas",
+    "region_id": "r09",
+    "element": "Cahaya",
+    "archetype": "beast",
+    "min_level": 840,
+    "max_level": 849,
+    "visual": "Rusa krem dengan tanduk kusen jendela dan dada kaca amber.",
+    "ability": "Pantul Janji: perisai untuk sekutu musuh.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Rusa Jendelaemas; beast; element Cahaya (Air means water), from Gerbang Senja; visual identity: Rusa krem dengan tanduk kusen jendela dan dada kaca amber. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_086",
+    "name": "Anjing Sisaalam",
+    "region_id": "r09",
+    "element": "Bayangan",
+    "archetype": "echo_beast",
+    "min_level": 850,
+    "max_level": 859,
+    "visual": "Anjing ungu dengan garis luar terputus dan dua ekor seperti tinta.",
+    "ability": "Gigit Kenangan: mencuri sedikit energi.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Anjing Sisaalam; echo_beast; element Bayangan (Air means water), from Gerbang Senja; visual identity: Anjing ungu dengan garis luar terputus dan dua ekor seperti tinta. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_087",
+    "name": "Prajurit Batupalang",
+    "region_id": "r09",
+    "element": "Tanah",
+    "archetype": "construct",
+    "min_level": 860,
+    "max_level": 869,
+    "visual": "Prajurit gerbang berkepala batu penyangga dan lengan palang kembar.",
+    "ability": "Tutup Jalan: menjaga sekutu belakang.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Prajurit Batupalang; construct; element Tanah (Air means water), from Gerbang Senja; visual identity: Prajurit gerbang berkepala batu penyangga dan lengan palang kembar. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_088",
+    "name": "Burung Suratbara",
+    "region_id": "r09",
+    "element": "Api",
+    "archetype": "avian",
+    "min_level": 870,
+    "max_level": 879,
+    "visual": "Burung kertas merah dengan tepi hangus dan paruh segel lilin.",
+    "ability": "Surat Hangus: Bara kelompok kecil.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Burung Suratbara; avian; element Api (Air means water), from Gerbang Senja; visual identity: Burung kertas merah dengan tepi hangus dan paruh segel lilin. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_089",
+    "name": "Penimbang Cahaya",
+    "region_id": "r09",
+    "element": "Cahaya",
+    "archetype": "construct",
+    "min_level": 880,
+    "max_level": 889,
+    "visual": "Timbangan berjalan berkaki tiga, mangkuk emas berisi serpih cahaya.",
+    "ability": "Berat Janji: bonus kerusakan pada sasaran dengan banyak penguatan.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Penimbang Cahaya; construct; element Cahaya (Air means water), from Gerbang Senja; visual identity: Timbangan berjalan berkaki tiga, mangkuk emas berisi serpih cahaya. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_090",
+    "name": "Penjaga Dua Ambang",
+    "region_id": "r09",
+    "element": "Bayangan",
+    "archetype": "gate_construct",
+    "min_level": 890,
+    "max_level": 899,
+    "visual": "Makhluk gerbang berkepala dua lengkung ungu, celah tubuh berwarna senja.",
+    "ability": "Pintu Terakhir: serangan area berperingatan, lalu pertahanan menurun satu giliran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Penjaga Dua Ambang; gate_construct; element Bayangan (Air means water), from Gerbang Senja; visual identity: Makhluk gerbang berkepala dua lengkung ungu, celah tubuh berwarna senja. Regional color anchors: #342B4E, #855978, #CB857B, #EACA93. Battle sprite, 128x128 logical canvas, full body, transparent background, 8 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=116; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_091",
+    "name": "Serpih Pagi Hidup",
+    "region_id": "r10",
+    "element": "Cahaya",
+    "archetype": "shard",
+    "min_level": 900,
+    "max_level": 909,
+    "visual": "Pecahan lentera amber melayang dengan kaki cahaya persegi.",
+    "ability": "Tusuk Pijar: serangan satu sasaran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Serpih Pagi Hidup; shard; element Cahaya (Air means water), from Takhta Fajar; visual identity: Pecahan lentera amber melayang dengan kaki cahaya persegi. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_092",
+    "name": "Tikus Sumbuasal",
+    "region_id": "r10",
+    "element": "Api",
+    "archetype": "beast",
+    "min_level": 910,
+    "max_level": 919,
+    "visual": "Tikus tembaga dengan ekor sumbu putih dan telinga berbentuk kelopak api.",
+    "ability": "Gigit Asal: Bara yang menguat setelah giliran pertama.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Tikus Sumbuasal; beast; element Api (Air means water), from Takhta Fajar; visual identity: Tikus tembaga dengan ekor sumbu putih dan telinga berbentuk kelopak api. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_093",
+    "name": "Kadal Lantaiputih",
+    "region_id": "r10",
+    "element": "Tanah",
+    "archetype": "reptile",
+    "min_level": 920,
+    "max_level": 929,
+    "visual": "Kadal batu gading bercorak ubin emas dan ekor pahat.",
+    "ability": "Pijak Ubin: memberi perisai diri.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Kadal Lantaiputih; reptile; element Tanah (Air means water), from Takhta Fajar; visual identity: Kadal batu gading bercorak ubin emas dan ekor pahat. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_094",
+    "name": "Ikan Cakraair",
+    "region_id": "r10",
+    "element": "Air",
+    "archetype": "sky_fish",
+    "min_level": 930,
+    "max_level": 939,
+    "visual": "Ikan biru berputar di dalam cincin air dengan sirip berbentuk tetes.",
+    "ability": "Lingkar Basah: serangan area dan Lambat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Ikan Cakraair; sky_fish; element Air (Air means water), from Takhta Fajar; visual identity: Ikan biru berputar di dalam cincin air dengan sirip berbentuk tetes. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_095",
+    "name": "Pipit Napasawal",
+    "region_id": "r10",
+    "element": "Angin",
+    "archetype": "avian",
+    "min_level": 940,
+    "max_level": 949,
+    "visual": "Pipit putih dengan dada seruling hijau dan bulu garis angin.",
+    "ability": "Nada Angin: mempercepat sekutu musuh singkat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Pipit Napasawal; avian; element Angin (Air means water), from Takhta Fajar; visual identity: Pipit putih dengan dada seruling hijau dan bulu garis angin. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_096",
+    "name": "Jubah Takhtakosong",
+    "region_id": "r10",
+    "element": "Bayangan",
+    "archetype": "echo",
+    "min_level": 950,
+    "max_level": 959,
+    "visual": "Jubah violet mengambang dengan mahkota berlubang dan tangan tanpa tubuh.",
+    "ability": "Perintah Hampa: mengurangi energi kelompok sedikit.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Jubah Takhtakosong; echo; element Bayangan (Air means water), from Takhta Fajar; visual identity: Jubah violet mengambang dengan mahkota berlubang dan tangan tanpa tubuh. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_097",
+    "name": "Golem Kacaasal",
+    "region_id": "r10",
+    "element": "Cahaya",
+    "archetype": "construct",
+    "min_level": 960,
+    "max_level": 969,
+    "visual": "Golem gading bertulang kaca amber dengan serpih dada tak lengkap.",
+    "ability": "Susun Cahaya: perisai besar lalu serangan satu sasaran.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Golem Kacaasal; construct; element Cahaya (Air means water), from Takhta Fajar; visual identity: Golem gading bertulang kaca amber dengan serpih dada tak lengkap. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_098",
+    "name": "Rantai Baraawal",
+    "region_id": "r10",
+    "element": "Api",
+    "archetype": "construct_serpent",
+    "min_level": 970,
+    "max_level": 979,
+    "visual": "Ular rantai emas membara dengan kepala pemantik putih.",
+    "ability": "Lilit Sumbu: Bara dan penurunan pertahanan.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Rantai Baraawal; construct_serpent; element Api (Air means water), from Takhta Fajar; visual identity: Ular rantai emas membara dengan kepala pemantik putih. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_099",
+    "name": "Rusa Cakrawala",
+    "region_id": "r10",
+    "element": "Angin",
+    "archetype": "lantern_beast",
+    "min_level": 980,
+    "max_level": 989,
+    "visual": "Rusa putih berkaki awan, tanduk melingkar tanpa ujung dengan pita mint.",
+    "ability": "Lompatan Awal: serangan area, lalu bonus penghindaran singkat.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Rusa Cakrawala; lantern_beast; element Angin (Air means water), from Takhta Fajar; visual identity: Rusa putih berkaki awan, tanduk melingkar tanpa ujung dengan pita mint. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Battle sprite, 64x64 logical canvas, full body, transparent background, 4 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=58; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  },
+  {
+    "id": "enemy_100",
+    "name": "Gema Lentera Pertama",
+    "region_id": "r10",
+    "element": "Cahaya",
+    "archetype": "dawn_echo",
+    "min_level": 990,
+    "max_level": 999,
+    "visual": "Lentera raksasa retak dengan empat sayap kaca dan ruang kosong di tengah.",
+    "ability": "Fajar Dibagi: serangan area berperingatan; fase berikutnya melemah setelah penguatan dihapus.",
+    "art": {
+      "sprite_prompt": "Original HARA: Gema Arunika fantasy JRPG pixel art; floating islands and broken dawn lantern visual language; crisp square pixels, restrained 12–16 color palette, hard clusters, 1 px selective dark outline, readable silhouette, upper-left warm light, no gradients, no blur, no antialiasing, no text, no watermark, no logos, no reference to existing franchises. One original enemy species: Gema Lentera Pertama; dawn_echo; element Cahaya (Air means water), from Takhta Fajar; visual identity: Lentera raksasa retak dengan empat sayap kaca dan ruang kosong di tengah. Regional color anchors: #30314D, #797797, #DBBDA1, #FFF0BC. Battle sprite, 128x128 logical canvas, full body, transparent background, 8 px safe margin; enemy stands on LEFT of battlefield and faces RIGHT; three-quarter side view, neutral ready stance; feet or floating anchor on baseline y=116; complete silhouette, no ground shadow baked in, no terrain. Export PNG; nearest-neighbor scaling only. Single pose, no sprite sheet. Tier badges are separate UI, not painted."
+    }
+  }
+]
