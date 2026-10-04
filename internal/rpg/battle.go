@@ -463,7 +463,7 @@ func (s *Service) complete(ctx context.Context, tx *sqlx.Tx, p *Profile, b *Batt
 			for _, h := range b.Heroes {
 				grantXP(p, h.ID, b.RewardXP)
 			}
-			if _, err := tx.ExecContext(ctx, `INSERT INTO rpg_ledger(player_id,event_key,shards,coins,created_at) VALUES(?,?,?,?,?)`, p.ID, fmt.Sprintf("clear:%d", b.Stage), b.RewardShards, b.RewardCoins, s.now().Unix()); err != nil {
+			if _, err := tx.ExecContext(ctx, tx.Rebind(`INSERT INTO rpg_ledger(player_id,event_key,shards,coins,created_at) VALUES(?,?,?,?,?)`), p.ID, fmt.Sprintf("clear:%d", b.Stage), b.RewardShards, b.RewardCoins, s.now().Unix()); err != nil {
 				return err
 			}
 			b.log(fmt.Sprintf("Menang! +%d Embun Bintang · +%d koin. Progres tersimpan.", b.RewardShards, b.RewardCoins))

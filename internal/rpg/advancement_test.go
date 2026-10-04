@@ -160,7 +160,7 @@ func TestV2BattleRetainsSkillsWithoutPassives(t *testing.T) {
 	b.Enemies[0].HP = 1000
 	b.Enemies[0].Max = 1000
 	raw, _ := json.Marshal(b)
-	if _, err = db.Exec(`UPDATE rpg_battles SET state=? WHERE id=?`, string(raw), b.ID); err != nil {
+	if _, err = db.Exec(db.Rebind(`UPDATE rpg_battles SET state=? WHERE id=?`), string(raw), b.ID); err != nil {
 		t.Fatal(err)
 	}
 	out, err = s.Act(ctx, p.ID, b.ID, Action{RequestID: "legacy-v2-skill", Revision: b.Revision, Actor: 0, Action: "skill", Target: 0})

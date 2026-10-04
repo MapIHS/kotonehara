@@ -245,4 +245,4 @@ Lihat `LICENSE`.
 
 ## RPG — HARA: Gema Arunika
 
-Battle browser dan gacha tersambung ke profil WhatsApp melalui `.rpg`. Lihat [konfigurasi RPG dan SQLite](docs/rpg.md). Fitur default mati sampai env RPG diisi.
+Battle browser dan gacha tersambung ke profil WhatsApp melalui `.rpg`. Lihat [konfigurasi RPG](docs/rpg.md) dan [deployment Heroku/PostgreSQL](docs/heroku-rpg.md). Fitur default mati sampai env RPG diisi.

@@ -238,7 +238,7 @@ func TestPassiveSnapshotReloadAndActionReplay(t *testing.T) {
 	b.Enemies[0].HP = 999
 	b.Enemies[0].Max = 999
 	raw, _ := json.Marshal(b)
-	if _, err = db.Exec(`UPDATE rpg_battles SET state=? WHERE id=?`, string(raw), b.ID); err != nil {
+	if _, err = db.Exec(db.Rebind(`UPDATE rpg_battles SET state=? WHERE id=?`), string(raw), b.ID); err != nil {
 		t.Fatal(err)
 	}
 	a := Action{RequestID: "passive-hit", Revision: b.Revision, Actor: 0, Target: 0, Action: "attack"}
@@ -276,7 +276,7 @@ func TestBlindMissActivatesTricksterPassive(t *testing.T) {
 		b.Enemies[i].Blind = 1
 	}
 	raw, _ := json.Marshal(b)
-	if _, err = db.Exec(`UPDATE rpg_battles SET state=? WHERE id=?`, string(raw), b.ID); err != nil {
+	if _, err = db.Exec(db.Rebind(`UPDATE rpg_battles SET state=? WHERE id=?`), string(raw), b.ID); err != nil {
 		t.Fatal(err)
 	}
 	out, err = s.Act(ctx, p.ID, b.ID, Action{RequestID: "blind-passive-guard", Revision: b.Revision, Actor: 0, Target: 0, Action: "guard"})

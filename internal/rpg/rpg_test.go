@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 	"reflect"
 	"sync"
@@ -27,6 +28,9 @@ func (v repeatingByte) Read(p []byte) (int, error) {
 }
 func openTest(t *testing.T, path string) (*sqlx.DB, *Service) {
 	t.Helper()
+	if dsn := os.Getenv("RPG_TEST_POSTGRES_URL"); dsn != "" {
+		return openPostgresTest(t, dsn, path)
+	}
 	db, err := sqlx.Open("sqlite", "file:"+path+"?_pragma=foreign_keys(1)&_pragma=busy_timeout(5000)")
 	if err != nil {
 		t.Fatal(err)
@@ -63,7 +67,7 @@ func patchProfile(t *testing.T, db *sqlx.DB, p Profile) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = db.Exec(`UPDATE rpg_players SET state=?,revision=? WHERE id=?`, string(raw), p.Revision, p.ID); err != nil {
+	if _, err = db.Exec(db.Rebind(`UPDATE rpg_players SET state=?,revision=? WHERE id=?`), string(raw), p.Revision, p.ID); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -447,7 +451,13 @@ func TestSoftPityBoundaries(t *testing.T) {
 }
 func TestStorageFailureRollsBackWalletHistoryAndLedger(t *testing.T) {
 	db, s, p := fixture(t)
-	_, err := db.Exec(`CREATE TRIGGER reject_test_receipt BEFORE INSERT ON rpg_requests WHEN NEW.request_id='storage-failure' BEGIN SELECT RAISE(ABORT,'simulated storage failure'); END`)
+	createFailure := `CREATE TRIGGER reject_test_receipt BEFORE INSERT ON rpg_requests WHEN NEW.request_id='storage-failure' BEGIN SELECT RAISE(ABORT,'simulated storage failure'); END`
+	removeFailure := `DROP TRIGGER reject_test_receipt`
+	if db.DriverName() == "postgres" {
+		createFailure = `ALTER TABLE rpg_requests ADD CONSTRAINT reject_test_receipt CHECK (request_id <> 'storage-failure')`
+		removeFailure = `ALTER TABLE rpg_requests DROP CONSTRAINT reject_test_receipt`
+	}
+	_, err := db.Exec(createFailure)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -469,7 +479,7 @@ func TestStorageFailureRollsBackWalletHistoryAndLedger(t *testing.T) {
 	if err = db.Get(&n, `SELECT COUNT(*) FROM rpg_ledger WHERE event_key<>'welcome'`); err != nil || n != 0 {
 		t.Fatal("partial ledger", err)
 	}
-	if _, err = db.Exec(`DROP TRIGGER reject_test_receipt`); err != nil {
+	if _, err = db.Exec(removeFailure); err != nil {
 		t.Fatal(err)
 	}
 	out, err := s.Summon(context.Background(), p.ID, "storage-failure", BannerID, 10)

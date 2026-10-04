@@ -28,8 +28,8 @@ type Service struct {
 }
 
 func New(ctx context.Context, db *sqlx.DB) (*Service, error) {
-	if db.DriverName() != "sqlite" {
-		return nil, fmt.Errorf("RPG v1 requires DB_DRIVER=sqlite")
+	if db.DriverName() != "sqlite" && db.DriverName() != "postgres" {
+		return nil, fmt.Errorf("RPG requires DB_DRIVER=sqlite or postgres")
 	}
 	c, err := loadCatalog()
 	if err != nil {
@@ -44,11 +44,30 @@ func New(ctx context.Context, db *sqlx.DB) (*Service, error) {
 	}
 	return s, nil
 }
+
+// beginWrite serializes RPG writes across PostgreSQL connections/processes as
+// well as the in-process mutex. This keeps identity creation, one-use tickets,
+// rewards and request replay atomic during a deployment overlap. The lock is
+// released automatically on commit/rollback; no external lock service is needed.
+func (s *Service) beginWrite(ctx context.Context) (*sqlx.Tx, error) {
+	if s.db.DriverName() == "sqlite" {
+		return s.db.BeginTxx(ctx, nil)
+	}
+	tx, err := s.db.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	if err != nil {
+		return nil, err
+	}
+	if _, err = tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(1380992817, 1)`); err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
+	return tx, nil
+}
 func (s *Service) Catalog() Catalog { return s.catalog }
 func (s *Service) migrate(ctx context.Context) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	tx, err := s.db.BeginTxx(ctx, nil)
+	tx, err := s.beginWrite(ctx)
 	if err != nil {
 		return err
 	}
@@ -72,7 +91,7 @@ func (s *Service) migrate(ctx context.Context) error {
 			return fmt.Errorf("RPG migration: %w", err)
 		}
 	}
-	if _, err = tx.ExecContext(ctx, `INSERT INTO rpg_migrations(version,applied_at) VALUES(1,?) ON CONFLICT(version) DO NOTHING`, s.now().Unix()); err != nil {
+	if _, err = tx.ExecContext(ctx, tx.Rebind(`INSERT INTO rpg_migrations(version,applied_at) VALUES(1,?) ON CONFLICT(version) DO NOTHING`), s.now().Unix()); err != nil {
 		return err
 	}
 	return tx.Commit()
@@ -95,7 +114,7 @@ var aliasPattern = regexp.MustCompile(`^[0-9]+@(s\.whatsapp\.net|lid)$`)
 func (s *Service) EnsurePlayer(ctx context.Context, aliases []string, name string) (Profile, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	tx, err := s.db.BeginTxx(ctx, nil)
+	tx, err := s.beginWrite(ctx)
 	if err != nil {
 		return Profile{}, err
 	}
@@ -109,7 +128,7 @@ func (s *Service) EnsurePlayer(ctx context.Context, aliases []string, name strin
 			return Profile{}, fail(400, "identity", "Identitas WhatsApp tidak valid.")
 		}
 		var found string
-		err = tx.QueryRowContext(ctx, `SELECT player_id FROM rpg_identities WHERE alias=?`, alias).Scan(&found)
+		err = tx.QueryRowContext(ctx, tx.Rebind(`SELECT player_id FROM rpg_identities WHERE alias=?`), alias).Scan(&found)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return Profile{}, err
 		}
@@ -141,10 +160,10 @@ func (s *Service) EnsurePlayer(ctx context.Context, aliases []string, name strin
 		}
 		normalizeProgress(&p)
 		raw, _ := json.Marshal(p)
-		if _, err = tx.ExecContext(ctx, `INSERT INTO rpg_players(id,state,revision,created_at) VALUES(?,?,0,?)`, id, string(raw), s.now().Unix()); err != nil {
+		if _, err = tx.ExecContext(ctx, tx.Rebind(`INSERT INTO rpg_players(id,state,revision,created_at) VALUES(?,?,0,?)`), id, string(raw), s.now().Unix()); err != nil {
 			return p, err
 		}
-		if _, err = tx.ExecContext(ctx, `INSERT INTO rpg_ledger(player_id,event_key,shards,coins,created_at) VALUES(?,'welcome',1600,0,?)`, id, s.now().Unix()); err != nil {
+		if _, err = tx.ExecContext(ctx, tx.Rebind(`INSERT INTO rpg_ledger(player_id,event_key,shards,coins,created_at) VALUES(?,'welcome',1600,0,?)`), id, s.now().Unix()); err != nil {
 			return p, err
 		}
 	} else {
@@ -154,7 +173,7 @@ func (s *Service) EnsurePlayer(ctx context.Context, aliases []string, name strin
 		}
 	}
 	for _, alias := range aliases {
-		if _, err = tx.ExecContext(ctx, `INSERT INTO rpg_identities(alias,player_id) VALUES(?,?) ON CONFLICT(alias) DO NOTHING`, alias, id); err != nil {
+		if _, err = tx.ExecContext(ctx, tx.Rebind(`INSERT INTO rpg_identities(alias,player_id) VALUES(?,?) ON CONFLICT(alias) DO NOTHING`), alias, id); err != nil {
 			return p, err
 		}
 	}
@@ -163,7 +182,7 @@ func (s *Service) EnsurePlayer(ctx context.Context, aliases []string, name strin
 func loadPlayer(ctx context.Context, tx *sqlx.Tx, id string) (Profile, error) {
 	var raw string
 	var p Profile
-	err := tx.QueryRowContext(ctx, `SELECT state FROM rpg_players WHERE id=?`, id).Scan(&raw)
+	err := tx.QueryRowContext(ctx, tx.Rebind(`SELECT state FROM rpg_players WHERE id=?`), id).Scan(&raw)
 	if errors.Is(err, sql.ErrNoRows) {
 		return p, fail(404, "profile_missing", "Profil RPG tidak ditemukan.")
 	}
@@ -181,7 +200,7 @@ func loadBattle(ctx context.Context, tx *sqlx.Tx, player, id string) (*Battle, e
 		return nil, nil
 	}
 	var raw string
-	err := tx.QueryRowContext(ctx, `SELECT state FROM rpg_battles WHERE id=? AND player_id=?`, id, player).Scan(&raw)
+	err := tx.QueryRowContext(ctx, tx.Rebind(`SELECT state FROM rpg_battles WHERE id=? AND player_id=?`), id, player).Scan(&raw)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, fail(404, "battle_missing", "Battle tidak ditemukan.")
 	}
@@ -198,7 +217,11 @@ func loadBattle(ctx context.Context, tx *sqlx.Tx, player, id string) (*Battle, e
 	return &b, nil
 }
 func (s *Service) Snapshot(ctx context.Context, id string) (Snapshot, error) {
-	tx, err := s.db.BeginTxx(ctx, &sql.TxOptions{ReadOnly: true})
+	options := &sql.TxOptions{ReadOnly: true}
+	if s.db.DriverName() == "postgres" {
+		options.Isolation = sql.LevelRepeatableRead
+	}
+	tx, err := s.db.BeginTxx(ctx, options)
 	if err != nil {
 		return Snapshot{}, err
 	}
@@ -227,13 +250,13 @@ func (s *Service) mutate(ctx context.Context, player, requestID, kind string, pa
 	hash := digest(kind + ":" + string(raw))
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	tx, err := s.db.BeginTxx(ctx, nil)
+	tx, err := s.beginWrite(ctx)
 	if err != nil {
 		return Snapshot{}, err
 	}
 	defer tx.Rollback()
 	var oldHash, response string
-	err = tx.QueryRowContext(ctx, `SELECT payload_hash,response FROM rpg_requests WHERE player_id=? AND request_id=?`, player, requestID).Scan(&oldHash, &response)
+	err = tx.QueryRowContext(ctx, tx.Rebind(`SELECT payload_hash,response FROM rpg_requests WHERE player_id=? AND request_id=?`), player, requestID).Scan(&oldHash, &response)
 	if err == nil {
 		if oldHash != hash {
 			return Snapshot{}, fail(409, "request_reused", "Request ID sudah dipakai untuk aksi lain.")
@@ -257,7 +280,7 @@ func (s *Service) mutate(ctx context.Context, player, requestID, kind string, pa
 		return Snapshot{}, err
 	}
 	var recent int
-	if err = tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM rpg_requests WHERE player_id=? AND created_at>?`, player, s.now().Add(-time.Minute).Unix()).Scan(&recent); err != nil {
+	if err = tx.QueryRowContext(ctx, tx.Rebind(`SELECT COUNT(*) FROM rpg_requests WHERE player_id=? AND created_at>?`), player, s.now().Add(-time.Minute).Unix()).Scan(&recent); err != nil {
 		return Snapshot{}, err
 	}
 	if recent >= 180 {
@@ -278,7 +301,7 @@ func (s *Service) mutate(ctx context.Context, player, requestID, kind string, pa
 	if err != nil {
 		return Snapshot{}, err
 	}
-	res, err := tx.ExecContext(ctx, `UPDATE rpg_players SET state=?,revision=? WHERE id=? AND revision=?`, string(raw), p.Revision, player, oldRevision)
+	res, err := tx.ExecContext(ctx, tx.Rebind(`UPDATE rpg_players SET state=?,revision=? WHERE id=? AND revision=?`), string(raw), p.Revision, player, oldRevision)
 	if err != nil {
 		return Snapshot{}, err
 	}
@@ -304,7 +327,7 @@ func (s *Service) mutate(ctx context.Context, player, requestID, kind string, pa
 	if err != nil {
 		return out, err
 	}
-	if _, err = tx.ExecContext(ctx, `INSERT INTO rpg_requests(player_id,request_id,payload_hash,response,created_at) VALUES(?,?,?,?,?)`, player, requestID, hash, string(raw), s.now().Unix()); err != nil {
+	if _, err = tx.ExecContext(ctx, tx.Rebind(`INSERT INTO rpg_requests(player_id,request_id,payload_hash,response,created_at) VALUES(?,?,?,?,?)`), player, requestID, hash, string(raw), s.now().Unix()); err != nil {
 		return Snapshot{}, err
 	}
 	if err = tx.Commit(); err != nil {
@@ -322,10 +345,10 @@ func saveBattle(ctx context.Context, tx *sqlx.Tx, player string, b *Battle, crea
 		status = b.Result
 	}
 	if create {
-		_, err = tx.ExecContext(ctx, `INSERT INTO rpg_battles(id,player_id,status,revision,state) VALUES(?,?,?,?,?)`, b.ID, player, status, b.Revision, string(raw))
+		_, err = tx.ExecContext(ctx, tx.Rebind(`INSERT INTO rpg_battles(id,player_id,status,revision,state) VALUES(?,?,?,?,?)`), b.ID, player, status, b.Revision, string(raw))
 		return err
 	}
-	res, err := tx.ExecContext(ctx, `UPDATE rpg_battles SET state=?,status=?,revision=? WHERE id=? AND player_id=? AND revision=?`, string(raw), status, b.Revision, b.ID, player, b.Revision-1)
+	res, err := tx.ExecContext(ctx, tx.Rebind(`UPDATE rpg_battles SET state=?,status=?,revision=? WHERE id=? AND player_id=? AND revision=?`), string(raw), status, b.Revision, b.ID, player, b.Revision-1)
 	if err != nil {
 		return err
 	}

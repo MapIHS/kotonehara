@@ -139,7 +139,7 @@ func TestLegacyProfileAndBattleRemainPlayable(t *testing.T) {
 		b.Heroes[i].Level = 0
 	}
 	raw, _ := json.Marshal(b)
-	if _, err = db.Exec(`UPDATE rpg_battles SET state=? WHERE id=?`, string(raw), b.ID); err != nil {
+	if _, err = db.Exec(db.Rebind(`UPDATE rpg_battles SET state=? WHERE id=?`), string(raw), b.ID); err != nil {
 		t.Fatal(err)
 	}
 	next, err := s.Act(ctx, p.ID, b.ID, Action{RequestID: "legacy-skill", Revision: b.Revision, Actor: 0, Target: 0, Action: "skill"})
@@ -198,7 +198,7 @@ func TestBurnRetargetAndShieldPersistence(t *testing.T) {
 	b.Heroes[0].Acted = false
 	b.Heroes[0].Shield = 50
 	raw, _ := json.Marshal(b)
-	if _, err = db.Exec(`UPDATE rpg_battles SET state=? WHERE id=?`, string(raw), b.ID); err != nil {
+	if _, err = db.Exec(db.Rebind(`UPDATE rpg_battles SET state=? WHERE id=?`), string(raw), b.ID); err != nil {
 		t.Fatal(err)
 	}
 	out, err = s.Act(ctx, p.ID, b.ID, Action{RequestID: "burn-finish-phase", Revision: b.Revision, Actor: 0, Target: 0, Action: "guard"})

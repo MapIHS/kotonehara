@@ -205,7 +205,7 @@ func (s *Service) Progress(ctx context.Context, player, operation string, a Prog
 		p.Coins -= cost
 		p.Dust -= dust
 		if cost > 0 {
-			_, err = tx.ExecContext(ctx, `INSERT INTO rpg_ledger(player_id,event_key,shards,coins,created_at) VALUES(?,?,0,?,?)`, p.ID, fmt.Sprintf("%s:%s", operation, a.RequestID), -cost, s.now().Unix())
+			_, err = tx.ExecContext(ctx, tx.Rebind(`INSERT INTO rpg_ledger(player_id,event_key,shards,coins,created_at) VALUES(?,?,0,?,?)`), p.ID, fmt.Sprintf("%s:%s", operation, a.RequestID), -cost, s.now().Unix())
 		}
 		return b, nil, err
 	})

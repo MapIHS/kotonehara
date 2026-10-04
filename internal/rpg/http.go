@@ -286,15 +286,29 @@ func writeError(w http.ResponseWriter, err error) {
 
 // StartHTTP binds synchronously, so an invalid port fails before WhatsApp login.
 func StartHTTP(s *Service, c HTTPConfig) (*http.Server, error) {
-	h, err := NewHTTPHandler(s, c)
-	if err != nil {
-		return nil, err
+	// Heroku still needs a web listener when RPG is disabled. No game routes
+	// are enabled in that case; /health reports process readiness only.
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-store")
+		writeJSON(w, http.StatusOK, map[string]any{"status": "ok", "rpg_enabled": s != nil})
+	})
+	if s != nil {
+		h, err := NewHTTPHandler(s, c)
+		if err != nil {
+			return nil, err
+		}
+		mux.Handle("/", h)
+	} else {
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			writeError(w, fail(503, "disabled", "RPG belum diaktifkan."))
+		})
 	}
 	listener, err := net.Listen("tcp", c.ListenAddr)
 	if err != nil {
 		return nil, err
 	}
-	server := &http.Server{Handler: h, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 20 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 16 << 10}
+	server := &http.Server{Addr: listener.Addr().String(), Handler: mux, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 20 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 16 << 10}
 	go func() {
 		if err := server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Printf("RPG HTTP stopped: %v", err)

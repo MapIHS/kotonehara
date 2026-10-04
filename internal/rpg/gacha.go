@@ -36,10 +36,10 @@ func (s *Service) Summon(ctx context.Context, player, request, banner string, co
 		if err != nil {
 			return nil, nil, err
 		}
-		if _, err = tx.ExecContext(ctx, `INSERT INTO rpg_gacha_history(player_id,request_id,results,created_at) VALUES(?,?,?,?)`, player, request, string(raw), s.now().Unix()); err != nil {
+		if _, err = tx.ExecContext(ctx, tx.Rebind(`INSERT INTO rpg_gacha_history(player_id,request_id,results,created_at) VALUES(?,?,?,?)`), player, request, string(raw), s.now().Unix()); err != nil {
 			return nil, nil, err
 		}
-		if _, err = tx.ExecContext(ctx, `INSERT INTO rpg_ledger(player_id,event_key,shards,coins,created_at) VALUES(?,?,?,0,?)`, player, "gacha:"+request, -count*160, s.now().Unix()); err != nil {
+		if _, err = tx.ExecContext(ctx, tx.Rebind(`INSERT INTO rpg_ledger(player_id,event_key,shards,coins,created_at) VALUES(?,?,?,0,?)`), player, "gacha:"+request, -count*160, s.now().Unix()); err != nil {
 			return nil, nil, err
 		}
 		return nil, pulls, nil
@@ -134,7 +134,7 @@ type HistoryEntry struct {
 }
 
 func (s *Service) History(ctx context.Context, player string) ([]HistoryEntry, error) {
-	rows, err := s.db.QueryContext(ctx, `SELECT request_id,created_at,results FROM rpg_gacha_history WHERE player_id=? ORDER BY created_at DESC,request_id DESC LIMIT 20`, player)
+	rows, err := s.db.QueryContext(ctx, s.db.Rebind(`SELECT request_id,created_at,results FROM rpg_gacha_history WHERE player_id=? ORDER BY created_at DESC,request_id DESC LIMIT 20`), player)
 	if err != nil {
 		return nil, err
 	}

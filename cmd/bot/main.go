@@ -88,24 +88,29 @@ func main() {
 	commands.SetQuotaCheck(quota.Global().CheckIdentity)
 	log.Printf("quota: free daily limit = %d", cfg.FreeDailyLimit)
 
+	var game *rpg.Service
+	rpgConfig := rpg.HTTPConfig{PublicURL: cfg.RPGPublicURL, GatewaySecret: cfg.RPGGatewaySecret, ListenAddr: cfg.RPGListenAddr}
 	if cfg.RPGEnabled {
-		rpgConfig := rpg.HTTPConfig{PublicURL: cfg.RPGPublicURL, GatewaySecret: cfg.RPGGatewaySecret, ListenAddr: cfg.RPGListenAddr}
 		if err := rpgConfig.Validate(); err != nil {
 			log.Fatal("RPG config: ", err)
 		}
 		rpgCtx, cancelRPG := context.WithTimeout(ctx, 30*time.Second)
-		game, err := rpg.New(rpgCtx, db)
+		game, err = rpg.New(rpgCtx, db)
 		cancelRPG()
 		if err != nil {
 			log.Fatal("RPG init: ", err)
 		}
+		rpg.SetDefault(game)
+	}
+	// Heroku routes only to web dynos bound to PORT. Keep a health listener
+	// available even when the optional RPG feature is disabled.
+	if cfg.RPGEnabled || strings.TrimSpace(os.Getenv("PORT")) != "" {
 		server, err := rpg.StartHTTP(game, rpgConfig)
 		if err != nil {
 			log.Fatal("RPG HTTP: ", err)
 		}
 		defer rpg.ShutdownHTTP(server)
-		rpg.SetDefault(game)
-		log.Printf("RPG enabled: internal API listening on %s", cfg.RPGListenAddr)
+		log.Printf("HTTP listening on %s (RPG enabled: %t)", cfg.RPGListenAddr, cfg.RPGEnabled)
 	}
 
 	d := devices.New(container, cfg, ctx)

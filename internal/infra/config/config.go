@@ -95,7 +95,10 @@ func Load() Config {
 	}
 
 	rpgListen := strings.TrimSpace(os.Getenv("RPG_LISTEN_ADDR"))
-	if rpgListen == "" {
+	// A platform-assigned PORT takes precedence over a stale VPS listen address.
+	if port := strings.TrimSpace(os.Getenv("PORT")); port != "" {
+		rpgListen = "0.0.0.0:" + port
+	} else if rpgListen == "" {
 		rpgListen = "127.0.0.1:8089"
 	}
 	return Config{
