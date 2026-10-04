@@ -37,3 +37,21 @@ melalui `http://hararest-dev:1337/`. Hararest sendiri hanya membuka port
 `127.0.0.1:1338` pada host, untuk akses dari reverse proxy jika diperlukan.
 
 Akun runner harus bisa menjalankan Docker dan membaca file env tersebut.
+
+## Separate branch workflows
+
+Both branches contain `.github/workflows/dev.yml` and `main.yml`:
+
+- `dev.yml`: pushes to `dev` run checks on `self-hosted`, then deploy Docker on the VPS.
+- `main.yml`: pushes to `main` run checks on `ubuntu-latest`, then deploy to Heroku.
+- Neither workflow has a `pull_request` or `pull_request_target` trigger.
+- Manual runs only run checks on the matching branch; deployments require a push.
+- Branch guards skip jobs if the wrong branch is selected for a manual run.
+
+Merging `dev` into `main` keeps both files. The resulting push runs only the
+main workflow and can deploy production after checks pass. Workflow files still
+participate in merges, so review changes to `main.yml` in the PR.
+
+Dev runtime env files and database volumes remain on the VPS. Heroku deployment
+uses GitHub secrets `HEROKU_API_KEY` / `HEROKU_APP_NAME`; production application
+env remains in Heroku Config Vars.
