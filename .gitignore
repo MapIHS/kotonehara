@@ -13,3 +13,7 @@ data/
 
 # Local integration audit notes
 /docs/hararest-integration-*.md
+
+# Python deployment checks
+__pycache__/
+*.pyc

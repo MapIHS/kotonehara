@@ -4,9 +4,6 @@ on:
   schedule:
     # Run every Wednesday at 03:00 UTC
     - cron: "0 3 * * 3"
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
@@ -14,6 +11,7 @@ permissions:
 
 jobs:
   govulncheck:
+    if: github.ref == 'refs/heads/main'
     name: Run govulncheck
     runs-on: ubuntu-latest
 

@@ -1,0 +1,157 @@
+name: Main CI and Heroku deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kotonehara-main
+  cancel-in-progress: false
+
+jobs:
+  go:
+    if: github.ref == 'refs/heads/main'
+    name: Go test, vet, and build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: rpg_test
+          POSTGRES_PASSWORD: rpg-test-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d rpg_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      CGO_ENABLED: "1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Run RPG suite against disposable PostgreSQL
+        env:
+          RPG_TEST_POSTGRES_URL: postgres://postgres:rpg-test-only@127.0.0.1:5432/rpg_test?sslmode=disable
+        run: go test -race -count=1 ./internal/rpg
+
+      - name: Validate deployment config checks
+        run: python3 -m unittest discover -s scripts -p '*_test.py'
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Build bot binary
+        run: go build -o hara ./cmd/bot
+
+  docker:
+    if: github.ref == 'refs/heads/main'
+    name: Docker build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Build Docker image
+        run: docker build --tag kotonehara:ci .
+
+  deploy:
+    name: Build and deploy container (Heroku)
+    timeout-minutes: 30
+    needs: [go, docker]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    env:
+      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install Heroku CLI
+        run: curl https://cli-assets.heroku.com/install.sh | sh
+
+      - name: Log in to Heroku Container Registry
+        run: echo "$HEROKU_API_KEY" | docker login --username=_ --password-stdin registry.heroku.com
+
+      - name: Build Docker image
+        run: docker build --tag registry.heroku.com/$HEROKU_APP_NAME/web .
+
+      - name: Push Docker image to Heroku
+        run: docker push registry.heroku.com/$HEROKU_APP_NAME/web
+
+      - name: Validate production configuration before stopping the old bot
+        run: |
+          set -euo pipefail
+          heroku config --json --app "$HEROKU_APP_NAME" | python3 scripts/check-heroku-config.py
+
+      - name: Replace worker with one web dyno
+        run: |
+          set -euo pipefail
+          # Stop existing bot processes before releasing to avoid duplicate WhatsApp sessions.
+          # A short maintenance window is intentional; no production DB/env is replaced.
+          formation=$(curl --fail --silent --show-error --max-time 30 \
+            -H "Authorization: Bearer $HEROKU_API_KEY" \
+            -H 'Accept: application/vnd.heroku+json; version=3' \
+            "https://api.heroku.com/apps/$HEROKU_APP_NAME/formation")
+          if jq -e 'any(.[]; .type == "worker")' <<< "$formation" >/dev/null; then
+            heroku ps:scale worker=0 --app "$HEROKU_APP_NAME"
+          fi
+          if jq -e 'any(.[]; .type == "web")' <<< "$formation" >/dev/null; then
+            heroku ps:scale web=0 --app "$HEROKU_APP_NAME"
+          fi
+          stopped=false
+          for attempt in $(seq 1 30); do
+            dynos=$(curl --fail --silent --show-error --max-time 30 \
+              -H "Authorization: Bearer $HEROKU_API_KEY" \
+              -H 'Accept: application/vnd.heroku+json; version=3' \
+              "https://api.heroku.com/apps/$HEROKU_APP_NAME/dynos")
+            if jq -e 'all(.[]; .type != "worker" and .type != "web")' <<< "$dynos" >/dev/null; then
+              stopped=true
+              break
+            fi
+            sleep 2
+          done
+          if [ "$stopped" != true ]; then
+            echo "Old bot dynos are still shutting down; refusing to start a second bot."
+            exit 1
+          fi
+          heroku container:release web --app "$HEROKU_APP_NAME"
+          heroku ps:scale web=1 --app "$HEROKU_APP_NAME"
+
+      - name: Check bot HTTP readiness
+        run: |
+          set -euo pipefail
+          web_url=$(heroku apps:info --json --app "$HEROKU_APP_NAME" | jq -er '.app.web_url')
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error --max-time 5 "${web_url%/}/health" | jq -e '.status == "ok"' >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Bot web readiness failed. Inspect Heroku logs; the previous worker remains stopped."
+          exit 1
+
+      - name: Log out of registry
+        if: always()
+        run: docker logout registry.heroku.com
