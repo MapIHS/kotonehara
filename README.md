@@ -5,6 +5,7 @@ Kotonehara adalah bot WhatsApp berbasis Go yang dibangun dengan [`whatsmeow`](ht
 ## Fitur
 
 - Bot WhatsApp multi-command dengan prefix yang dapat dikonfigurasi.
+- Diagnostik owner lewat `.cekstatus` untuk status WhatsApp, database, dan uptime.
 - Login WhatsApp via QR code.
 - Penyimpanan session/device menggunakan PostgreSQL atau SQLite (pilih via `DB_DRIVER`).
 - Downloader untuk Instagram, TikTok, Facebook, X/Twitter, YouTube, Threads, Rednote/Xiaohongshu, dan Bilibili melalui API eksternal.

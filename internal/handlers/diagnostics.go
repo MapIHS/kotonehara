@@ -12,6 +12,7 @@ import (
 	"github.com/MapIHS/kotonehara/internal/commands"
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"github.com/MapIHS/kotonehara/internal/message"
+	"github.com/MapIHS/kotonehara/internal/quota"
 	"github.com/MapIHS/kotonehara/internal/service/httpclient"
 )
 
@@ -35,6 +36,17 @@ func init() {
 		IsPrefix:  true,
 		SkipQuota: true,
 		Exec:      cekAPI,
+	})
+
+	commands.Register(&commands.Command{
+		Name:        "cekstatus",
+		As:          []string{"statusbot", "botstatus"},
+		Description: "Cek koneksi WhatsApp, database, dan uptime bot",
+		Tags:        "diagnostics",
+		IsPrefix:    true,
+		IsOwner:     true,
+		SkipQuota:   true,
+		Exec:        cekStatus,
 	})
 }
 
@@ -110,6 +122,32 @@ func cekSystem(ctx context.Context, client *clients.Client, m *message.Message, 
 	)
 
 	m.Reply(ctx, response)
+}
+
+func cekStatus(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
+	whatsappStatus := "🔴 Terputus"
+	if client != nil && client.WA != nil && client.WA.IsLoggedIn() && client.WA.IsConnected() {
+		whatsappStatus = "🟢 Terhubung"
+	}
+
+	databaseStatus := "🔴 Tidak tersedia"
+	if checker := quota.Global(); checker != nil {
+		pingCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+		started := time.Now()
+		err := checker.Ping(pingCtx)
+		elapsed := time.Since(started).Milliseconds()
+		cancel()
+		if err == nil {
+			databaseStatus = fmt.Sprintf("🟢 Terhubung (%d ms)", elapsed)
+		}
+	}
+
+	response := fmt.Sprintf("*乂 STATUS BOT*\n\n*• WhatsApp:* %s\n*• Database:* %s\n*• Uptime:* %s",
+		whatsappStatus,
+		databaseStatus,
+		formatDuration(time.Since(startTime)),
+	)
+	_, _ = m.Reply(ctx, response)
 }
 
 func cekAPI(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {

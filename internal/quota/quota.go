@@ -47,6 +47,15 @@ type Checker struct {
 	reconciled map[string]bool
 }
 
+// Ping reports whether the database connection used by quota and bot features
+// is currently reachable.
+func (c *Checker) Ping(ctx context.Context) error {
+	if c == nil || c.store == nil || c.store.db == nil {
+		return fmt.Errorf("database checker belum diinisialisasi")
+	}
+	return c.store.db.PingContext(ctx)
+}
+
 var globalChecker *Checker
 
 // Init creates and stores the global Checker instance.
