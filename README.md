@@ -8,6 +8,8 @@ Kotonehara adalah bot WhatsApp berbasis Go yang dibangun dengan [`whatsmeow`](ht
 - Login WhatsApp via QR code.
 - Penyimpanan session/device menggunakan PostgreSQL atau SQLite (pilih via `DB_DRIVER`).
 - Downloader untuk Instagram, TikTok, Facebook, X/Twitter, YouTube, Threads, Rednote/Xiaohongshu, dan Bilibili melalui API eksternal.
+- Pencarian/info YouTube serta pencarian, trending, dan feed pengguna TikTok melalui Hararest.
+- Unduhan gallery NHentai sebagai dokumen PDF melalui Hararest.
 - Tools media: sticker, sticker meme, brat, image/video conversion, upload ke URL.
 - Sticker quote dan fake quote melalui Hararest di `BASEAPI_URL`.
 - Command AI via OpenAI-compatible API.
@@ -242,7 +244,3 @@ func init() {
 ## License
 
 Lihat `LICENSE`.
-
-## RPG — HARA: Gema Arunika
-
-Battle browser dan gacha tersambung ke profil WhatsApp melalui `.rpg`. Lihat [konfigurasi RPG](docs/rpg.md) dan [deployment Heroku/PostgreSQL](docs/heroku-rpg.md). Fitur default mati sampai env RPG diisi.
