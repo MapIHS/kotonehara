@@ -2,21 +2,6 @@
 
 Kotonehara adalah bot WhatsApp berbasis Go yang dibangun dengan [`whatsmeow`](https://github.com/tulir/whatsmeow). Bot ini menyediakan command untuk downloader media sosial, pembuatan sticker, konversi media, upload file, diagnostics, dan AI chat melalui API yang kompatibel dengan OpenAI.
 
-## Fitur
-
-- Bot WhatsApp multi-command dengan prefix yang dapat dikonfigurasi.
-- Login WhatsApp via QR code.
-- Penyimpanan session/device menggunakan PostgreSQL atau SQLite (pilih via `DB_DRIVER`).
-- Downloader untuk Instagram, TikTok, Facebook, X/Twitter, YouTube, Threads, Rednote/Xiaohongshu, dan Bilibili melalui API eksternal.
-- Pencarian/info YouTube serta pencarian, trending, dan feed pengguna TikTok melalui Hararest.
-- Unduhan gallery NHentai sebagai dokumen PDF melalui Hararest.
-- Tools media: sticker, sticker meme, brat, image/video conversion, upload ke URL.
-- Sticker quote dan fake quote melalui Hararest di `BASEAPI_URL`.
-- Menfess teks anonim dengan persetujuan penerima, sesi tersimpan, dan blokir undangan.
-- Command AI via OpenAI-compatible API.
-- WhatsApp outbound call via [`meowcaller`](https://github.com/purpshell/meowcaller) untuk owner.
-- Docker/Podman support.
-
 ## Requirements
 
 Untuk menjalankan langsung di host:
