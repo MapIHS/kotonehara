@@ -15,6 +15,7 @@ import (
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	dbInfra "github.com/MapIHS/kotonehara/internal/infra/db"
 	"github.com/MapIHS/kotonehara/internal/infra/store"
+	"github.com/MapIHS/kotonehara/internal/menfess"
 	"github.com/MapIHS/kotonehara/internal/quota"
 	"github.com/MapIHS/kotonehara/internal/rpg"
 	"github.com/mdp/qrterminal"
@@ -60,6 +61,30 @@ func main() {
 
 	defer db.Close()
 	store.InitDB(db)
+	menfessCtx, cancelMenfess := context.WithTimeout(ctx, 30*time.Second)
+	anonymous, err := menfess.New(menfessCtx, db)
+	cancelMenfess()
+	if err != nil {
+		log.Fatal("menfess init: ", err)
+	}
+	menfess.SetDefault(anonymous)
+	go func() {
+		ticker := time.NewTicker(time.Minute)
+		defer ticker.Stop()
+		for {
+			cleanupCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+			err := anonymous.Prune(cleanupCtx)
+			cancel()
+			if err != nil && ctx.Err() == nil {
+				log.Printf("menfess cleanup: %v", err)
+			}
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+			}
+		}
+	}()
 
 	dbLog := waLog.Stdout("Database", "INFO", true)
 	container := sqlstore.NewWithDB(db.DB, cfg.DBDriver, dbLog)

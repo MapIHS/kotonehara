@@ -12,6 +12,7 @@ Kotonehara adalah bot WhatsApp berbasis Go yang dibangun dengan [`whatsmeow`](ht
 - Unduhan gallery NHentai sebagai dokumen PDF melalui Hararest.
 - Tools media: sticker, sticker meme, brat, image/video conversion, upload ke URL.
 - Sticker quote dan fake quote melalui Hararest di `BASEAPI_URL`.
+- Menfess teks anonim dengan persetujuan penerima, sesi tersimpan, dan blokir undangan.
 - Command AI via OpenAI-compatible API.
 - WhatsApp outbound call via [`meowcaller`](https://github.com/purpshell/meowcaller) untuk owner.
 - Docker/Podman support.
@@ -106,6 +107,41 @@ OPENAI_PROVIDERS_FILE=configs/providers.json
 Lihat `configs/providers.json.example` untuk formatnya. Provider aktif dirotasi round-robin; `model` dapat berupa satu string atau array model. Jika konfigurasi rotasi tidak diisi, bot tetap memakai `OPENAI_BASE_URL`, `OPENAI_API_KEY`, dan `OPENAI_MODEL` seperti sebelumnya.
 
 > Jangan commit `.env` atau secret/API key ke repository.
+
+## Menfess
+
+Menfess berjalan lewat chat pribadi bot dan memakai database aplikasi yang sama
+(SQLite atau PostgreSQL), tanpa API eksternal atau environment tambahan. Nomor
+peserta dipakai bot untuk routing tetapi tidak diteruskan kepada lawan bicara.
+
+Dengan prefix default `.`:
+
+| Command | Fungsi |
+| --- | --- |
+| `.menfess 6281234567890 \| Bintang \| Halo!` | Kirim undangan ke nomor internasional, tanpa `0` lokal atau JID. |
+| `.terimamenfess <kode>` | Penerima menyetujui undangan dan membuka pesan pertama. |
+| `.balas <kode> \| <pesan>` | Kedua peserta mengirim balasan anonim lewat bot. |
+| `.stopmenfess [kode]` | Tolak undangan, batalkan undangan sendiri, atau tutup sesi. Tanpa kode, tutup sesi milik sendiri. |
+| `.blokmenfess` | Tolak semua undangan baru dan tutup sesi yang sedang berjalan. |
+| `.bukamenfess` | Izinkan undangan kembali; sesi lama tetap ditutup. |
+
+Penerima hanya mendapat nama samaran dan undangan sebelum menyetujuinya. Pesan
+awal dibuka setelah persetujuan; pengirim mendapat pemberitahuan saat diterima.
+Kode hanya dapat dipakai oleh kedua peserta sesi. Menfess tidak mengirim media,
+kontak, kutipan, mention, atau metadata pesan asal. Hindari memasukkan nomor atau
+identitas sendiri ke nama samaran maupun isi pesan jika ingin tetap anonim.
+
+Batas bawaan: satu undangan/sesi per peserta, tiga undangan per jam per pengirim,
+lima undangan per 24 jam per penerima, dan jeda balasan lima detik per peserta.
+Undangan berlaku 15 menit dan sesi berlaku 24 jam sejak disetujui. Nama samaran
+maksimal 40 karakter, pesan maksimal 1.000 karakter. Command persetujuan, penutupan,
+dan blokir tetap tersedia saat kuota harian habis.
+
+Sesi dan preferensi blokir tetap ada setelah restart. Pesan awal disimpan hanya
+selama menunggu persetujuan dan dihapus setelah diterima, ditutup, atau kedaluwarsa.
+Isi balasan tidak disimpan oleh fitur Menfess. Metadata sesi berakhir dibersihkan
+setelah 48 jam sejak pembuatan; pemeriksaan berkala berjalan setiap menit. Riwayat
+pesan pada WhatsApp peserta dan bot mengikuti penyimpanan WhatsApp masing-masing.
 
 ## Menjalankan aplikasi
 
