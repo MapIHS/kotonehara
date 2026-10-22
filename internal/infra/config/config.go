@@ -10,31 +10,35 @@ import (
 )
 
 type Config struct {
-	RPGEnabled           bool
-	RPGPublicURL         string
-	RPGGatewaySecret     string
-	RPGListenAddr        string
-	AppEnv               string
-	Prefix               string
-	LoginMethod          string
-	PairingPhoneNumber   string
-	DBDriver             string
-	DBURL                string
-	Owners               []string
-	Cooldown             time.Duration
-	AdminTTL             time.Duration
-	DisableContactImport bool
-	BASEApiURL           string
-	BASES3URL            string
-	RemoveBGURL          string
-	OpenAIBaseURL        string
-	OpenAIAPIKey         string
-	OpenAIModel          string
-	OpenAIProviders      []OpenAIProvider
-	OpenAIProvidersError string
-	OpenAISystemPrompt   string
-	OpenAITimeout        time.Duration
-	FreeDailyLimit       int
+	RPGEnabled                   bool
+	RPGPublicURL                 string
+	RPGGatewaySecret             string
+	RPGListenAddr                string
+	AppEnv                       string
+	Prefix                       string
+	LoginMethod                  string
+	PairingPhoneNumber           string
+	DBDriver                     string
+	DBURL                        string
+	Owners                       []string
+	Cooldown                     time.Duration
+	AdminTTL                     time.Duration
+	DisableContactImport         bool
+	BASEApiURL                   string
+	GoogleLensWorkerURL          string
+	GoogleLensWorkerToken        string
+	CloudflareAccessClientID     string
+	CloudflareAccessClientSecret string
+	BASES3URL                    string
+	RemoveBGURL                  string
+	OpenAIBaseURL                string
+	OpenAIAPIKey                 string
+	OpenAIModel                  string
+	OpenAIProviders              []OpenAIProvider
+	OpenAIProvidersError         string
+	OpenAISystemPrompt           string
+	OpenAITimeout                time.Duration
+	FreeDailyLimit               int
 }
 
 // OpenAIProvider describes one OpenAI-compatible upstream. Models can contain
@@ -71,6 +75,10 @@ func Load() Config {
 	disableContactImport := parseBoolDefault(os.Getenv("DISABLE_CONTACT_IMPORT"), true)
 
 	baseurl := strings.TrimSpace(os.Getenv("BASEAPI_URL"))
+	googleLensWorkerURL := strings.TrimRight(strings.TrimSpace(os.Getenv("GOOGLE_LENS_WORKER_URL")), "/")
+	if googleLensWorkerURL == "" {
+		googleLensWorkerURL = "https://lens.oohara.dev"
+	}
 
 	bases3url := strings.TrimSpace(os.Getenv("BASES3_URL"))
 	removeBGURL := strings.TrimRight(strings.TrimSpace(os.Getenv("REMOVEBG_URL")), "/")
@@ -102,31 +110,35 @@ func Load() Config {
 		rpgListen = "127.0.0.1:8089"
 	}
 	return Config{
-		RPGEnabled:           parseBool(os.Getenv("RPG_ENABLED")),
-		RPGPublicURL:         strings.TrimRight(strings.TrimSpace(os.Getenv("RPG_PUBLIC_URL")), "/"),
-		RPGGatewaySecret:     strings.TrimSpace(os.Getenv("RPG_GATEWAY_SECRET")),
-		RPGListenAddr:        rpgListen,
-		AppEnv:               env,
-		Prefix:               prefix,
-		LoginMethod:          loginMethod,
-		PairingPhoneNumber:   pairingPhoneNumber,
-		DBDriver:             dbDriver,
-		DBURL:                dbURL,
-		Owners:               owners,
-		Cooldown:             cd,
-		AdminTTL:             adminTTL,
-		DisableContactImport: disableContactImport,
-		BASEApiURL:           baseurl,
-		BASES3URL:            bases3url,
-		RemoveBGURL:          removeBGURL,
-		OpenAIBaseURL:        openAIBaseURL,
-		OpenAIAPIKey:         openAIAPIKey,
-		OpenAIModel:          openAIModel,
-		OpenAIProviders:      openAIProviders,
-		OpenAIProvidersError: openAIProvidersErr,
-		OpenAISystemPrompt:   openAISystemPrompt,
-		OpenAITimeout:        openAITimeout,
-		FreeDailyLimit:       freeDailyLimit,
+		RPGEnabled:                   parseBool(os.Getenv("RPG_ENABLED")),
+		RPGPublicURL:                 strings.TrimRight(strings.TrimSpace(os.Getenv("RPG_PUBLIC_URL")), "/"),
+		RPGGatewaySecret:             strings.TrimSpace(os.Getenv("RPG_GATEWAY_SECRET")),
+		RPGListenAddr:                rpgListen,
+		AppEnv:                       env,
+		Prefix:                       prefix,
+		LoginMethod:                  loginMethod,
+		PairingPhoneNumber:           pairingPhoneNumber,
+		DBDriver:                     dbDriver,
+		DBURL:                        dbURL,
+		Owners:                       owners,
+		Cooldown:                     cd,
+		AdminTTL:                     adminTTL,
+		DisableContactImport:         disableContactImport,
+		BASEApiURL:                   baseurl,
+		GoogleLensWorkerURL:          googleLensWorkerURL,
+		GoogleLensWorkerToken:        strings.TrimSpace(os.Getenv("GOOGLE_LENS_WORKER_TOKEN")),
+		CloudflareAccessClientID:     strings.TrimSpace(os.Getenv("CLOUDFLARE_ACCESS_CLIENT_ID")),
+		CloudflareAccessClientSecret: strings.TrimSpace(os.Getenv("CLOUDFLARE_ACCESS_CLIENT_SECRET")),
+		BASES3URL:                    bases3url,
+		RemoveBGURL:                  removeBGURL,
+		OpenAIBaseURL:                openAIBaseURL,
+		OpenAIAPIKey:                 openAIAPIKey,
+		OpenAIModel:                  openAIModel,
+		OpenAIProviders:              openAIProviders,
+		OpenAIProvidersError:         openAIProvidersErr,
+		OpenAISystemPrompt:           openAISystemPrompt,
+		OpenAITimeout:                openAITimeout,
+		FreeDailyLimit:               freeDailyLimit,
 	}
 }
 
