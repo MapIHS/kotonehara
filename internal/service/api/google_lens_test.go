@@ -7,19 +7,17 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func TestGoogleLensRequestAndDecode(t *testing.T) {
 	image := []byte("\x89PNG\r\n\x1a\nimage-data")
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost || r.URL.Path != "/prefix/api/google-lens" || r.URL.Query().Get("mode") != "visual" {
+		if r.Method != http.MethodPost || r.URL.Path != "/api/google-lens" || r.URL.Query().Get("mode") != "visual" {
 			t.Errorf("unexpected request: %s %s", r.Method, r.URL.String())
 		}
-		if r.Header.Get("Authorization") != "Bearer worker-token" || r.Header.Get("Content-Type") != "image/png" {
-			t.Errorf("missing worker auth or content type")
-		}
-		if r.Header.Get("CF-Access-Client-Id") != "access-id" || r.Header.Get("CF-Access-Client-Secret") != "access-secret" {
-			t.Errorf("missing Cloudflare Access headers")
+		if r.Header.Get("Authorization") != "" || r.Header.Get("Content-Type") != "image/png" {
+			t.Errorf("Hararest request should send the image without worker credentials")
 		}
 		got, err := io.ReadAll(r.Body)
 		if err != nil || string(got) != string(image) {
@@ -36,7 +34,7 @@ func TestGoogleLensRequestAndDecode(t *testing.T) {
 	}))
 	defer server.Close()
 
-	result, err := New("", 0).GoogleLens(context.Background(), server.URL+"/prefix/", "worker-token", "access-id", "access-secret", "visual", image)
+	result, err := New(server.URL+"/ignored-prefix/", time.Second).GoogleLens(context.Background(), "visual", image)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,17 +43,15 @@ func TestGoogleLensRequestAndDecode(t *testing.T) {
 	}
 }
 
-func TestGoogleLensRejectsInvalidImageAndCredentials(t *testing.T) {
+func TestGoogleLensRejectsInvalidImage(t *testing.T) {
 	for _, tc := range []struct {
 		name  string
-		token string
 		image []byte
 	}{
-		{name: "missing token", image: []byte("\x89PNG\r\n\x1a\n")},
-		{name: "unsupported image", token: "token", image: []byte("not an image")},
+		{name: "unsupported image", image: []byte("not an image")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			if _, err := New("", 0).GoogleLens(context.Background(), "https://lens.example", tc.token, "", "", "visual", tc.image); err == nil {
+			if _, err := New("https://hararest.example", time.Second).GoogleLens(context.Background(), "visual", tc.image); err == nil {
 				t.Fatal("expected request validation error")
 			}
 		})

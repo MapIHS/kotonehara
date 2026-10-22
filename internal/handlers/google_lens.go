@@ -53,12 +53,8 @@ func formatGoogleLensResult(result *api.GoogleLensResult, mode string) string {
 }
 
 func handleGoogleLens(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config, mode string) {
-	if strings.TrimSpace(cfg.GoogleLensWorkerToken) == "" {
-		m.Reply(ctx, "Google Lens belum dikonfigurasi (GOOGLE_LENS_WORKER_TOKEN kosong).")
-		return
-	}
-	if (cfg.CloudflareAccessClientID == "") != (cfg.CloudflareAccessClientSecret == "") {
-		m.Reply(ctx, "Konfigurasi Cloudflare Access Google Lens belum lengkap.")
+	if strings.TrimSpace(cfg.BASEApiURL) == "" {
+		m.Reply(ctx, "Google Lens belum dikonfigurasi (BASEAPI_URL Hararest kosong).")
 		return
 	}
 	if m.Media == nil || m.IsVideo || m.IsQuotedVideo || m.IsGif || m.IsQuotedGif || (!m.IsImage && !m.IsQuotedImage) {
@@ -72,8 +68,7 @@ func handleGoogleLens(ctx context.Context, client *clients.Client, m *message.Me
 		m.Reply(ctx, "Gambarnya belum bisa diunduh.")
 		return
 	}
-	result, err := api.New("", 100*time.Second).GoogleLens(opCtx, cfg.GoogleLensWorkerURL, cfg.GoogleLensWorkerToken,
-		cfg.CloudflareAccessClientID, cfg.CloudflareAccessClientSecret, mode, raw)
+	result, err := api.Shared(cfg.BASEApiURL, 100*time.Second).GoogleLens(opCtx, mode, raw)
 	if err != nil {
 		m.Reply(ctx, "Pencarian Google Lens gagal: "+err.Error())
 		return
