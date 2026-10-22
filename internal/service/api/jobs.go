@@ -25,10 +25,11 @@ type mediaJob struct {
 	State       string `json:"state"`
 	Error       string `json:"error"`
 	Result      struct {
-		Kind     string         `json:"kind"`
-		Size     int64          `json:"size"`
-		MimeType string         `json:"mimeType"`
-		Player   *PlayerSession `json:"player"`
+		Kind     string            `json:"kind"`
+		Size     int64             `json:"size"`
+		MimeType string            `json:"mimeType"`
+		Player   *PlayerSession    `json:"player"`
+		Data     *GoogleLensResult `json:"data"`
 	} `json:"result"`
 }
 

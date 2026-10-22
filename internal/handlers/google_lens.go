@@ -61,14 +61,14 @@ func handleGoogleLens(ctx context.Context, client *clients.Client, m *message.Me
 		m.Reply(ctx, "Kirim atau balas gambar (JPEG, PNG, atau WebP) dengan perintah ini untuk mencari sumbernya.")
 		return
 	}
-	opCtx, cancel := context.WithTimeout(ctx, 100*time.Second)
+	opCtx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
 	raw, err := client.WA.Download(opCtx, m.Media)
 	if err != nil || len(raw) == 0 {
 		m.Reply(ctx, "Gambarnya belum bisa diunduh.")
 		return
 	}
-	result, err := api.Shared(cfg.BASEApiURL, 100*time.Second).GoogleLens(opCtx, mode, raw)
+	result, err := api.Shared(cfg.BASEApiURL, 20*time.Second).GoogleLens(opCtx, mode, raw)
 	if err != nil {
 		m.Reply(ctx, "Pencarian Google Lens gagal: "+err.Error())
 		return
