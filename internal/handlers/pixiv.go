@@ -72,14 +72,18 @@ func init() {
 		Name:        "pixivsearch",
 		As:          []string{"pxsearch"},
 		Tags:        "search",
-		Description: "Cari artwork di Pixiv",
+		Description: "Cari artwork di Pixiv: <kata kunci> [--mode safe|r18|all]",
 		IsPrefix:    true,
 		IsQuery:     true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
+			query, mode, err := parsePixivQuery(m.Query)
+			if err != nil {
+				m.Reply(ctx, err.Error())
+				return
+			}
 			m.Reply(ctx, "Tunggu Sebentar ya.")
-
 			ap := api.Shared(cfg.BASEApiURL, 60*time.Second)
-			res, err := ap.PixivSearch(ctx, m.Query)
+			res, err := ap.PixivSearch(ctx, query, mode)
 			if err != nil || res == nil || len(res.Results) == 0 {
 				m.Reply(ctx, "Tidak menemukan hasil atau terjadi kesalahan saat mencari di Pixiv.")
 				return

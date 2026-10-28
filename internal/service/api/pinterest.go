@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	neturl "net/url"
 )
@@ -90,6 +91,33 @@ func (c *Client) PinterestSearch(ctx context.Context, query string) (*PinterestS
 	var out APIResponse[PinterestSearchResponse]
 	if err := decodeAPIResponse(resp, &out); err != nil {
 		return nil, err
+	}
+	return &out.Data, nil
+}
+
+type PinterestUserProfile struct {
+	Username    string `json:"username"`
+	FullName    string `json:"fullName"`
+	Bio         string `json:"bio"`
+	Avatar      string `json:"avatar"`
+	Followers   *int   `json:"followers"`
+	Following   *int   `json:"following"`
+	PinsCount   *int   `json:"pinsCount"`
+	BoardsCount *int   `json:"boardsCount"`
+}
+
+type PinterestUserResponse struct {
+	User PinterestUserProfile  `json:"user"`
+	Pins []PinterestSearchItem `json:"pins"`
+}
+
+func (c *Client) PinterestUser(ctx context.Context, target string) (*PinterestUserResponse, error) {
+	var out APIResponse[PinterestUserResponse]
+	if err := c.profileRequest(ctx, "/api/pinterest/user", neturl.Values{"username": {target}}, &out); err != nil {
+		return nil, err
+	}
+	if out.Data.User.Username == "" {
+		return nil, fmt.Errorf("respons profil Pinterest tidak valid")
 	}
 	return &out.Data, nil
 }

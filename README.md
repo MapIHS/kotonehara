@@ -196,6 +196,26 @@ internal/message/        Parser pesan WhatsApp
 internal/service/        Client API eksternal, OpenAI, S3, dan HTTP helper
 ```
 
+## Profil Pinterest dan Pixiv
+
+Command berikut memakai `BASEAPI_URL` Hararest. Hararest yang dituju harus
+menyediakan endpoint `/api/pinterest/user` dan `/api/pixiv/user`.
+
+```text
+.pinuser <username atau URL profil Pinterest>
+.pinterestuser <username atau URL profil Pinterest>
+.pixivuser <ID atau URL profil Pixiv> [--mode safe|r18|all]
+.pxuser <ID atau URL profil Pixiv> [--mode safe|r18|all]
+.pixivsearch <kata kunci> [--mode safe|r18|all]
+```
+
+Profil ditampilkan sebagai teks dengan maksimal lima tautan pin/artwork.
+`--mode safe` memilih karya aman, `--mode r18` memilih R18, dan `--mode all`
+memilih semua kategori. Tanpa opsi, mode tetap `all` seperti pencarian lama.
+Mode juga dapat ditulis `--mode=safe`; kata biasa `safe`/`all` tetap menjadi
+bagian kata kunci jika tidak memakai flag. Contoh: `.pixivsearch langit biru --mode safe`.
+Prefix menyesuaikan konfigurasi `PREFIX`.
+
 ## Menambah command baru
 
 Command biasanya dibuat di package `internal/handlers` dan didaftarkan lewat `commands.Register` di fungsi `init()`:
