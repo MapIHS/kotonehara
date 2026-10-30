@@ -34,8 +34,9 @@ type TraceMoeResult struct {
 }
 
 type AnilistInfo struct {
-	ID          int    `json:"id"`
-	Title       struct {
+	IsAdult bool `json:"isAdult"`
+	ID      int  `json:"id"`
+	Title   struct {
 		Romaji  string `json:"romaji"`
 		English string `json:"english"`
 		Native  string `json:"native"`
@@ -96,7 +97,7 @@ func (c *Client) SearchTraceMoe(ctx context.Context, imageBytes []byte) (*TraceM
 
 // FetchAnilistInfo queries the AniList GraphQL API for anime metadata.
 func (c *Client) FetchAnilistInfo(ctx context.Context, id int) (*AnilistInfo, error) {
-	query := `query ($id: Int) { Media (id: $id, type: ANIME) { id title { romaji english native } description bannerImage coverImage { extraLarge large medium } genres status season seasonYear meanScore episodes duration } }`
+	query := `query ($id: Int) { Media (id: $id, type: ANIME) { id isAdult title { romaji english native } description bannerImage coverImage { extraLarge large medium } genres status season seasonYear meanScore episodes duration } }`
 	payload := map[string]interface{}{
 		"query": query,
 		"variables": map[string]int{

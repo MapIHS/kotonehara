@@ -12,6 +12,7 @@ import (
 	"github.com/MapIHS/kotonehara/internal/clients"
 	"github.com/MapIHS/kotonehara/internal/commands"
 	"github.com/MapIHS/kotonehara/internal/infra/config"
+	"github.com/MapIHS/kotonehara/internal/infra/store"
 	"github.com/MapIHS/kotonehara/internal/message"
 	"github.com/MapIHS/kotonehara/internal/service/api"
 )
@@ -73,158 +74,177 @@ func init() {
 				return
 			}
 
-			// Get the best result
-			best := traceRes.Result[0]
-
-			// Fetch detailed info from AniList
-			info, err := apiClient.FetchAnilistInfo(opCtx, best.Anilist.ID)
-			var replyText string
-
-			if err != nil || info == nil {
-				// Fallback to basic info if AniList fetch fails
-				title := best.Anilist.Title.Romaji
-				if best.Anilist.Title.Native != "" {
-					title += fmt.Sprintf(" (%s)", best.Anilist.Title.Native)
-				}
-				epStr := "?"
-				if best.Episode != nil {
-					epStr = fmt.Sprintf("%v", best.Episode)
-				}
-				timeStr := fmt.Sprintf("%s - %s", formatSeconds(best.From), formatSeconds(best.To))
-				simStr := fmt.Sprintf("%.2f%%", best.Similarity*100)
-
-				replyText = fmt.Sprintf(
-					"🎬 *Hasil Pencarian trace.moe*\n"+
-						"─────────────────\n"+
-						"📌 *Judul*: %s\n"+
-						"📺 *Episode*: %s\n"+
-						"⏱️ *Waktu*: %s\n"+
-						"💯 *Kecocokan*: %s\n",
-					title, epStr, timeStr, simStr,
-				)
-			} else {
-				// Full info
-				title := info.Title.Romaji
-				if info.Title.Native != "" && info.Title.Native != title {
-					title += fmt.Sprintf(" (%s)", info.Title.Native)
-				} else if info.Title.English != "" && info.Title.English != title {
-					title += fmt.Sprintf(" (%s)", info.Title.English)
-				}
-
-				epStr := "?"
-				if best.Episode != nil {
-					epStr = fmt.Sprintf("%v", best.Episode)
-				}
-				timeStr := fmt.Sprintf("%s - %s", formatSeconds(best.From), formatSeconds(best.To))
-				simStr := fmt.Sprintf("%.2f%%", best.Similarity*100)
-
-				genres := strings.Join(info.Genres, ", ")
-				if genres == "" {
-					genres = "-"
-				}
-
-				seasonStr := "-"
-				if info.Season != "" {
-					seasonStr = fmt.Sprintf("%s %d", info.Season, info.SeasonYear)
-				}
-
-				// Clean basic HTML from description
-				desc := info.Description
-				desc = strings.ReplaceAll(desc, "<br>", "\n")
-				desc = strings.ReplaceAll(desc, "<br/>", "\n")
-				desc = strings.ReplaceAll(desc, "<br />", "\n")
-				desc = strings.ReplaceAll(desc, "<i>", "_")
-				desc = strings.ReplaceAll(desc, "</i>", "_")
-				desc = strings.ReplaceAll(desc, "<b>", "*")
-				desc = strings.ReplaceAll(desc, "</b>", "*")
-				// Limit description length if too long
-				if len(desc) > 300 {
-					desc = desc[:300] + "..."
-				}
-
-				adultWarning := ""
-				if best.Anilist.IsAdult {
-					adultWarning = "\n⚠️ *PERINGATAN: Anime ini berlabel 18+ (NSFW)*\n"
-				}
-
-				replyText = fmt.Sprintf(
-					"🎬 *Hasil Pencarian trace.moe*\n"+
-						"─────────────────\n"+
-						"📌 *Judul*: %s\n"+
-						"📺 *Episode*: %s\n"+
-						"⏱️ *Waktu*: %s\n"+
-						"💯 *Kecocokan*: %s\n"+
-						"─────────────────\n"+
-						"📑 *Genre*: %s\n"+
-						"✨ *Status*: %s\n"+
-						"📅 *Musim*: %s\n"+
-						"⭐ *Skor*: %d/100\n"+
-						"🎞️ *Total Ep*: %d (%d mnt/ep)\n"+
-						"🖼️ *Cover*: %s\n\n"+
-						"📝 *Sinopsis*:\n%s%s",
-					title, epStr, timeStr, simStr,
-					genres, info.Status, seasonStr, info.MeanScore, info.Episodes, info.Duration,
-					info.CoverImage.ExtraLarge, desc, adultWarning,
-				)
-			}
-
-			// Try sending video preview first
-			videoSent := false
-			if best.Video != "" {
-				// Muted video preview
-				previewURL := best.Video
-				if !strings.Contains(previewURL, "?") {
-					previewURL += "?mute"
-				} else {
-					previewURL += "&mute"
-				}
-				// Download the preview
-				reqVid, err := http.NewRequestWithContext(opCtx, http.MethodGet, previewURL, nil)
-				if err == nil {
-					resVid, err := apiClient.HTTP.Do(reqVid)
-					if err == nil && resVid != nil {
-						vidRaw, readErr := readTracePreview(resVid.Body)
-						_ = resVid.Body.Close()
-						if resVid.StatusCode == http.StatusOK && readErr == nil && len(vidRaw) > 0 {
-							// Send video preview
-							_, _ = client.SendVideo(ctx, m.From, vidRaw, false, replyText, m.ID)
-							videoSent = true
-						}
-					}
-				}
-			}
-
-			// Fallback to Image if video failed or was empty
-			if !videoSent {
-				imageURL := ""
-				if info != nil && info.BannerImage != "" {
-					imageURL = info.BannerImage
-				} else if info != nil && info.CoverImage.ExtraLarge != "" {
-					imageURL = info.CoverImage.ExtraLarge
-				}
-
-				imageSent := false
-				if imageURL != "" {
-					reqImg, err := http.NewRequestWithContext(opCtx, http.MethodGet, imageURL, nil)
-					if err == nil {
-						resImg, err := apiClient.HTTP.Do(reqImg)
-						if err == nil && resImg != nil {
-							imgRaw, readErr := readTracePreview(resImg.Body)
-							_ = resImg.Body.Close()
-							if resImg.StatusCode == http.StatusOK && readErr == nil && len(imgRaw) > 0 {
-								// Send Image preview
-								_, _ = client.SendImage(ctx, m.From, imgRaw, replyText, m.ID)
-								imageSent = true
-							}
-						}
-					}
-				}
-
-				if !imageSent {
-					// Fallback to send text only
-					m.Reply(ctx, replyText)
-				}
-			}
+			replyTraceResult(opCtx, client, m, apiClient, traceRes.Result[0], store.IsNSFWEnabled)
 		},
 	})
+}
+
+// replyTraceResult enforces the group setting before any result text or preview is sent.
+func replyTraceResult(ctx context.Context, client *clients.Client, m *message.Message, apiClient *api.Client, best api.TraceMoeResult, nsfwEnabled func(string) bool) {
+	blocked := func(adult bool) bool {
+		if !adult || !m.IsGroup || nsfwEnabled(m.From.ToNonAD().String()) {
+			return false
+		}
+		_, _ = m.Reply(ctx, "Hasil trace ini berlabel 18+ (NSFW) dan diblokir karena NSFW nonaktif di grup ini. Admin dapat mengaturnya dengan .nsfw.")
+		return true
+	}
+	// Reject trace.moe's adult flag before requesting metadata or downloading previews.
+	if blocked(best.Anilist.IsAdult) {
+		return
+	}
+
+	// Fetch detailed info from AniList
+	info, err := apiClient.FetchAnilistInfo(ctx, best.Anilist.ID)
+	isAdult := best.Anilist.IsAdult || (info != nil && info.IsAdult)
+	// AniList may classify the result as adult even when trace.moe did not.
+	if blocked(isAdult) {
+		return
+	}
+	adultWarning := ""
+	if isAdult {
+		adultWarning = "\n⚠️ *PERINGATAN: Anime ini berlabel 18+ (NSFW)*\n"
+	}
+	var replyText string
+
+	if err != nil || info == nil {
+		// Fallback to basic info if AniList fetch fails
+		title := best.Anilist.Title.Romaji
+		if best.Anilist.Title.Native != "" {
+			title += fmt.Sprintf(" (%s)", best.Anilist.Title.Native)
+		}
+		epStr := "?"
+		if best.Episode != nil {
+			epStr = fmt.Sprintf("%v", best.Episode)
+		}
+		timeStr := fmt.Sprintf("%s - %s", formatSeconds(best.From), formatSeconds(best.To))
+		simStr := fmt.Sprintf("%.2f%%", best.Similarity*100)
+
+		replyText = fmt.Sprintf(
+			"🎬 *Hasil Pencarian trace.moe*\n"+
+				"─────────────────\n"+
+				"📌 *Judul*: %s\n"+
+				"📺 *Episode*: %s\n"+
+				"⏱️ *Waktu*: %s\n"+
+				"💯 *Kecocokan*: %s\n",
+			title, epStr, timeStr, simStr,
+		)
+		replyText += adultWarning
+	} else {
+		// Full info
+		title := info.Title.Romaji
+		if info.Title.Native != "" && info.Title.Native != title {
+			title += fmt.Sprintf(" (%s)", info.Title.Native)
+		} else if info.Title.English != "" && info.Title.English != title {
+			title += fmt.Sprintf(" (%s)", info.Title.English)
+		}
+
+		epStr := "?"
+		if best.Episode != nil {
+			epStr = fmt.Sprintf("%v", best.Episode)
+		}
+		timeStr := fmt.Sprintf("%s - %s", formatSeconds(best.From), formatSeconds(best.To))
+		simStr := fmt.Sprintf("%.2f%%", best.Similarity*100)
+
+		genres := strings.Join(info.Genres, ", ")
+		if genres == "" {
+			genres = "-"
+		}
+
+		seasonStr := "-"
+		if info.Season != "" {
+			seasonStr = fmt.Sprintf("%s %d", info.Season, info.SeasonYear)
+		}
+
+		// Clean basic HTML from description
+		desc := info.Description
+		desc = strings.ReplaceAll(desc, "<br>", "\n")
+		desc = strings.ReplaceAll(desc, "<br/>", "\n")
+		desc = strings.ReplaceAll(desc, "<br />", "\n")
+		desc = strings.ReplaceAll(desc, "<i>", "_")
+		desc = strings.ReplaceAll(desc, "</i>", "_")
+		desc = strings.ReplaceAll(desc, "<b>", "*")
+		desc = strings.ReplaceAll(desc, "</b>", "*")
+		// Limit description length if too long
+		if len(desc) > 300 {
+			desc = desc[:300] + "..."
+		}
+
+		replyText = fmt.Sprintf(
+			"🎬 *Hasil Pencarian trace.moe*\n"+
+				"─────────────────\n"+
+				"📌 *Judul*: %s\n"+
+				"📺 *Episode*: %s\n"+
+				"⏱️ *Waktu*: %s\n"+
+				"💯 *Kecocokan*: %s\n"+
+				"─────────────────\n"+
+				"📑 *Genre*: %s\n"+
+				"✨ *Status*: %s\n"+
+				"📅 *Musim*: %s\n"+
+				"⭐ *Skor*: %d/100\n"+
+				"🎞️ *Total Ep*: %d (%d mnt/ep)\n"+
+				"🖼️ *Cover*: %s\n\n"+
+				"📝 *Sinopsis*:\n%s%s",
+			title, epStr, timeStr, simStr,
+			genres, info.Status, seasonStr, info.MeanScore, info.Episodes, info.Duration,
+			info.CoverImage.ExtraLarge, desc, adultWarning,
+		)
+	}
+
+	// Try sending video preview first
+	videoSent := false
+	if best.Video != "" {
+		// Muted video preview
+		previewURL := best.Video
+		if !strings.Contains(previewURL, "?") {
+			previewURL += "?mute"
+		} else {
+			previewURL += "&mute"
+		}
+		// Download the preview
+		reqVid, err := http.NewRequestWithContext(ctx, http.MethodGet, previewURL, nil)
+		if err == nil {
+			resVid, err := apiClient.HTTP.Do(reqVid)
+			if err == nil && resVid != nil {
+				vidRaw, readErr := readTracePreview(resVid.Body)
+				_ = resVid.Body.Close()
+				if resVid.StatusCode == http.StatusOK && readErr == nil && len(vidRaw) > 0 {
+					// Send video preview
+					_, _ = client.SendVideo(ctx, m.From, vidRaw, false, replyText, m.ID)
+					videoSent = true
+				}
+			}
+		}
+	}
+
+	// Fallback to Image if video failed or was empty
+	if !videoSent {
+		imageURL := ""
+		if info != nil && info.BannerImage != "" {
+			imageURL = info.BannerImage
+		} else if info != nil && info.CoverImage.ExtraLarge != "" {
+			imageURL = info.CoverImage.ExtraLarge
+		}
+
+		imageSent := false
+		if imageURL != "" {
+			reqImg, err := http.NewRequestWithContext(ctx, http.MethodGet, imageURL, nil)
+			if err == nil {
+				resImg, err := apiClient.HTTP.Do(reqImg)
+				if err == nil && resImg != nil {
+					imgRaw, readErr := readTracePreview(resImg.Body)
+					_ = resImg.Body.Close()
+					if resImg.StatusCode == http.StatusOK && readErr == nil && len(imgRaw) > 0 {
+						// Send Image preview
+						_, _ = client.SendImage(ctx, m.From, imgRaw, replyText, m.ID)
+						imageSent = true
+					}
+				}
+			}
+		}
+
+		if !imageSent {
+			// Fallback to send text only
+			m.Reply(ctx, replyText)
+		}
+	}
 }
