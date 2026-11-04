@@ -81,9 +81,6 @@ func Load() Config {
 	openAIModel := strings.TrimSpace(os.Getenv("OPENAI_MODEL"))
 	openAIProviders, openAIProvidersErr := loadOpenAIProviders()
 	openAISystemPrompt := strings.TrimSpace(os.Getenv("OPENAI_SYSTEM_PROMPT"))
-	if openAISystemPrompt == "" {
-		openAISystemPrompt = "Kamu adalah Kotonehara, asisten WhatsApp yang membantu dengan jawaban jelas, ringkas, dan ramah dalam Bahasa Indonesia."
-	}
 	openAITimeout := parseDurationOrSeconds(os.Getenv("OPENAI_TIMEOUT"), 90*time.Second)
 
 	freeDailyLimit := 10

@@ -9,6 +9,8 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
+	"regexp"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -16,7 +18,14 @@ import (
 	"github.com/MapIHS/kotonehara/internal/service/httpclient"
 )
 
-const maxResponseBytes = 8 * 1024 * 1024
+const maxResponseBytes = 32 * 1024 * 1024
+const maxReplyImages = 4
+
+// Reply preserves generated images alongside the assistant text.
+type Reply struct {
+	Text   string
+	Images []string
+}
 
 type Client struct {
 	BaseURL string
@@ -54,7 +63,8 @@ type chatCompletionRequest struct {
 type chatCompletionResponse struct {
 	Choices []struct {
 		Message struct {
-			Content json.RawMessage `json:"content"`
+			Content json.RawMessage   `json:"content"`
+			Images  []json.RawMessage `json:"images"`
 		} `json:"message"`
 	} `json:"choices"`
 	Error json.RawMessage `json:"error,omitempty"`
@@ -90,27 +100,32 @@ func NewRouter(providers []Provider, timeout time.Duration) *Router {
 }
 
 func (r *Router) ChatCompletion(ctx context.Context, messages []Message) (string, error) {
+	reply, err := r.Chat(ctx, messages)
+	return reply.Text, err
+}
+
+func (r *Router) Chat(ctx context.Context, messages []Message) (Reply, error) {
 	if r == nil || len(r.providers) == 0 {
-		return "", fmt.Errorf("tidak ada provider AI aktif")
+		return Reply{}, fmt.Errorf("tidak ada provider AI aktif")
 	}
 
 	start := int((r.next.Add(1) - 1) % uint64(len(r.providers)))
 	var lastErr error
 	for offset := range r.providers {
 		provider := r.providers[(start+offset)%len(r.providers)]
-		answer, err := New(provider.BaseURL, provider.APIKey, provider.Model, r.timeout).ChatCompletion(ctx, messages)
+		answer, err := New(provider.BaseURL, provider.APIKey, provider.Model, r.timeout).Chat(ctx, messages)
 		if err == nil {
 			return answer, nil
 		}
 		if ctx.Err() != nil {
-			return "", ctx.Err()
+			return Reply{}, ctx.Err()
 		}
 		if !shouldFailover(err) {
-			return "", fmt.Errorf("provider %s: %w", providerName(provider), err)
+			return Reply{}, fmt.Errorf("provider %s: %w", providerName(provider), err)
 		}
 		lastErr = fmt.Errorf("provider %s: %w", providerName(provider), err)
 	}
-	return "", fmt.Errorf("semua provider AI tidak tersedia: %w", lastErr)
+	return Reply{}, fmt.Errorf("semua provider AI tidak tersedia: %w", lastErr)
 }
 
 func providerName(provider Provider) string {
@@ -132,20 +147,25 @@ func shouldFailover(err error) bool {
 }
 
 func (c *Client) ChatCompletion(ctx context.Context, messages []Message) (string, error) {
+	reply, err := c.Chat(ctx, messages)
+	return reply.Text, err
+}
+
+func (c *Client) Chat(ctx context.Context, messages []Message) (Reply, error) {
 	if c == nil {
-		return "", fmt.Errorf("openai client nil")
+		return Reply{}, fmt.Errorf("openai client nil")
 	}
 	if c.APIKey == "" {
-		return "", fmt.Errorf("OPENAI_API_KEY belum diatur")
+		return Reply{}, fmt.Errorf("OPENAI_API_KEY belum diatur")
 	}
 	if c.BaseURL == "" {
-		return "", fmt.Errorf("OPENAI_BASE_URL belum diatur")
+		return Reply{}, fmt.Errorf("OPENAI_BASE_URL belum diatur")
 	}
 	if c.Model == "" {
-		return "", fmt.Errorf("OPENAI_MODEL belum diatur")
+		return Reply{}, fmt.Errorf("OPENAI_MODEL belum diatur")
 	}
 	if len(messages) == 0 {
-		return "", fmt.Errorf("pesan kosong")
+		return Reply{}, fmt.Errorf("pesan kosong")
 	}
 
 	endpoint := chatCompletionsEndpoint(c.BaseURL)
@@ -154,12 +174,12 @@ func (c *Client) ChatCompletion(ctx context.Context, messages []Message) (string
 		Messages: messages,
 	})
 	if err != nil {
-		return "", err
+		return Reply{}, err
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(payload))
 	if err != nil {
-		return "", err
+		return Reply{}, err
 	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
@@ -172,38 +192,39 @@ func (c *Client) ChatCompletion(ctx context.Context, messages []Message) (string
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return "", err
+		return Reply{}, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseBytes+1))
 	if err != nil {
-		return "", err
+		return Reply{}, err
 	}
 	if len(body) > maxResponseBytes {
-		return "", fmt.Errorf("respons AI terlalu besar")
+		return Reply{}, fmt.Errorf("respons AI terlalu besar")
 	}
 
 	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
-		return "", openAIHTTPStatusError(resp.StatusCode, body)
+		return Reply{}, openAIHTTPStatusError(resp.StatusCode, body)
 	}
 
 	var out chatCompletionResponse
 	if err := json.Unmarshal(body, &out); err != nil {
-		return "", err
+		return Reply{}, err
 	}
 	if len(out.Choices) == 0 {
 		if len(out.Error) > 0 {
-			return "", fmt.Errorf("openai api: %s", decodeOpenAIError(out.Error))
+			return Reply{}, fmt.Errorf("openai api: %s", decodeOpenAIError(out.Error))
 		}
-		return "", fmt.Errorf("openai api tidak mengembalikan pilihan jawaban")
+		return Reply{}, fmt.Errorf("openai api tidak mengembalikan pilihan jawaban")
 	}
 
-	content := strings.TrimSpace(decodeOpenAIContent(out.Choices[0].Message.Content))
-	if content == "" {
-		return "", fmt.Errorf("openai api mengembalikan jawaban kosong")
+	message := out.Choices[0].Message
+	reply := decodeOpenAIReply(message.Content, message.Images)
+	if reply.Text == "" && len(reply.Images) == 0 {
+		return Reply{}, fmt.Errorf("openai api mengembalikan jawaban kosong")
 	}
-	return content, nil
+	return reply, nil
 }
 
 func chatCompletionsEndpoint(baseURL string) string {
@@ -214,31 +235,107 @@ func chatCompletionsEndpoint(baseURL string) string {
 	return baseURL + "/chat/completions"
 }
 
-func decodeOpenAIContent(raw json.RawMessage) string {
-	var s string
-	if json.Unmarshal(raw, &s) == nil {
-		return s
-	}
+// Markdown is extracted as media instead of sending data URLs as chat text.
+var markdownImage = regexp.MustCompile(`!\[[^\]\n]*\]\(\s*(?:<([^>\n]+)>|([^\s)]+))(?:\s+["'][^\n]*?["'])?\s*\)`)
 
-	var parts []struct {
-		Type string `json:"type"`
-		Text string `json:"text"`
-	}
-	if json.Unmarshal(raw, &parts) == nil {
-		var b strings.Builder
-		for _, part := range parts {
-			if strings.TrimSpace(part.Text) == "" {
-				continue
-			}
-			if b.Len() > 0 {
-				b.WriteByte('\n')
-			}
-			b.WriteString(part.Text)
+func decodeOpenAIReply(raw json.RawMessage, images []json.RawMessage) Reply {
+	var reply Reply
+	seen := make(map[string]bool)
+	addImage := func(value string) bool {
+		value = strings.TrimSpace(value)
+		if value == "" {
+			return false
 		}
-		return b.String()
+		parsed, err := url.Parse(value)
+		if err != nil {
+			return false
+		}
+		if !((parsed.Scheme == "http" || parsed.Scheme == "https") && parsed.Hostname() != "" ||
+			strings.HasPrefix(strings.ToLower(value), "data:image/")) {
+			return false
+		}
+		if !seen[value] && len(reply.Images) < maxReplyImages {
+			seen[value] = true
+			reply.Images = append(reply.Images, value)
+		}
+		return true
 	}
+	var text strings.Builder
+	appendText := func(value string) {
+		value = markdownImage.ReplaceAllStringFunc(value, func(match string) string {
+			groups := markdownImage.FindStringSubmatch(match)
+			image := groups[1]
+			if image == "" {
+				image = groups[2]
+			}
+			if addImage(image) {
+				return ""
+			}
+			return match
+		})
+		value = strings.TrimSpace(value)
+		if value == "" {
+			return
+		}
+		if text.Len() > 0 {
+			text.WriteByte('\n')
+		}
+		text.WriteString(value)
+	}
+	var content string
+	if json.Unmarshal(raw, &content) == nil {
+		appendText(content)
+	} else {
+		var parts []struct {
+			Text     string          `json:"text"`
+			ImageURL json.RawMessage `json:"image_url"`
+		}
+		if json.Unmarshal(raw, &parts) == nil {
+			for _, part := range parts {
+				appendText(part.Text)
+				addImage(imageReference(part.ImageURL))
+			}
+		}
+	}
+	for _, rawImage := range images {
+		addImage(imageReference(rawImage))
+	}
+	reply.Text = text.String()
+	return reply
+}
 
-	return strings.TrimSpace(string(raw))
+// Providers represent image_url either as a string or as an object containing
+// url. The message.images array can wrap either representation in image_url.
+func imageReference(raw json.RawMessage) string {
+	var value string
+	if json.Unmarshal(raw, &value) == nil {
+		return value
+	}
+	var image struct {
+		URL      string          `json:"url"`
+		ImageURL json.RawMessage `json:"image_url"`
+	}
+	if json.Unmarshal(raw, &image) != nil {
+		return ""
+	}
+	if image.URL != "" {
+		return image.URL
+	}
+	if len(image.ImageURL) == 0 {
+		return ""
+	}
+	// Only one wrapper is needed; unmarshal its string/object URL directly so
+	// deeply nested provider data cannot cause unbounded recursion.
+	if json.Unmarshal(image.ImageURL, &value) == nil {
+		return value
+	}
+	var nested struct {
+		URL string `json:"url"`
+	}
+	if json.Unmarshal(image.ImageURL, &nested) == nil {
+		return nested.URL
+	}
+	return ""
 }
 
 type httpStatusError struct {
