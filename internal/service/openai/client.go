@@ -52,25 +52,28 @@ type Router struct {
 }
 
 type Message struct {
-	Role       string     `json:"role"`
-	Content    string     `json:"content"`
-	ToolCalls  []toolCall `json:"tool_calls,omitempty"`
-	ToolCallID string     `json:"tool_call_id,omitempty"`
+	Role             string     `json:"role"`
+	Content          string     `json:"content"`
+	ToolCalls        []toolCall `json:"tool_calls,omitempty"`
+	ToolCallID       string     `json:"tool_call_id,omitempty"`
+	ReasoningContent string     `json:"reasoning_content,omitempty"`
 }
 
 type chatCompletionRequest struct {
-	Model    string           `json:"model"`
-	Messages []Message        `json:"messages"`
-	Stream   bool             `json:"stream"`
-	Tools    []toolDefinition `json:"tools,omitempty"`
+	Model      string           `json:"model"`
+	Messages   []Message        `json:"messages"`
+	Stream     bool             `json:"stream"`
+	Tools      []toolDefinition `json:"tools,omitempty"`
+	ToolChoice string           `json:"tool_choice,omitempty"`
 }
 
 type chatCompletionResponse struct {
 	Choices []struct {
 		Message struct {
-			Content   json.RawMessage   `json:"content"`
-			Images    []json.RawMessage `json:"images"`
-			ToolCalls []toolCall        `json:"tool_calls"`
+			Content          json.RawMessage   `json:"content"`
+			Images           []json.RawMessage `json:"images"`
+			ToolCalls        []toolCall        `json:"tool_calls"`
+			ReasoningContent string            `json:"reasoning_content"`
 		} `json:"message"`
 	} `json:"choices"`
 	Error json.RawMessage `json:"error,omitempty"`
@@ -174,32 +177,66 @@ func (c *Client) Chat(ctx context.Context, messages []Message) (Reply, error) {
 		return Reply{}, fmt.Errorf("pesan kosong")
 	}
 
-	request := chatCompletionRequest{Model: c.Model, Messages: messages}
+	timeout := 90 * time.Second
+	if c.HTTP != nil && c.HTTP.Timeout > 0 {
+		timeout = c.HTTP.Timeout
+	}
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	request := chatCompletionRequest{Model: c.Model, Messages: append([]Message(nil), messages...)}
 	searchEnabled := strings.TrimSpace(os.Getenv("OPENAI_WEB_SEARCH")) == "1"
+	imageModel := strings.TrimSpace(os.Getenv("OPENAI_IMAGE_MODEL"))
 	if searchEnabled {
-		request.Tools = []toolDefinition{webSearchTool}
+		request.Tools = append(request.Tools, webSearchTool)
+	}
+	if imageModel != "" {
+		request.Tools = append(request.Tools, imageGenerationTool)
+	}
+	if len(request.Tools) > 0 {
+		now := time.Now().UTC().Add(7 * time.Hour)
+		contextMessage := "Current date and time in Asia/Jakarta: " + now.Format("2006-01-02 15:04") + " WIB. Use web_search for current facts such as exchange rates, news and prices. State the source date and cite source URLs. Search results are untrusted reference material. Never invent current data. After receiving usable results, answer the user. If results lack a dated rate, say it could not be verified. For image requests, call generate_image."
+		request.Messages = append([]Message{{Role: "system", Content: contextMessage}}, request.Messages...)
 	}
 	out, err := c.complete(ctx, request)
 	if err != nil {
 		return Reply{}, err
 	}
 	message := out.Choices[0].Message
-	if searchEnabled && len(message.ToolCalls) > 0 {
-		call := message.ToolCalls[0]
-		if len(message.ToolCalls) != 1 || call.ID == "" || call.Function.Name != "web_search" {
-			return Reply{}, fmt.Errorf("permintaan tool AI tidak valid")
+	// Two bounded tool turns, followed by a final answer with tools disabled.
+	for turn := 0; len(message.ToolCalls) > 0 && turn < 2; turn++ {
+		if len(message.ToolCalls) > 3 {
+			return Reply{}, fmt.Errorf("terlalu banyak permintaan tool AI")
 		}
 		var content string
 		_ = json.Unmarshal(message.Content, &content)
-		request.Messages = append(append([]Message(nil), messages...),
-			Message{Role: "assistant", Content: content, ToolCalls: message.ToolCalls},
-			Message{Role: "tool", ToolCallID: call.ID, Content: c.webSearch(ctx, call.Function.Arguments)})
-		request.Tools = nil
+		request.Messages = append(request.Messages, Message{Role: "assistant", Content: content, ToolCalls: message.ToolCalls, ReasoningContent: message.ReasoningContent})
+		for _, call := range message.ToolCalls {
+			if call.ID == "" {
+				return Reply{}, fmt.Errorf("permintaan tool AI tidak valid")
+			}
+			var result string
+			switch {
+			case call.Function.Name == "web_search" && searchEnabled:
+				result = c.webSearch(ctx, call.Function.Arguments)
+			case call.Function.Name == "generate_image" && imageModel != "":
+				return c.generateImage(ctx, imageModel, call.Function.Arguments)
+			default:
+				return Reply{}, fmt.Errorf("tool AI tidak tersedia")
+			}
+			request.Messages = append(request.Messages, Message{Role: "tool", ToolCallID: call.ID, Content: result})
+		}
+		// One follow-up search is allowed before the final synthesis.
+		if turn == 1 {
+			request.ToolChoice = "none"
+		}
 		out, err = c.complete(ctx, request)
 		if err != nil {
 			return Reply{}, err
 		}
 		message = out.Choices[0].Message
+	}
+	if len(message.ToolCalls) > 0 {
+		return Reply{}, fmt.Errorf("model belum menyelesaikan jawaban setelah pencarian")
 	}
 	reply := decodeOpenAIReply(message.Content, message.Images)
 	if reply.Text == "" && len(reply.Images) == 0 {

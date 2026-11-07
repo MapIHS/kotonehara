@@ -76,10 +76,12 @@ func (c *Client) webSearch(ctx context.Context, arguments string) string {
 		return unavailable
 	}
 	var result struct {
-		Results []struct {
-			Title   string `json:"title"`
-			URL     string `json:"url"`
-			Snippet string `json:"snippet"`
+		RetrievedAt string `json:"retrieved_at"`
+		Results     []struct {
+			Title       string          `json:"title"`
+			URL         string          `json:"url"`
+			Snippet     string          `json:"snippet"`
+			PublishedAt json.RawMessage `json:"published_at,omitempty"`
 		} `json:"results"`
 	}
 	if json.Unmarshal(body, &result) != nil {
@@ -94,6 +96,7 @@ func (c *Client) webSearch(ctx context.Context, arguments string) string {
 			item.Snippet = item.Snippet[:1200]
 		}
 	}
+	result.RetrievedAt = time.Now().UTC().Format(time.RFC3339)
 	output, _ := json.Marshal(result)
 	return string(output)
 }
