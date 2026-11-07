@@ -18,7 +18,7 @@ const maxAIReplySize = 65536
 
 var aiRouters sync.Map // map[string]*openai.Router; one router per loaded configuration
 
-func aiCmd(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
+func aiCmd(ctx context.Context, _ *clients.Client, m *message.Message, cfg config.Config) {
 	if cfg.OpenAIProvidersError != "" {
 		m.Reply(ctx, "Konfigurasi rotasi AI tidak valid: "+cfg.OpenAIProvidersError)
 		return
@@ -52,24 +52,16 @@ func aiCmd(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 	}
 
 	ai := aiRouterFor(providers, cfg.OpenAITimeout)
-	answer, err := ai.Chat(ctx, aiMessages(cfg.OpenAISystemPrompt, prompt))
+	answer, err := ai.ChatCompletion(ctx, aiMessages(cfg.OpenAISystemPrompt, prompt))
 	if err != nil {
 		m.Reply(ctx, "AI gagal menjawab: "+err.Error())
 		return
 	}
 
-	err = sendAIReply(ctx, answer, func(text string) error {
-		_, err := m.Reply(ctx, text)
-		return err
-	}, func(data []byte) error {
-		_, err := client.SendImage(ctx, m.From, data, "", m.ID)
-		return err
-	}, func(ctx context.Context, source string) ([]byte, error) {
-		return loadAIImage(ctx, source, fetchHTTPClient(client), nil)
-	})
-	if err != nil {
-		m.Reply(ctx, "Gagal mengirim hasil AI: "+err.Error())
+	if len(answer) > maxAIReplySize {
+		answer = answer[:maxAIReplySize-5] + "\n\n..."
 	}
+	m.Reply(ctx, answer)
 }
 
 func aiMessages(systemPrompt, prompt string) []openai.Message {
