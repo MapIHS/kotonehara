@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 	"sync/atomic"
@@ -51,20 +52,25 @@ type Router struct {
 }
 
 type Message struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
+	Role       string     `json:"role"`
+	Content    string     `json:"content"`
+	ToolCalls  []toolCall `json:"tool_calls,omitempty"`
+	ToolCallID string     `json:"tool_call_id,omitempty"`
 }
 
 type chatCompletionRequest struct {
-	Model    string    `json:"model"`
-	Messages []Message `json:"messages"`
+	Model    string           `json:"model"`
+	Messages []Message        `json:"messages"`
+	Stream   bool             `json:"stream"`
+	Tools    []toolDefinition `json:"tools,omitempty"`
 }
 
 type chatCompletionResponse struct {
 	Choices []struct {
 		Message struct {
-			Content json.RawMessage   `json:"content"`
-			Images  []json.RawMessage `json:"images"`
+			Content   json.RawMessage   `json:"content"`
+			Images    []json.RawMessage `json:"images"`
+			ToolCalls []toolCall        `json:"tool_calls"`
 		} `json:"message"`
 	} `json:"choices"`
 	Error json.RawMessage `json:"error,omitempty"`
@@ -168,18 +174,50 @@ func (c *Client) Chat(ctx context.Context, messages []Message) (Reply, error) {
 		return Reply{}, fmt.Errorf("pesan kosong")
 	}
 
-	endpoint := chatCompletionsEndpoint(c.BaseURL)
-	payload, err := json.Marshal(chatCompletionRequest{
-		Model:    c.Model,
-		Messages: messages,
-	})
+	request := chatCompletionRequest{Model: c.Model, Messages: messages}
+	searchEnabled := strings.TrimSpace(os.Getenv("OPENAI_WEB_SEARCH")) == "1"
+	if searchEnabled {
+		request.Tools = []toolDefinition{webSearchTool}
+	}
+	out, err := c.complete(ctx, request)
 	if err != nil {
 		return Reply{}, err
+	}
+	message := out.Choices[0].Message
+	if searchEnabled && len(message.ToolCalls) > 0 {
+		call := message.ToolCalls[0]
+		if len(message.ToolCalls) != 1 || call.ID == "" || call.Function.Name != "web_search" {
+			return Reply{}, fmt.Errorf("permintaan tool AI tidak valid")
+		}
+		var content string
+		_ = json.Unmarshal(message.Content, &content)
+		request.Messages = append(append([]Message(nil), messages...),
+			Message{Role: "assistant", Content: content, ToolCalls: message.ToolCalls},
+			Message{Role: "tool", ToolCallID: call.ID, Content: c.webSearch(ctx, call.Function.Arguments)})
+		request.Tools = nil
+		out, err = c.complete(ctx, request)
+		if err != nil {
+			return Reply{}, err
+		}
+		message = out.Choices[0].Message
+	}
+	reply := decodeOpenAIReply(message.Content, message.Images)
+	if reply.Text == "" && len(reply.Images) == 0 {
+		return Reply{}, fmt.Errorf("openai api mengembalikan jawaban kosong")
+	}
+	return reply, nil
+}
+
+func (c *Client) complete(ctx context.Context, request chatCompletionRequest) (chatCompletionResponse, error) {
+	endpoint := chatCompletionsEndpoint(c.BaseURL)
+	payload, err := json.Marshal(request)
+	if err != nil {
+		return chatCompletionResponse{}, err
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(payload))
 	if err != nil {
-		return Reply{}, err
+		return chatCompletionResponse{}, err
 	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
@@ -192,39 +230,34 @@ func (c *Client) Chat(ctx context.Context, messages []Message) (Reply, error) {
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return Reply{}, err
+		return chatCompletionResponse{}, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseBytes+1))
 	if err != nil {
-		return Reply{}, err
+		return chatCompletionResponse{}, err
 	}
 	if len(body) > maxResponseBytes {
-		return Reply{}, fmt.Errorf("respons AI terlalu besar")
+		return chatCompletionResponse{}, fmt.Errorf("respons AI terlalu besar")
 	}
 
 	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
-		return Reply{}, openAIHTTPStatusError(resp.StatusCode, body)
+		return chatCompletionResponse{}, openAIHTTPStatusError(resp.StatusCode, body)
 	}
 
 	var out chatCompletionResponse
 	if err := json.Unmarshal(body, &out); err != nil {
-		return Reply{}, err
+		return chatCompletionResponse{}, err
 	}
 	if len(out.Choices) == 0 {
 		if len(out.Error) > 0 {
-			return Reply{}, fmt.Errorf("openai api: %s", decodeOpenAIError(out.Error))
+			return chatCompletionResponse{}, fmt.Errorf("openai api: %s", decodeOpenAIError(out.Error))
 		}
-		return Reply{}, fmt.Errorf("openai api tidak mengembalikan pilihan jawaban")
+		return chatCompletionResponse{}, fmt.Errorf("openai api tidak mengembalikan pilihan jawaban")
 	}
 
-	message := out.Choices[0].Message
-	reply := decodeOpenAIReply(message.Content, message.Images)
-	if reply.Text == "" && len(reply.Images) == 0 {
-		return Reply{}, fmt.Errorf("openai api mengembalikan jawaban kosong")
-	}
-	return reply, nil
+	return out, nil
 }
 
 func chatCompletionsEndpoint(baseURL string) string {

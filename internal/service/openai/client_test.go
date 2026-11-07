@@ -45,7 +45,7 @@ func TestChatPreservesTextAndImages(t *testing.T) {
 				if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 					t.Error(err)
 				}
-				if len(request) != 2 || string(request["model"]) != `"fixture-model"` {
+				if len(request) != 3 || string(request["stream"]) != "false" || string(request["model"]) != `"fixture-model"` {
 					t.Errorf("request fields changed: %v", request)
 				}
 				if string(request["messages"]) != `[{"role":"user","content":"buat gambar"}]` {
