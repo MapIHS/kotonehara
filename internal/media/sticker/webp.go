@@ -78,7 +78,7 @@ func videoToWebP(ctx context.Context, data []byte) ([]byte, error) {
 		"-sn",
 		"-dn",
 		"-vcodec", "libwebp",
-		"-vf", "fps=15,scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:-1:-1:color=0x00000000@0,setsar=1",
+		"-vf", "fps=15,crop=w='min(iw,ih)':h='min(iw,ih)':x='(iw-ow)/2':y='(ih-oh)/2':exact=1,scale=512:512,setsar=1",
 		"-lossless", "0",
 		"-q:v", "45",
 		"-compression_level", "4",
