@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -64,6 +65,10 @@ func stc(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 
 	stc, err := sticker.BuildSticker(opCtx, raw, m.PushName, isSticker, isGif)
 	if err != nil {
+		if errors.Is(err, sticker.ErrAnimatedStickerTooLarge) {
+			_, _ = m.Reply(ctx, "Stiker animasinya masih lebih dari 500 KB. Coba potong GIF jadi lebih pendek, yaa.")
+			return
+		}
 		if stickerMsg != nil && len(stickerMsg.GetPngThumbnail()) > 0 {
 			stc, err = sticker.BuildSticker(opCtx, stickerMsg.GetPngThumbnail(), m.PushName, false, false)
 			if err == nil {

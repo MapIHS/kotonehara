@@ -3,8 +3,11 @@ package sticker
 import (
 	"context"
 	"errors"
-	"fmt"
 )
+
+const maxAnimatedStickerBytes = 500_000
+
+var ErrAnimatedStickerTooLarge = errors.New("stiker animasi masih melebihi 500 KB setelah dikompres")
 
 func BuildSticker(ctx context.Context, data []byte, author string, isSticker bool, isVideo bool) ([]byte, error) {
 	if len(data) == 0 {
@@ -12,30 +15,21 @@ func BuildSticker(ctx context.Context, data []byte, author string, isSticker boo
 	}
 
 	exif := buildExif(author)
-
+	animatedWebP := len(data) >= 30 && string(data[:4]) == "RIFF" &&
+		string(data[8:16]) == "WEBPVP8X" && data[20]&0x02 != 0
 	if isSticker {
 		out, err := injectWebPEXIF(ctx, data, exif)
-		if err == nil {
+		if err == nil && (!animatedWebP || len(out) <= maxAnimatedStickerBytes) {
 			return out, nil
 		}
-
-		webp, convErr := stickerFallbackToWebP(ctx, data, isVideo)
-		if convErr != nil {
-			return nil, fmt.Errorf("sticker bukan WebP valid dan gagal convert ulang: %w (inject exif: %v)", convErr, err)
-		}
-		return injectWebPEXIF(ctx, webp, exif)
 	}
 
-	webp, err := stickerFallbackToWebP(ctx, data, isVideo)
+	if isVideo || animatedWebP {
+		return videoToWebP(ctx, data, exif, animatedWebP)
+	}
+	webp, err := toWebP512(data)
 	if err != nil {
 		return nil, err
 	}
 	return injectWebPEXIF(ctx, webp, exif)
-}
-
-func stickerFallbackToWebP(ctx context.Context, data []byte, isVideo bool) ([]byte, error) {
-	if isVideo {
-		return videoToWebP(ctx, data)
-	}
-	return toWebP512(data)
 }

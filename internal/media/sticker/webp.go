@@ -5,13 +5,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	exec "github.com/MapIHS/kotonehara/internal/service/mediaproc"
 	"image"
 	idraw "image/draw"
 	"os"
 	"path/filepath"
-	"strings"
+	"strconv"
 
+	exec "github.com/MapIHS/kotonehara/internal/service/mediaproc"
 	webpenc "github.com/chai2010/webp"
 	xdraw "golang.org/x/image/draw"
 
@@ -47,7 +47,7 @@ func toWebP512(b []byte) ([]byte, error) {
 	return out.Bytes(), nil
 }
 
-func videoToWebP(ctx context.Context, data []byte) ([]byte, error) {
+func videoToWebP(ctx context.Context, data, exif []byte, animatedWebP bool) ([]byte, error) {
 	if _, err := exec.LookPath("ffmpeg"); err != nil {
 		return nil, errors.New("ffmpeg belum terpasang")
 	}
@@ -65,41 +65,55 @@ func videoToWebP(ctx context.Context, data []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	cmd := exec.CommandContext(
-		ctx,
-		"ffmpeg",
-		"-hide_banner",
-		"-loglevel", "error",
-		"-y",
-		"-hwaccel", "auto",
-		"-t", "10",
-		"-i", inFile,
-		"-an",
-		"-sn",
-		"-dn",
-		"-vcodec", "libwebp",
-		"-vf", "fps=15,crop=w='min(iw,ih)':h='min(iw,ih)':x='(iw-ow)/2':y='(ih-oh)/2':exact=1,scale=512:512,setsar=1",
-		"-lossless", "0",
-		"-q:v", "45",
-		"-compression_level", "4",
-		"-loop", "0",
-		"-preset", "default",
-		"-vsync", "0",
-		outFile,
-	)
-	if out, err := cmd.CombinedOutput(); err != nil {
-		if ctx.Err() != nil {
-			return nil, ctx.Err()
-		}
-		if len(out) > 0 {
-			msg := string(bytes.TrimSpace(out))
-			if strings.Contains(msg, "no decoder found") || strings.Contains(msg, "Decoder") {
-				return nil, fmt.Errorf("codec video tidak didukung oleh ffmpeg (install ffmpeg lengkap dari RPM Fusion): %s", msg)
+	if animatedWebP {
+		gifFile := filepath.Join(dir, "frames.gif")
+		if err := exec.CommandContext(ctx, "magick", inFile, "-coalesce", gifFile).Run(); err != nil {
+			if ctx.Err() != nil {
+				return nil, ctx.Err()
 			}
-			return nil, errors.New(msg)
+			if out, err := exec.CommandContext(ctx, "convert", inFile, "-coalesce", gifFile).CombinedOutput(); err != nil {
+				return nil, fmt.Errorf("decode WebP animasi: %w: %s", err, out)
+			}
 		}
-		return nil, err
+		inFile = gifFile
 	}
 
-	return os.ReadFile(outFile)
+	// Keep the original duration on the first retries. Shorten only when
+	// reducing quality and frame rate still cannot meet the upload limit.
+	for _, preset := range []struct{ fps, quality, seconds int }{
+		{15, 45, 10}, {12, 30, 10}, {8, 20, 10}, {8, 15, 6}, {6, 10, 3}, {5, 8, 2},
+	} {
+		filter := fmt.Sprintf("fps=%d,crop=w='min(iw,ih)':h='min(iw,ih)':x='(iw-ow)/2':y='(ih-oh)/2':exact=1,scale=512:512,setsar=1", preset.fps)
+		cmd := exec.CommandContext(ctx, "ffmpeg",
+			"-hide_banner", "-loglevel", "error", "-y",
+			"-t", strconv.Itoa(preset.seconds), "-i", inFile,
+			"-an", "-sn", "-dn", "-vcodec", "libwebp", "-vf", filter,
+			"-lossless", "0", "-q:v", strconv.Itoa(preset.quality),
+			"-compression_level", "4", "-loop", "0", "-preset", "default", "-vsync", "0", outFile)
+		if out, err := cmd.CombinedOutput(); err != nil {
+			if ctx.Err() != nil {
+				return nil, ctx.Err()
+			}
+			return nil, fmt.Errorf("encode stiker animasi: %w: %s", err, bytes.TrimSpace(out))
+		}
+		info, err := os.Stat(outFile)
+		if err != nil {
+			return nil, err
+		}
+		if info.Size() > maxAnimatedStickerBytes {
+			continue
+		}
+		raw, err := os.ReadFile(outFile)
+		if err != nil {
+			return nil, err
+		}
+		final, err := injectWebPEXIF(ctx, raw, exif)
+		if err != nil {
+			return nil, err
+		}
+		if len(final) <= maxAnimatedStickerBytes {
+			return final, nil
+		}
+	}
+	return nil, ErrAnimatedStickerTooLarge
 }
