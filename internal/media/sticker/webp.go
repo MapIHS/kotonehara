@@ -79,11 +79,11 @@ func videoToWebP(ctx context.Context, data, exif []byte, animatedWebP bool) ([]b
 	}
 
 	// Keep the original duration on the first retries. Shorten only when
-	// reducing quality and frame rate still cannot meet the upload limit.
-	for _, preset := range []struct{ fps, quality, seconds int }{
-		{15, 45, 10}, {12, 30, 10}, {8, 20, 10}, {8, 15, 6}, {6, 10, 3}, {5, 8, 2},
+	// reducing quality still cannot meet the upload limit. Keep motion at 15 fps.
+	for _, preset := range []struct{ quality, seconds int }{
+		{45, 10}, {30, 10}, {20, 10}, {15, 6}, {10, 3}, {8, 2},
 	} {
-		filter := fmt.Sprintf("fps=%d,crop=w='min(iw,ih)':h='min(iw,ih)':x='(iw-ow)/2':y='(ih-oh)/2':exact=1,scale=512:512,setsar=1", preset.fps)
+		filter := "fps=15,crop=w='min(iw,ih)':h='min(iw,ih)':x='(iw-ow)/2':y='(ih-oh)/2':exact=1,scale=512:512,setsar=1"
 		cmd := exec.CommandContext(ctx, "ffmpeg",
 			"-hide_banner", "-loglevel", "error", "-y",
 			"-t", strconv.Itoa(preset.seconds), "-i", inFile,
