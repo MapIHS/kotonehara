@@ -94,6 +94,11 @@ func TestQuotaUsesIdentityAliasesAndSkipQuota(t *testing.T) {
 	if ran != 1 || checks != 1 {
 		t.Fatal("SkipQuota not respected")
 	}
+	m.Body, m.IsBot = ".paid", true
+	CommandExec(context.Background(), nil, m, cfg)
+	if ran != 2 || checks != 1 {
+		t.Fatal("bot account was not exempt from quota")
+	}
 }
 
 func TestCooldownSurvivesIdentitySwitchAndResets(t *testing.T) {
