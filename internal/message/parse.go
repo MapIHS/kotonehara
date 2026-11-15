@@ -110,6 +110,11 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 	cmd, query := splitCommand(splitBody)
 	quotedMsg := pickQuoted(mess)
 	media := pickMedia(quotedMsg, mess)
+	if strings.EqualFold(cmd, "tomp3") {
+		if audio := quotedMsg.GetAudioMessage(); audio != nil {
+			media = audio
+		}
+	}
 
 	isImage := mess.Message.GetImageMessage() != nil
 	isVideo := mess.Message.GetVideoMessage() != nil
