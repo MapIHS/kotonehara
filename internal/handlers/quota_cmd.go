@@ -38,6 +38,11 @@ func init() {
 				return
 			}
 
+			if info.MaxLimit < 0 {
+				m.Reply(ctx, "📊 *Status Kuota Kamu*\n─────────────────\n🏷️ Tier: *Gratis*\n📈 Kuota: *Unlimited*\n\nLimit harian sedang tidak diaktifkan.")
+				return
+			}
+
 			used := info.UsedCount
 			max := info.MaxLimit
 			remaining := max - used

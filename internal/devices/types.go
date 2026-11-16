@@ -22,7 +22,10 @@ type Devices struct {
 	lifecycleMu sync.Mutex
 	stopping    bool
 	active      sync.WaitGroup
-	eventSem    chan struct{}
+	eventSem    chan struct{} // limits concurrently running handlers
+	queued      int           // accepted handlers (running + waiting), guarded by lifecycleMu
+	maxQueued   int           // cap on queued; beyond it events are rejected and logged
+	stopCh      chan struct{} // closed when shutdown begins; waiting handlers are dropped
 	stopOnce    sync.Once
 	drained     chan struct{}
 }

@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -140,5 +141,68 @@ func TestDispatchChatRestrictions(t *testing.T) {
 		if (ran > before) != tc.allowed {
 			t.Errorf("incorrect chat restriction: %+v", tc)
 		}
+	}
+}
+
+func TestQuotaNotChargedWhenPreconditionsFail(t *testing.T) {
+	isolateCommands(t)
+	checks, ran := 0, 0
+	SetQuotaCheck(func(context.Context, string, []string) (bool, string, error) {
+		checks++
+		return true, "", nil
+	})
+	Register(&Command{Name: "needmedia", IsPrefix: true, IsMedia: true, Exec: func(context.Context, *clients.Client, *message.Message, config.Config) { ran++ }})
+	Register(&Command{Name: "needquery", IsPrefix: true, IsQuery: true, Exec: func(context.Context, *clients.Client, *message.Message, config.Config) { ran++ }})
+	Register(&Command{Name: "grouponly", IsPrefix: true, IsGroup: true, Exec: func(context.Context, *clients.Client, *message.Message, config.Config) { ran++ }})
+	Register(&Command{Name: "ok", IsPrefix: true, Exec: func(context.Context, *clients.Client, *message.Message, config.Config) { ran++ }})
+	cfg := config.Config{Prefix: "."}
+	reply := func(context.Context, string, ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error) {
+		return whatsmeow.SendResponse{}, nil
+	}
+	for _, body := range []string{".needmedia", ".needquery", ".grouponly"} {
+		CommandExec(context.Background(), nil, &message.Message{Body: body, Reply: reply}, cfg)
+	}
+	if checks != 0 || ran != 0 {
+		t.Fatalf("rejected invocations charged quota: checks=%d ran=%d", checks, ran)
+	}
+	CommandExec(context.Background(), nil, &message.Message{Body: ".ok", Reply: reply}, cfg)
+	if checks != 1 || ran != 1 {
+		t.Fatalf("valid invocation: checks=%d ran=%d", checks, ran)
+	}
+}
+
+func TestQuotaErrorBlocksCommand(t *testing.T) {
+	isolateCommands(t)
+	ran := 0
+	SetQuotaCheck(func(context.Context, string, []string) (bool, string, error) {
+		return false, "", errors.New("db down")
+	})
+	Register(&Command{Name: "paid", IsPrefix: true, Exec: func(context.Context, *clients.Client, *message.Message, config.Config) { ran++ }})
+	reply := ""
+	m := &message.Message{Body: ".paid", Reply: func(_ context.Context, text string, _ ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error) {
+		reply = text
+		return whatsmeow.SendResponse{}, nil
+	}}
+	CommandExec(context.Background(), nil, m, config.Config{Prefix: "."})
+	if ran != 0 || reply == "" {
+		t.Fatal("command ran despite quota error")
+	}
+}
+
+func TestWrongPrefixDoesNotStartCooldown(t *testing.T) {
+	isolateCommands(t)
+	SetCooldown(time.Hour)
+	ran := 0
+	Register(&Command{Name: "probe", IsPrefix: true, Exec: func(context.Context, *clients.Client, *message.Message, config.Config) { ran++ }})
+	cfg := config.Config{Prefix: "."}
+	sender := types.NewJID("628123", types.DefaultUserServer)
+	reply := func(context.Context, string, ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error) {
+		return whatsmeow.SendResponse{}, nil
+	}
+	// Unprefixed "probe" is ordinary chat text, not an invocation.
+	CommandExec(context.Background(), nil, &message.Message{Body: "probe", Sender: sender, Reply: reply}, cfg)
+	CommandExec(context.Background(), nil, &message.Message{Body: ".probe", Sender: sender, Reply: reply}, cfg)
+	if ran != 1 {
+		t.Fatal("unprefixed text started a cooldown and blocked the real command")
 	}
 }

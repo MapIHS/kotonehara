@@ -26,8 +26,16 @@ func TestConcurrencyLimitAndShutdownDrain(t *testing.T) {
 			t.Fatal("command did not start")
 		}
 	}
-	if d.tryStartCommand(func() { t.Error("over-capacity command ran") }) {
-		t.Fatal("capacity exceeded")
+	// Over the concurrency limit the event is queued, not dropped, and it
+	// must not run while every slot is busy.
+	queuedRan := make(chan struct{}, 1)
+	if !d.tryStartCommand(func() { queuedRan <- struct{}{} }) {
+		t.Fatal("event over concurrency limit was dropped instead of queued")
+	}
+	select {
+	case <-queuedRan:
+		t.Fatal("queued command ran while all slots were busy")
+	case <-time.After(50 * time.Millisecond):
 	}
 	timeout, cancel := context.WithCancel(context.Background())
 	cancel()
@@ -48,6 +56,59 @@ func TestConcurrencyLimitAndShutdownDrain(t *testing.T) {
 	}
 	if err := d.Shutdown(ctx); err != nil {
 		t.Fatalf("repeated shutdown: %v", err)
+	}
+	select {
+	case <-queuedRan:
+		t.Fatal("command still waiting at shutdown was run instead of dropped")
+	default:
+	}
+}
+
+func TestQueuedCommandRunsWhenSlotFrees(t *testing.T) {
+	d := New(nil, config.Config{}, context.Background())
+	release := make(chan struct{})
+	started := make(chan struct{}, cap(d.eventSem))
+	for i := 0; i < cap(d.eventSem); i++ {
+		d.tryStartCommand(func() { started <- struct{}{}; <-release })
+	}
+	for i := 0; i < cap(d.eventSem); i++ {
+		<-started
+	}
+	queuedRan := make(chan struct{})
+	if !d.tryStartCommand(func() { close(queuedRan) }) {
+		t.Fatal("queued command rejected")
+	}
+	release <- struct{}{}
+	select {
+	case <-queuedRan:
+	case <-time.After(time.Second):
+		t.Fatal("queued command did not run after a slot freed")
+	}
+	close(release)
+	ctx, done := context.WithTimeout(context.Background(), time.Second)
+	defer done()
+	if err := d.Shutdown(ctx); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestQueueLimitRejects(t *testing.T) {
+	d := New(nil, config.Config{}, context.Background())
+	d.maxQueued = 2
+	release := make(chan struct{})
+	for i := 0; i < d.maxQueued; i++ {
+		if !d.tryStartCommand(func() { <-release }) {
+			t.Fatal("rejected below queue limit")
+		}
+	}
+	if d.tryStartCommand(func() { t.Error("over-limit command ran") }) {
+		t.Fatal("queue limit not enforced")
+	}
+	close(release)
+	ctx, done := context.WithTimeout(context.Background(), time.Second)
+	defer done()
+	if err := d.Shutdown(ctx); err != nil {
+		t.Fatal(err)
 	}
 }
 

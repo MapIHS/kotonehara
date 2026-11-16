@@ -35,6 +35,7 @@ type Config struct {
 	OpenAISystemPrompt   string
 	OpenAITimeout        time.Duration
 	FreeDailyLimit       int
+	QuotaFailOpen        bool
 }
 
 // OpenAIProvider describes one OpenAI-compatible upstream. Models can contain
@@ -123,6 +124,7 @@ func Load() Config {
 		OpenAISystemPrompt:   openAISystemPrompt,
 		OpenAITimeout:        openAITimeout,
 		FreeDailyLimit:       freeDailyLimit,
+		QuotaFailOpen:        parseBoolDefault(os.Getenv("QUOTA_FAIL_OPEN"), true),
 	}
 }
 

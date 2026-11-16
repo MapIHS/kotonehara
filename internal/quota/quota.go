@@ -45,12 +45,18 @@ type Checker struct {
 	ownerJIDs  map[string]bool
 	identityMu sync.Mutex
 	reconciled map[string]bool
+	// failOpen decides what happens when the quota store errors: allow the
+	// command (true) or block it with an explanatory message (false).
+	failOpen bool
 }
+
+const unavailableMessage = "⚠️ Sistem kuota sedang bermasalah, jadi command belum bisa dipakai. Coba lagi nanti, yaa."
 
 var globalChecker *Checker
 
 // Init creates and stores the global Checker instance.
-func Init(db *sqlx.DB, freeLimit int, owners []string) {
+// A freeLimit of 0 or less means free users are unlimited.
+func Init(db *sqlx.DB, freeLimit int, owners []string, failOpen bool) {
 	m := make(map[string]bool, len(owners))
 	for _, o := range owners {
 		m[normalizeJID(o)] = true
@@ -60,6 +66,7 @@ func Init(db *sqlx.DB, freeLimit int, owners []string) {
 		freeLimit:  freeLimit,
 		ownerJIDs:  m,
 		reconciled: make(map[string]bool),
+		failOpen:   failOpen,
 	}
 }
 
@@ -78,7 +85,7 @@ func (c *Checker) CheckCommand(ctx context.Context, jid string) (bool, string, e
 func (c *Checker) CheckIdentity(ctx context.Context, jid string, aliases []string) (bool, string, error) {
 	jid = normalizeJID(jid)
 	if err := c.reconcileAliases(ctx, jid, aliases); err != nil {
-		return false, "", err
+		return c.storeFailure("identity reconcile", err)
 	}
 
 	// 1. Owner bypass
@@ -89,18 +96,21 @@ func (c *Checker) CheckIdentity(ctx context.Context, jid string, aliases []strin
 	// 2. Premium bypass
 	isPremium, err := c.store.IsPremium(ctx, jid)
 	if err != nil {
-		log.Printf("quota: premium check error: %v", err)
-		return true, "", nil // fail open
+		return c.storeFailure("premium check", err)
 	}
 	if isPremium {
 		return true, "", nil
 	}
 
-	// 3. Free user: increment and check
+	// 3. Free users are unlimited when no positive limit is configured.
+	if c.freeLimit <= 0 {
+		return true, "", nil
+	}
+
+	// 4. Free user: increment and check
 	count, err := c.store.IncrementAndGet(ctx, jid)
 	if err != nil {
-		log.Printf("quota: increment error: %v", err)
-		return true, "", nil // fail open
+		return c.storeFailure("increment", err)
 	}
 
 	if count > c.freeLimit {
@@ -116,6 +126,17 @@ func (c *Checker) CheckIdentity(ctx context.Context, jid string, aliases []strin
 	}
 
 	return true, "", nil
+}
+
+// storeFailure applies the configured policy to a quota store error. It never
+// returns the error itself so callers get a definite allow/deny decision.
+func (c *Checker) storeFailure(stage string, err error) (bool, string, error) {
+	if c.failOpen {
+		log.Printf("quota: %s error (fail-open, allowing): %v", stage, err)
+		return true, "", nil
+	}
+	log.Printf("quota: %s error (fail-closed, blocking): %v", stage, err)
+	return false, unavailableMessage, nil
 }
 
 func (c *Checker) reconcileAliases(ctx context.Context, canonical string, aliases []string) error {
@@ -163,6 +184,11 @@ func (c *Checker) GetIdentityUsageInfo(ctx context.Context, jid string, aliases 
 	}
 	if isPremium {
 		return &UsageInfo{MaxLimit: -1, IsPremium: true}, nil
+	}
+
+	// Free, but no positive limit configured.
+	if c.freeLimit <= 0 {
+		return &UsageInfo{MaxLimit: -1}, nil
 	}
 
 	// Free

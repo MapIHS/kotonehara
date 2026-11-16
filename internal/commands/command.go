@@ -56,6 +56,15 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 		return
 	}
 
+	// A command typed with the wrong prefix style is not an invocation, so it
+	// must not start a cooldown or trigger the spam sticker.
+	if cmd.IsPrefix && msgPrefix == "" {
+		return
+	}
+	if !cmd.IsPrefix && msgPrefix != "" {
+		return
+	}
+
 	cooldownKeys := make([]string, 0, 4)
 	for _, alias := range m.Identity.AliasStrings() {
 		cooldownKeys = append(cooldownKeys, alias+"|"+cmd.Name)
@@ -70,30 +79,6 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 			}
 		}
 		return
-	}
-
-	if cmd.IsPrefix && msgPrefix == "" {
-		return
-	}
-	if !cmd.IsPrefix && msgPrefix != "" {
-		return
-	}
-
-	// Quota check: skip for exempt commands, owners, and messages sent by the bot account.
-	if !cmd.SkipQuota && !cmd.IsOwner && !m.IsBot && quotaCheck != nil {
-		// Resolve LID → phone number for consistent DB lookups.
-		allowed, blockMsg, err := quotaCheck(ctx, m.Identity.StateJID(), m.Identity.AliasStrings())
-		if err != nil {
-			log.Printf("quota check error: %v", err)
-			// fail open: allow command if quota system errors
-		} else if !allowed {
-			_, _ = m.Reply(ctx, blockMsg)
-			return
-		}
-	}
-
-	if cmd.After != nil {
-		cmd.After(ctx, c, m)
 	}
 
 	if cmd.IsOwner && !m.IsOwner {
@@ -136,6 +121,29 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 		_, _ = m.Reply(ctx, "Tolong jadikan bot sebagai admin dulu, yaa.")
 		return
 	}
+
+	// Quota is charged only after every precondition passes, so a rejected
+	// invocation (missing media/query, wrong chat, not admin) costs nothing.
+	// Exempt: SkipQuota commands, owner commands, and the bot account itself.
+	if !cmd.SkipQuota && !cmd.IsOwner && !m.IsBot && quotaCheck != nil {
+		allowed, blockMsg, err := quotaCheck(ctx, m.Identity.StateJID(), m.Identity.AliasStrings())
+		if err != nil {
+			// The checker already applied its fail-open/fail-closed policy;
+			// an error here means the command must not run.
+			log.Printf("quota check error: %v", err)
+			_, _ = m.Reply(ctx, "Sistem kuota sedang bermasalah. Coba lagi nanti, yaa.")
+			return
+		}
+		if !allowed {
+			_, _ = m.Reply(ctx, blockMsg)
+			return
+		}
+	}
+
+	if cmd.After != nil {
+		cmd.After(ctx, c, m)
+	}
+
 	if cmd.ShowWait {
 		_, _ = m.Reply(ctx, "Tunggu sebentar, yaa.")
 	}

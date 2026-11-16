@@ -43,6 +43,8 @@ Variabel penting:
 | `OWNER` | Daftar owner JID, pisahkan dengan koma jika lebih dari satu. | kosong |
 | `PREFIX` | Prefix command, contoh `.`. | `.` |
 | `COOLDOWN` | Cooldown command, contoh `3s` atau `3`. Set `0` untuk nonaktif. | `3s` |
+| `FREE_DAILY_LIMIT` | Jumlah command gratis per user per hari. `0` = unlimited. | `10` |
+| `QUOTA_FAIL_OPEN` | Jika `true`, command tetap jalan saat database kuota error; jika `false`, command diblokir. | `true` |
 | `ADMIN_TTL` | TTL cache admin grup. | `45s` |
 | `DISABLE_CONTACT_IMPORT` | Nonaktifkan import kontak WhatsApp. | `true` |
 | `BASEAPI_URL` | Base URL Hararest untuk downloader dan generator quote. | kosong |

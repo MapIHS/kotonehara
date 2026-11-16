@@ -109,9 +109,9 @@ func main() {
 	if err := store.MigrateAFKIdentities(migrationCtx); err != nil {
 		log.Fatal("AFK identity migration: ", err)
 	}
-	quota.Init(db, cfg.FreeDailyLimit, cfg.Owners)
+	quota.Init(db, cfg.FreeDailyLimit, cfg.Owners, cfg.QuotaFailOpen)
 	commands.SetQuotaCheck(quota.Global().CheckIdentity)
-	log.Printf("quota: free daily limit = %d", cfg.FreeDailyLimit)
+	log.Printf("quota: free daily limit = %d (0 = unlimited), fail-open = %t", cfg.FreeDailyLimit, cfg.QuotaFailOpen)
 
 	var game *rpg.Service
 	rpgConfig := rpg.HTTPConfig{PublicURL: cfg.RPGPublicURL, GatewaySecret: cfg.RPGGatewaySecret, ListenAddr: cfg.RPGListenAddr}

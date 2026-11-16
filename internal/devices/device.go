@@ -20,6 +20,15 @@ import (
 	waLog "go.mau.fi/whatsmeow/util/log"
 )
 
+const (
+	// maxConcurrentEvents bounds handlers running at once (downloads, ffmpeg, ...).
+	maxConcurrentEvents = 20
+	// maxQueuedEvents bounds handlers accepted but not finished, so a burst
+	// waits for a free slot instead of being silently dropped, while a flood
+	// still cannot grow memory without limit.
+	maxQueuedEvents = 500
+)
+
 func New(c *sqlstore.Container, cfg config.Config, ctx context.Context) *Devices {
 	if ctx == nil {
 		ctx = context.Background()
@@ -32,7 +41,9 @@ func New(c *sqlstore.Container, cfg config.Config, ctx context.Context) *Devices
 		timeout:   10 * time.Second,
 		ctx:       ctx,
 		cfg:       cfg,
-		eventSem:  make(chan struct{}, 20),
+		eventSem:  make(chan struct{}, maxConcurrentEvents),
+		maxQueued: maxQueuedEvents,
+		stopCh:    make(chan struct{}),
 		drained:   make(chan struct{}),
 	}
 	go func() {
@@ -64,6 +75,7 @@ func (d *Devices) beginShutdown() {
 	d.stopOnce.Do(func() {
 		d.lifecycleMu.Lock()
 		d.stopping = true
+		close(d.stopCh)
 		d.lifecycleMu.Unlock()
 		go func() {
 			d.active.Wait()
@@ -72,6 +84,10 @@ func (d *Devices) beginShutdown() {
 	})
 }
 
+// tryStartCommand accepts run for asynchronous execution. It never blocks the
+// whatsmeow event loop: accepted work waits in its own goroutine for one of the
+// maxConcurrentEvents slots. It returns false (and logs) only when shutting
+// down or when maxQueued handlers are already pending.
 func (d *Devices) tryStartCommand(run func()) bool {
 	if run == nil {
 		return false
@@ -82,20 +98,39 @@ func (d *Devices) tryStartCommand(run func()) bool {
 		d.lifecycleMu.Unlock()
 		return false
 	}
-	select {
-	case d.eventSem <- struct{}{}:
-		d.active.Add(1)
-	default:
+	if d.queued >= d.maxQueued {
 		d.lifecycleMu.Unlock()
+		d.log.Warnf("event queue full (%d pending), dropping message event", d.maxQueued)
 		return false
 	}
+	d.queued++
+	d.active.Add(1)
 	d.lifecycleMu.Unlock()
 
 	go func() {
 		defer func() {
-			<-d.eventSem
+			d.lifecycleMu.Lock()
+			d.queued--
+			d.lifecycleMu.Unlock()
 			d.active.Done()
 		}()
+
+		select {
+		case d.eventSem <- struct{}{}:
+		case <-d.stopCh:
+			return
+		case <-d.ctx.Done():
+			return
+		}
+		defer func() { <-d.eventSem }()
+
+		// A slot may free up at the same moment shutdown begins; queued work
+		// that has not started yet is dropped rather than run during drain.
+		select {
+		case <-d.stopCh:
+			return
+		default:
+		}
 		run()
 	}()
 	return true
