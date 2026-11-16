@@ -35,6 +35,9 @@ func handlePlayWS(ctx context.Context, m *message.Message,
 ) {
 	query := strings.TrimSpace(m.Query)
 	if query == "" {
+		query = message.FirstURL(m.QuotedText())
+	}
+	if query == "" {
 		_, _ = m.Reply(ctx, "Tulis judul lagu atau link YouTube setelah playws.\nContoh: playws Coldplay Yellow")
 		return
 	}

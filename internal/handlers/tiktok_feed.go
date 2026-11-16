@@ -19,7 +19,7 @@ func init() {
 		aliases := map[string][]string{"search": {"ttsearch"}, "trending": {"tttrending"}, "user": {"ttuser"}}
 		descriptions := map[string]string{"search": "Cari TikTok: <kata kunci> [| cursor]", "trending": "TikTok trending: [kode negara, contoh ID]", "user": "Posting TikTok: <username> [| cursor]"}
 		commands.Register(&commands.Command{
-			Name: "tiktok" + kind, As: aliases[kind], Tags: "downloader", Description: descriptions[kind], IsPrefix: true, IsQuery: kind != "trending",
+			Name: "tiktok" + kind, As: aliases[kind], Tags: "search", Description: descriptions[kind], IsPrefix: true, IsQuery: kind != "trending",
 			Exec: func(ctx context.Context, _ *clients.Client, m *message.Message, cfg config.Config) {
 				if strings.TrimSpace(cfg.BASEApiURL) == "" {
 					m.Reply(ctx, "Fitur ini belum dikonfigurasi (BASEAPI_URL kosong).")

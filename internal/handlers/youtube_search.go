@@ -15,7 +15,7 @@ import (
 
 func init() {
 	commands.Register(&commands.Command{
-		Name: "youtubesearch", As: []string{"ytsearch", "yts"}, Tags: "downloader", Description: "Cari video YouTube: <kata kunci>", IsPrefix: true, IsQuery: true,
+		Name: "youtubesearch", As: []string{"ytsearch", "yts"}, Tags: "search", Description: "Cari video YouTube: <kata kunci>", IsPrefix: true, IsQuery: true,
 		Exec: func(ctx context.Context, _ *clients.Client, m *message.Message, cfg config.Config) {
 			if strings.TrimSpace(cfg.BASEApiURL) == "" {
 				m.Reply(ctx, "Fitur ini belum dikonfigurasi (BASEAPI_URL kosong).")

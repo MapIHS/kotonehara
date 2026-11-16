@@ -12,7 +12,9 @@ import (
 	"github.com/MapIHS/kotonehara/internal/infra/config"
 	"github.com/MapIHS/kotonehara/internal/message"
 	"go.mau.fi/whatsmeow"
+	waE2E "go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types"
+	"google.golang.org/protobuf/proto"
 )
 
 func isolateCommands(t *testing.T) {
@@ -263,5 +265,43 @@ func TestMenuDescriptionsOnlyWithFlag(t *testing.T) {
 	}
 	if group := BuildMenuText(".", true, false, true); strings.Contains(group, "waifu") {
 		t.Fatal("private NSFW command shown in group with NSFW disabled")
+	}
+}
+
+func TestDownloaderTakesLinkFromQuotedMessage(t *testing.T) {
+	isolateCommands(t)
+	var got []string
+	record := func(_ context.Context, _ *clients.Client, m *message.Message, _ config.Config) {
+		got = append(got, m.Query)
+	}
+	Register(&Command{Name: "ig", Tags: "downloader", IsPrefix: true, IsQuery: true, Exec: record})
+	Register(&Command{Name: "ai", Tags: "search", IsPrefix: true, IsQuery: true, Exec: record})
+	cfg := config.Config{Prefix: "."}
+	reply := ""
+	replyFn := func(_ context.Context, text string, _ ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error) {
+		reply = text
+		return whatsmeow.SendResponse{}, nil
+	}
+	quoted := &waE2E.Message{Conversation: proto.String("cek ini https://www.instagram.com/reel/abc123/?x=1. keren")}
+
+	CommandExec(context.Background(), nil, &message.Message{Body: ".ig", QuotedMsg: quoted, Reply: replyFn}, cfg)
+	if len(got) != 1 || got[0] != "https://www.instagram.com/reel/abc123/?x=1" {
+		t.Fatalf("quoted link not used: %v", got)
+	}
+	// An explicit argument wins over the quoted message.
+	CommandExec(context.Background(), nil, &message.Message{Body: ".ig https://a.example/x", Query: "https://a.example/x", QuotedMsg: quoted, Reply: replyFn}, cfg)
+	if len(got) != 2 || got[1] != "https://a.example/x" {
+		t.Fatalf("explicit link overridden: %v", got)
+	}
+	// Quoted text without a link still fails query validation.
+	noLink := &waE2E.Message{Conversation: proto.String("halo")}
+	CommandExec(context.Background(), nil, &message.Message{Body: ".ig", QuotedMsg: noLink, Reply: replyFn}, cfg)
+	if len(got) != 2 || !strings.Contains(reply, "Kueri") {
+		t.Fatalf("ran without a link: %v %q", got, reply)
+	}
+	// Search and other non-downloader commands are unaffected.
+	CommandExec(context.Background(), nil, &message.Message{Body: ".ai", QuotedMsg: quoted, Reply: replyFn}, cfg)
+	if len(got) != 2 {
+		t.Fatal("non-downloader picked up quoted link")
 	}
 }

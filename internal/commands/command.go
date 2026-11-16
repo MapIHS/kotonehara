@@ -103,6 +103,9 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 		return
 	}
 	if cmd.IsQuery && m.Query == "" {
+		m.Query = quotedQuery(cmd, m)
+	}
+	if cmd.IsQuery && m.Query == "" {
 		_, _ = m.Reply(ctx, "Kueri-nya dibutuhkan, yaa.")
 		return
 	}
@@ -237,4 +240,13 @@ func fillAdminStatus(ctx context.Context, c *clients.Client, m *message.Message)
 			return
 		}
 	}
+}
+
+// quotedQuery lets downloaders take the link from the replied-to message, so
+// replying ".ig" to a chat containing a link works like ".ig <link>".
+func quotedQuery(cmd *Command, m *message.Message) string {
+	if !strings.EqualFold(strings.TrimSpace(cmd.Tags), "downloader") {
+		return ""
+	}
+	return message.FirstURL(m.QuotedText())
 }
