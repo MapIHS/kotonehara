@@ -69,11 +69,12 @@ func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:     "smeme",
-		As:       []string{"stickermeme"},
-		Tags:     "convert",
-		IsPrefix: true,
-		IsMedia:  true,
-		Exec:     smeme,
+		Name:        "smeme",
+		Description: "Buat stiker meme dari gambar. Format: .smeme teks atas|teks bawah",
+		As:          []string{"stickermeme"},
+		Tags:        "convert",
+		IsPrefix:    true,
+		IsMedia:     true,
+		Exec:        smeme,
 	})
 }

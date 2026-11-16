@@ -26,11 +26,12 @@ func firstURLFromText(text string) string {
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:     "xiahongsu",
-		As:       []string{"rednote", "xhs"},
-		Tags:     "downloader",
-		IsQuery:  true,
-		IsPrefix: true,
+		Name:        "xiahongsu",
+		Description: "Download video/gambar dari link Xiaohongshu (RedNote)",
+		As:          []string{"rednote", "xhs"},
+		Tags:        "downloader",
+		IsQuery:     true,
+		IsPrefix:    true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			targetURL := firstURLFromText(m.Query)
 			if targetURL == "" {

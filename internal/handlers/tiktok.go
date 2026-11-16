@@ -15,11 +15,12 @@ import (
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:     "tiktok",
-		As:       []string{"tt"},
-		Tags:     "downloader",
-		IsQuery:  true,
-		IsPrefix: true,
+		Name:        "tiktok",
+		Description: "Download video atau slide foto dari link TikTok",
+		As:          []string{"tt"},
+		Tags:        "downloader",
+		IsQuery:     true,
+		IsPrefix:    true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			args := strings.Fields(m.Query)
 			if len(args) == 0 || !message.IsValidURL(args[0]) {

@@ -18,7 +18,8 @@ import (
 
 func init() {
 	commands.Register(&commands.Command{
-		Name: "playws", As: []string{"playhtml"}, Tags: "downloader", IsPrefix: true,
+		Name:        "playws",
+		Description: "Cari lagu lalu kirim kartu player web untuk diputar", As: []string{"playhtml"}, Tags: "downloader", IsPrefix: true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 			defer cancel()

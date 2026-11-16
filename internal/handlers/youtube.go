@@ -128,21 +128,23 @@ func yta(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:     "youtubevideo",
-		As:       []string{"ytv"},
-		Tags:     "downloader",
-		IsQuery:  true,
-		IsPrefix: true,
-		Exec:     ytv,
+		Name:        "youtubevideo",
+		Description: "Download video dari link YouTube",
+		As:          []string{"ytv"},
+		Tags:        "downloader",
+		IsQuery:     true,
+		IsPrefix:    true,
+		Exec:        ytv,
 	})
 
 	commands.Register(&commands.Command{
-		Name:     "youtubeaudio",
-		As:       []string{"yta"},
-		Tags:     "downloader",
-		IsQuery:  true,
-		IsPrefix: true,
-		Exec:     yta,
+		Name:        "youtubeaudio",
+		Description: "Download audio dari link YouTube",
+		As:          []string{"yta"},
+		Tags:        "downloader",
+		IsQuery:     true,
+		IsPrefix:    true,
+		Exec:        yta,
 	})
 }
 

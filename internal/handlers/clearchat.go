@@ -23,11 +23,12 @@ func parseDeleteMediaOption(q string) (bool, bool) {
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:      "clearchat",
-		Tags:      "owner",
-		IsPrefix:  true,
-		SkipQuota: true,
-		IsOwner:   true,
+		Name:        "clearchat",
+		Description: "Bersihkan chat ini. Tambahkan 'media' untuk ikut menghapus media",
+		Tags:        "owner",
+		IsPrefix:    true,
+		SkipQuota:   true,
+		IsOwner:     true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			if m.IsBot {
 				return

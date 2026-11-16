@@ -119,11 +119,12 @@ func sendThreadsItem(ctx context.Context, client *clients.Client, m *message.Mes
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:     "threads",
-		As:       []string{"thread", "threadsdl", "thdl"},
-		Tags:     "downloader",
-		IsQuery:  true,
-		IsPrefix: true,
-		Exec:     threads,
+		Name:        "threads",
+		Description: "Download video/gambar dari link Threads",
+		As:          []string{"thread", "threadsdl", "thdl"},
+		Tags:        "downloader",
+		IsQuery:     true,
+		IsPrefix:    true,
+		Exec:        threads,
 	})
 }

@@ -118,11 +118,12 @@ func stickerMessage(msg *waE2E.Message) *waE2E.StickerMessage {
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:     "sticker",
-		As:       []string{"s", "stiker"},
-		Tags:     "convert",
-		IsPrefix: true,
-		IsMedia:  true,
-		Exec:     stc,
+		Name:        "sticker",
+		Description: "Ubah gambar, video, atau GIF menjadi stiker",
+		As:          []string{"s", "stiker"},
+		Tags:        "convert",
+		IsPrefix:    true,
+		IsMedia:     true,
+		Exec:        stc,
 	})
 }

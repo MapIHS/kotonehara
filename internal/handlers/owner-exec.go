@@ -303,12 +303,13 @@ func pruneOwnerExecSessions() {
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:     "$",
-		As:       []string{"$"},
-		Tags:     "owner",
-		IsPrefix: false,
-		IsOwner:  true,
-		IsQuery:  true,
-		Exec:     ownerExec,
+		Name:        "$",
+		Description: "Jalankan perintah shell di server bot",
+		As:          []string{"$"},
+		Tags:        "owner",
+		IsPrefix:    false,
+		IsOwner:     true,
+		IsQuery:     true,
+		Exec:        ownerExec,
 	})
 }

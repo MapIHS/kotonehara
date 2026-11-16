@@ -17,11 +17,12 @@ import (
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:      "getpp",
-		Tags:      "main",
-		As:        []string{"getprofilepicture"},
-		IsPrefix:  true,
-		SkipQuota: true,
+		Name:        "getpp",
+		Description: "Ambil foto profil WhatsApp dari pesan yang dibalas, tag, atau nomor",
+		Tags:        "main",
+		As:          []string{"getprofilepicture"},
+		IsPrefix:    true,
+		SkipQuota:   true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			var targetJID types.JID
 			var parseErr error

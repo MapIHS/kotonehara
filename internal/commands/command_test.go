@@ -206,3 +206,62 @@ func TestWrongPrefixDoesNotStartCooldown(t *testing.T) {
 		t.Fatal("unprefixed text started a cooldown and blocked the real command")
 	}
 }
+
+func TestHelpFlagShowsDescriptionWithoutRunning(t *testing.T) {
+	isolateCommands(t)
+	checks, ran := 0, 0
+	SetQuotaCheck(func(context.Context, string, []string) (bool, string, error) {
+		checks++
+		return true, "", nil
+	})
+	Register(&Command{Name: "sticker", As: []string{"s"}, Tags: "convert", Description: "Ubah gambar jadi stiker", IsPrefix: true, IsMedia: true, Exec: func(context.Context, *clients.Client, *message.Message, config.Config) { ran++ }})
+	Register(&Command{Name: "menu", IsPrefix: true, OwnHelpFlag: true, Exec: func(_ context.Context, _ *clients.Client, m *message.Message, _ config.Config) {
+		if IsHelpFlag(m.Query) {
+			ran += 10
+		}
+	}})
+	cfg := config.Config{Prefix: "."}
+	reply := ""
+	m := &message.Message{Body: ".s --D", Query: "--D", Reply: func(_ context.Context, text string, _ ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error) {
+		reply = text
+		return whatsmeow.SendResponse{}, nil
+	}}
+	CommandExec(context.Background(), nil, m, cfg)
+	if ran != 0 || checks != 0 {
+		t.Fatalf("--d ran the command or charged quota: ran=%d checks=%d", ran, checks)
+	}
+	for _, want := range []string{"*.sticker*", "Ubah gambar jadi stiker", "Alias: .s", "butuh media"} {
+		if !strings.Contains(reply, want) {
+			t.Errorf("help %q missing %q", reply, want)
+		}
+	}
+	// A command that owns the flag receives it instead of the generic reply.
+	m.Body, m.Query = ".menu --d", "--d"
+	CommandExec(context.Background(), nil, m, cfg)
+	if ran != 10 {
+		t.Fatal("OwnHelpFlag command did not receive --d")
+	}
+	// --d inside a longer query is ordinary input.
+	Register(&Command{Name: "echo", IsPrefix: true, Exec: func(context.Context, *clients.Client, *message.Message, config.Config) { ran++ }})
+	m.Body, m.Query = ".echo pakai --d", "pakai --d"
+	CommandExec(context.Background(), nil, m, cfg)
+	if ran != 11 {
+		t.Fatal("--d inside a query was intercepted")
+	}
+}
+
+func TestMenuDescriptionsOnlyWithFlag(t *testing.T) {
+	isolateCommands(t)
+	Register(&Command{Name: "sticker", As: []string{"s"}, Tags: "convert", Description: "Ubah gambar jadi stiker", IsPrefix: true})
+	Register(&Command{Name: "waifu", Tags: "nsfw", Description: "rahasia", IsPrefix: true, IsPrivate: true})
+	plain := BuildMenuText(".", false, false, false)
+	if strings.Contains(plain, "Ubah gambar") || !strings.Contains(plain, ".sticker (alias: .s)") {
+		t.Fatalf("plain menu: %q", plain)
+	}
+	if detailed := BuildMenuText(".", false, false, true); !strings.Contains(detailed, "Ubah gambar jadi stiker") {
+		t.Fatalf("detailed menu lacks description: %q", detailed)
+	}
+	if group := BuildMenuText(".", true, false, true); strings.Contains(group, "waifu") {
+		t.Fatal("private NSFW command shown in group with NSFW disabled")
+	}
+}

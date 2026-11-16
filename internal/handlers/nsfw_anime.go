@@ -14,50 +14,56 @@ import (
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:      "waifu",
-		Tags:      "nsfw",
-		IsPrefix:  true,
-		IsPrivate: true,
-		Exec:      nsfwAnime("waifu"),
+		Name:        "waifu",
+		Description: "Gambar acak waifu (NSFW)",
+		Tags:        "nsfw",
+		IsPrefix:    true,
+		IsPrivate:   true,
+		Exec:        nsfwAnime("waifu"),
 	})
 	commands.Register(&commands.Command{
-		Name:      "neko",
-		As:        []string{"nekonsfw"},
-		Tags:      "nsfw",
-		IsPrefix:  true,
-		IsPrivate: true,
-		Disable:   true,
-		Exec:      nsfwAnime("neko"),
+		Name:        "neko",
+		Description: "Gambar acak neko (NSFW)",
+		As:          []string{"nekonsfw"},
+		Tags:        "nsfw",
+		IsPrefix:    true,
+		IsPrivate:   true,
+		Disable:     true,
+		Exec:        nsfwAnime("neko"),
 	})
 
 	commands.Register(&commands.Command{
-		Name:      "hentai",
-		Tags:      "nsfw",
-		IsPrefix:  true,
-		IsPrivate: true,
-		Exec:      nsfwAnime("hentai"),
+		Name:        "hentai",
+		Description: "Gambar acak hentai (NSFW)",
+		Tags:        "nsfw",
+		IsPrefix:    true,
+		IsPrivate:   true,
+		Exec:        nsfwAnime("hentai"),
 	})
 	commands.Register(&commands.Command{
-		Name:      "oppai",
-		Tags:      "nsfw",
-		IsPrefix:  true,
-		IsPrivate: true,
-		Exec:      nsfwAnime("oppai"),
+		Name:        "oppai",
+		Description: "Gambar acak oppai (NSFW)",
+		Tags:        "nsfw",
+		IsPrefix:    true,
+		IsPrivate:   true,
+		Exec:        nsfwAnime("oppai"),
 	})
 	commands.Register(&commands.Command{
-		Name:      "ero",
-		As:        []string{"ecchi"},
-		Tags:      "nsfw",
-		IsPrefix:  true,
-		IsPrivate: true,
-		Exec:      nsfwAnime("ero"),
+		Name:        "ero",
+		Description: "Gambar acak ero/ecchi (NSFW)",
+		As:          []string{"ecchi"},
+		Tags:        "nsfw",
+		IsPrefix:    true,
+		IsPrivate:   true,
+		Exec:        nsfwAnime("ero"),
 	})
 	commands.Register(&commands.Command{
-		Name:      "maid",
-		Tags:      "nsfw",
-		IsPrefix:  true,
-		IsPrivate: true,
-		Exec:      nsfwAnime("maid"),
+		Name:        "maid",
+		Description: "Gambar acak maid (NSFW)",
+		Tags:        "nsfw",
+		IsPrefix:    true,
+		IsPrivate:   true,
+		Exec:        nsfwAnime("maid"),
 	})
 }
 

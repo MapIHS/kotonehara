@@ -14,11 +14,12 @@ import (
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:     "facebook",
-		As:       []string{"fbdl", "fb"},
-		Tags:     "downloader",
-		IsQuery:  true,
-		IsPrefix: true,
+		Name:        "facebook",
+		Description: "Download video dari link Facebook",
+		As:          []string{"fbdl", "fb"},
+		Tags:        "downloader",
+		IsQuery:     true,
+		IsPrefix:    true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			args := strings.Fields(m.Query)
 			if len(args) == 0 || !message.IsValidURL(args[0]) {

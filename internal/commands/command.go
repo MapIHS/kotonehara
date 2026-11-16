@@ -81,6 +81,17 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 		return
 	}
 
+	// "<command> --d" shows the description instead of running the command.
+	// It costs no quota and skips media/query validation, but still respects
+	// chat visibility so hidden NSFW commands are not advertised.
+	if IsHelpFlag(m.Query) && !cmd.OwnHelpFlag {
+		nsfwEnabled := m.IsGroup && cmd.IsPrivate && store.IsNSFWEnabled(m.From.ToNonAD().String())
+		if visibleIn(cmd, m.IsGroup, nsfwEnabled) {
+			_, _ = m.Reply(ctx, BuildCommandHelp(cmd, cfgPrefix))
+			return
+		}
+	}
+
 	if cmd.IsOwner && !m.IsOwner {
 		if data, err := loadOwnerSticker(); err == nil && len(data) > 0 {
 			_, _ = c.SendSticker(ctx, m.From, data, false, false, m.ID)

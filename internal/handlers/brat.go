@@ -35,10 +35,11 @@ func brat(ctx context.Context, client *clients.Client, m *message.Message, cfg c
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:     "brat",
-		Tags:     "convert",
-		IsPrefix: true,
-		IsQuery:  true,
-		Exec:     brat,
+		Name:        "brat",
+		Description: "Buat stiker teks gaya brat. Contoh: .brat halo dunia",
+		Tags:        "convert",
+		IsPrefix:    true,
+		IsQuery:     true,
+		Exec:        brat,
 	})
 }

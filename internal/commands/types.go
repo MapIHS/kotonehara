@@ -24,6 +24,9 @@ type Command struct {
 	ShowWait    bool
 	IsPrivate   bool
 	SkipQuota   bool
+	// OwnHelpFlag lets the command handle "--d" itself instead of the
+	// generic description reply (used by menu to show all descriptions).
+	OwnHelpFlag bool
 	After       func(ctx context.Context, client *clients.Client, m *message.Message)
 	Exec        func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config)
 }

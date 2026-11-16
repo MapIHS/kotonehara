@@ -13,17 +13,24 @@ import (
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:      "menu",
-		Tags:      "main",
-		IsPrefix:  true,
-		SkipQuota: true,
+		Name:        "menu",
+		Description: "Tampilkan daftar command. Pakai .menu --d untuk melihat semua deskripsi",
+		Tags:        "main",
+		IsPrefix:    true,
+		SkipQuota:   true,
+		OwnHelpFlag: true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
-			text := fmt.Sprintf("Hello %s, Berikut List Command Yang Tersedia\n\n", m.PushName)
+			withDescription := commands.IsHelpFlag(m.Query)
+			text := fmt.Sprintf("Hello %s, Berikut List Command Yang Tersedia\n", m.PushName)
+			if !withDescription {
+				text += fmt.Sprintf("_Ketik %smenu %s untuk melihat deskripsi, atau <command> %s untuk satu command (contoh: %ss %s)_\n", cfg.Prefix, commands.HelpFlag, commands.HelpFlag, cfg.Prefix, commands.HelpFlag)
+			}
+			text += "\n"
 			nsfwEnabled := false
 			if m.IsGroup {
 				nsfwEnabled = store.IsNSFWEnabled(m.From.ToNonAD().String())
 			}
-			text += commands.BuildMenuText(cfg.Prefix, m.IsGroup, nsfwEnabled)
+			text += commands.BuildMenuText(cfg.Prefix, m.IsGroup, nsfwEnabled, withDescription)
 			_, _ = m.Reply(ctx, text)
 		},
 	})

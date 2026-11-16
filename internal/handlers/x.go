@@ -152,11 +152,12 @@ func SelectMediaToSend(mediaLinks []api.TwitterMediaLink) []api.TwitterMediaLink
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:     "x",
-		As:       []string{"x", "twitter"},
-		Tags:     "downloader",
-		IsQuery:  true,
-		IsPrefix: true,
+		Name:        "x",
+		Description: "Download video/gambar dari link X (Twitter)",
+		As:          []string{"x", "twitter"},
+		Tags:        "downloader",
+		IsQuery:     true,
+		IsPrefix:    true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			args := strings.Fields(m.Query)
 			if len(args) == 0 || !message.IsValidURL(args[0]) {

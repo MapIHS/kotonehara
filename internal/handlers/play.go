@@ -82,11 +82,12 @@ func play(ctx context.Context, client *clients.Client, m *message.Message, cfg c
 
 func init() {
 	commands.Register(&commands.Command{
-		Name:     "play",
-		As:       []string{"play", "lagu"},
-		Tags:     "downloader",
-		IsQuery:  true,
-		IsPrefix: true,
-		Exec:     play,
+		Name:        "play",
+		Description: "Cari lagu di YouTube lalu kirim audionya. Contoh: .play Coldplay Yellow",
+		As:          []string{"play", "lagu"},
+		Tags:        "downloader",
+		IsQuery:     true,
+		IsPrefix:    true,
+		Exec:        play,
 	})
 }

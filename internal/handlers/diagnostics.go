@@ -20,21 +20,23 @@ var startTime time.Time
 func init() {
 	startTime = time.Now()
 	commands.Register(&commands.Command{
-		Name:      "ceksystem",
-		As:        []string{"system", "sys"},
-		Tags:      "diagnostics",
-		IsPrefix:  true,
-		SkipQuota: true,
-		Exec:      cekSystem,
+		Name:        "ceksystem",
+		Description: "Tampilkan informasi sistem server bot",
+		As:          []string{"system", "sys"},
+		Tags:        "diagnostics",
+		IsPrefix:    true,
+		SkipQuota:   true,
+		Exec:        cekSystem,
 	})
 
 	commands.Register(&commands.Command{
-		Name:      "cekapi",
-		As:        []string{"api", "apistatus"},
-		Tags:      "diagnostics",
-		IsPrefix:  true,
-		SkipQuota: true,
-		Exec:      cekAPI,
+		Name:        "cekapi",
+		Description: "Cek status API yang dipakai bot",
+		As:          []string{"api", "apistatus"},
+		Tags:        "diagnostics",
+		IsPrefix:    true,
+		SkipQuota:   true,
+		Exec:        cekAPI,
 	})
 }
 
