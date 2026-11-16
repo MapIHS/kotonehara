@@ -2,9 +2,12 @@
 set -e
 
 if [ -n "${TAILSCALE_AUTHKEY:-}" ]; then
+  mkdir -p /tmp/tailscale
+  chmod 700 /tmp/tailscale
   /app/tailscaled \
     --tun=userspace-networking \
     --state=/tmp/tailscale.state \
+    --statedir=/tmp/tailscale \
     --socket=/tmp/tailscaled.sock \
     --socks5-server=localhost:1055 &
 
