@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 
@@ -28,14 +29,6 @@ type cardVariant struct {
 	HTML    func(fragment, title string, ws *url.URL) string
 }
 
-func httpsOrigin(ws *url.URL) string {
-	scheme := "https"
-	if ws.Scheme == "ws" {
-		scheme = "http"
-	}
-	return scheme + "://" + ws.Host
-}
-
 // fullHTMLDocument wraps the card fragment in a complete document. csp, when
 // set, is added as a meta Content-Security-Policy.
 func fullHTMLDocument(fragment, title, csp string) string {
@@ -55,23 +48,53 @@ func fullHTMLDocument(fragment, title, csp string) string {
 	return b.String()
 }
 
+var (
+	playerURLField = regexp.MustCompile(`,?"playerUrl":"[^"]*"`)
+	httpWord       = regexp.MustCompile(`(?i)https?`)
+)
+
+// withoutHTTPS removes every "http"/"https" occurrence from the card: the
+// https player link in the embedded track data, the diagnostic HTTPS probe,
+// and JavaScript comments. The WebSocket itself is wss:// and unchanged. It
+// returns false when the card no longer has the expected shape.
+func withoutHTTPS(card string) (string, bool) {
+	card = playerURLField.ReplaceAllString(card, "")
+	start := strings.Index(card, "function probe(){")
+	end := strings.Index(card, "\n  function failWithProbe")
+	if start >= 0 && end > start {
+		card = card[:start] + "function probe(){return Promise.resolve('nonaktif');}" + card[end:]
+	}
+	card = strings.ReplaceAll(card, "info.https", "info.cek")
+	lines := strings.Split(card, "\n")
+	kept := lines[:0]
+	for _, line := range lines {
+		if !strings.HasPrefix(strings.TrimSpace(line), "//") {
+			kept = append(kept, line)
+		}
+	}
+	card = strings.Join(kept, "\n")
+	return card, !httpWord.MatchString(card)
+}
+
 func cardVariants() []cardVariant {
 	host := func(ws *url.URL) []string { return []string{ws.Hostname()} }
-	all := func(ws *url.URL) []string {
-		return []string{httpsOrigin(ws), ws.Scheme + "://" + ws.Host, ws.Hostname()}
-	}
 	fragment := func(f, _ string, _ *url.URL) string { return f }
-	document := func(f, title string, _ *url.URL) string { return fullHTMLDocument(f, title, "") }
-	documentCSP := func(f, title string, ws *url.URL) string {
-		csp := "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; media-src blob:; connect-src " +
-			ws.Scheme + "://" + ws.Host + " " + httpsOrigin(ws)
-		return fullHTMLDocument(f, title, csp)
+	noHTTPS := func(f, _ string, _ *url.URL) string {
+		if clean, ok := withoutHTTPS(f); ok {
+			return clean
+		}
+		return ""
+	}
+	noHTTPSDocument := func(f, title string, ws *url.URL) string {
+		if clean := noHTTPS(f, title, ws); clean != "" {
+			return fullHTMLDocument(clean, title, "")
+		}
+		return ""
 	}
 	return []cardVariant{
-		{"1 potongan HTML (sekarang)", host, fragment},
-		{"2 dokumen lengkap", host, document},
-		{"3 dokumen lengkap + meta CSP", host, documentCSP},
-		{"4 dokumen lengkap + semua sumber", all, document},
+		{"1 seperti sekarang", host, fragment},
+		{"2 tanpa https (potongan HTML)", host, noHTTPS},
+		{"3 tanpa https (dokumen lengkap)", host, noHTTPSDocument},
 	}
 }
 
@@ -110,6 +133,10 @@ func handlePlayWSSourceTest(ctx context.Context, m *message.Message,
 	for _, variant := range cardVariants() {
 		sources := variant.Sources(ws)
 		payload := variant.HTML(session.HTML, session.Title, ws)
+		if payload == "" {
+			_, _ = m.Reply(ctx, "Varian "+variant.Label+" dilewati: bentuk kartu dari Hararest tidak dikenali.")
+			continue
+		}
 		label := fmt.Sprintf("Varian %s\ntrusted_sources = %q\nTekan Putar pada kartu di bawah, lalu catat kode yang muncul.", variant.Label, sources)
 		_, _ = m.Reply(ctx, label)
 		out, err := clients.BuildRichHTML(payload, sources...)

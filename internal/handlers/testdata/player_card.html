@@ -1,0 +1,111 @@
+<style>
+.kt-player{box-sizing:border-box;max-width:480px;margin:12px auto;padding:20px;border:1px solid #255951;border-radius:20px;background:linear-gradient(145deg,#101d25,#10241e);color:#eefcf6;font:14px system-ui,sans-serif;box-shadow:0 12px 30px #0003}
+.kt-player *{box-sizing:border-box}.kt-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.kt-brand{color:#70dcaf;font-size:10px;letter-spacing:2px;font-weight:700}.kt-status{font-size:11px;color:#b4d0c3}.kt-title{font-size:20px;line-height:1.3;margin:20px 0 5px;overflow-wrap:anywhere}.kt-artist{color:#a4bcb0;margin:0 0 18px}.kt-progress{width:100%;accent-color:#65dfac}.kt-time{display:flex;justify-content:space-between;font-size:11px;color:#a4bcb0;font-variant-numeric:tabular-nums;margin:4px 0 16px}.kt-controls{display:flex;align-items:center;gap:14px}.kt-play{border:0;border-radius:30px;background:#6ce7b2;color:#07271b;font:700 14px system-ui;padding:12px 24px;cursor:pointer}.kt-play:disabled{opacity:.55;cursor:wait}.kt-detail{font-size:12px;color:#a4bcb0;flex:1}.kt-expiry{font-size:10px;color:#7c9d8d;margin-top:10px}.kt-code{display:none;margin-top:10px;padding:8px 10px;border-radius:10px;background:#0b1712;color:#f3c58a;font:11px/1.45 ui-monospace,monospace;overflow-wrap:anywhere;user-select:text}.kt-code.on{display:block}.kt-player audio{display:none}
+</style>
+<section class="kt-player" aria-label="Pemutar musik Kotonehara">
+<div class="kt-head"><span class="kt-brand">KOTONEHARA · MUSIC</span><span class="kt-status" data-role="status" role="status" aria-live="polite">Siap</span></div>
+<h2 class="kt-title">T</h2><p class="kt-artist">A</p>
+<input class="kt-progress" data-role="seek" type="range" min="0" max="100" step="0.1" value="0" disabled aria-label="Posisi lagu">
+<div class="kt-time"><span data-role="current">0:00</span><span data-role="duration">0:00</span></div>
+<div class="kt-controls"><button class="kt-play" data-role="toggle" type="button">Putar</button><span class="kt-detail" data-role="detail">Ketuk Putar untuk memuat lagu.</span></div>
+<div class="kt-code" data-role="code" aria-live="polite"></div><div class="kt-expiry" data-role="expiry"></div><audio preload="metadata" data-role="audio"></audio>
+<script type="application/json" data-role="track">{"id":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","title":"T","artist":"A","duration":10,"size":1000,"mimeType":"audio/mpeg","expiresAt":"2026-11-17T10:11:17.319Z","wsUrl":"wss://api.oohara.dev/ws/player/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","playerUrl":"https://api.oohara.dev/player/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}</script>
+<script>
+(function(){
+  var script=document.currentScript, root=script&&script.closest('.kt-player');
+  if(!root)return;
+  var find=function(name){return root.querySelector('[data-role="'+name+'"]');};
+  var track=JSON.parse(find('track').textContent), audio=find('audio'), button=find('toggle'), seek=find('seek');
+  var status=find('status'), detail=find('detail'), current=find('current'), duration=find('duration');
+  var ws=null, loading=false, blobUrl=null, timer=null, attempt=0, codeBox=find('code');
+  var maxBytes=24*1024*1024, maxChunks=Math.ceil(maxBytes/65536), expires=Date.parse(track.expiresAt);
+  function fmt(n){if(!Number.isFinite(n)||n<0)return '0:00';return Math.floor(n/60)+':'+String(Math.floor(n%60)).padStart(2,'0');}
+  duration.textContent=fmt(track.duration);
+  find('expiry').textContent='Sesi tersedia hingga '+new Date(expires).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  function stopTransfer(){clearTimeout(timer);timer=null;if(ws){ws.onmessage=ws.onclose=ws.onerror=null;ws.close();ws=null;}}
+  function host(){try{return new URL(track.wsUrl).host;}catch(e){return '?';}}
+  function resetAudio(){audio.pause();audio.removeAttribute('src');audio.load();seek.disabled=true;if(blobUrl){URL.revokeObjectURL(blobUrl);blobUrl=null;}}
+  function showCode(code,info){
+    var parts=['Kode: '+code];
+    for(var key in info){if(info[key]!==undefined&&info[key]!=='')parts.push(key+'='+info[key]);}
+    codeBox.textContent=parts.join(' · ');codeBox.className='kt-code on';
+  }
+  function fail(message,code,info){attempt++;loading=false;stopTransfer();button.disabled=false;button.textContent='Coba lagi';status.textContent='Gagal';detail.textContent=message;if(code)showCode(code,info||{});}
+  // Tells "the network cannot reach the server" apart from "only WebSockets are
+  // blocked": an opaque no-cors response still proves HTTPS reached the host.
+  function probe(){
+    var origin;try{var u=new URL(track.wsUrl);origin=(u.protocol==='wss:'?'https:':'http:')+'//'+u.host;}catch(e){return Promise.resolve('url-invalid');}
+    if(typeof fetch!=='function')return Promise.resolve('no-fetch');
+    var ctrl=typeof AbortController==='function'?new AbortController():null, t=setTimeout(function(){if(ctrl)ctrl.abort();},6000);
+    return fetch(origin+'/health',{mode:'no-cors',cache:'no-store',credentials:'omit',signal:ctrl?ctrl.signal:undefined})
+      .then(function(){return 'ok';},function(e){return 'gagal('+(e&&e.name||'Error')+')';})
+      .then(function(r){clearTimeout(t);return r;});
+  }
+  function failWithProbe(message,code,info){
+    var seq=attempt;
+    fail(message,code,info);
+    info.https='mengecek…';showCode(code,info);
+    probe().then(function(r){if(seq+1===attempt){info.https=r;showCode(code,info);}});
+  }
+  function failConnect(info){failWithProbe('Koneksi gagal. Pastikan alamat player dapat diakses, lalu coba lagi.','WS_CONNECT',info);}
+  function syncPlayback(){button.textContent=audio.paused?'Putar':'Jeda';status.textContent=audio.ended?'Selesai':audio.paused?'Jeda':'Memutar';}
+  async function play(){
+    try{await audio.play();syncPlayback();detail.textContent='Lagu siap diputar.';}
+    catch(error){button.disabled=false;button.textContent='Putar';status.textContent='Siap';detail.textContent=error&&error.name==='NotAllowedError'?'Ketuk Putar sekali lagi untuk mulai.':'Audio tidak dapat diputar di perangkat ini.';if(!(error&&error.name==='NotAllowedError'))showCode('PLAY_FAILED',{err:error&&error.name});}
+  }
+  button.onclick=function(){
+    if(loading)return;
+    if(blobUrl){if(!audio.paused){audio.pause();syncPlayback();}else{if(audio.ended)audio.currentTime=0;void play();}return;}
+    if(!Number.isFinite(expires)||Date.now()>=expires){fail('Sesi kedaluwarsa. Jalankan playws lagi.','SESSION_EXPIRED',{expires:track.expiresAt});return;}
+    loading=true;button.disabled=true;button.textContent='Memuat…';status.textContent='Menghubungkan';detail.textContent='Menyiapkan audio…';codeBox.className='kt-code';codeBox.textContent='';
+    var seq=++attempt, started=false, done=false, chunks=[], received=0, bytes=0, expected=0, total=0, mime='audio/mpeg', opened=false, errored=false, began=Date.now(), errTimer=null;
+    var base=function(){return {host:host(),tahap:opened?(started?'menerima':'terbuka'):'menghubungkan',ms:Date.now()-began,chunk:started?received+'/'+total:undefined,online:navigator.onLine===false?'tidak':'ya'};};
+    timer=setTimeout(function(){if(seq===attempt)fail('Waktu memuat habis. Silakan coba lagi.','TIMEOUT',base());},120000);
+    if(typeof WebSocket!=='function'){fail('Perangkat ini tidak mendukung koneksi player.','WS_UNSUPPORTED',base());return;}
+    try{ws=new WebSocket(track.wsUrl);ws.binaryType='arraybuffer';}catch(error){var i0=base();i0.err=(error&&error.name||'Error')+(error&&error.message?':'+String(error.message).slice(0,80):'');fail('Koneksi player tidak dapat dibuka. Silakan coba lagi.','WS_BLOCKED',i0);return;}
+    ws.onopen=function(){opened=true;status.textContent='Memuat';};
+    ws.onmessage=function(event){
+      if(seq!==attempt)return;
+      try{
+        if(typeof event.data==='string'){
+          var msg=JSON.parse(event.data);
+          if(msg.type==='error'){fail(typeof msg.message==='string'?msg.message:'Sesi tidak tersedia.','SERVER_ERROR',base());return;}
+          if(msg.type==='start'){
+            if(started||!Number.isInteger(msg.totalChunks)||msg.totalChunks<1||msg.totalChunks>maxChunks||!Number.isInteger(msg.size)||msg.size<1||msg.size>maxBytes||msg.size!==track.size||msg.totalChunks!==Math.ceil(msg.size/65536)||msg.mimeType!==track.mimeType)throw new Error('Invalid start');
+            started=true;total=msg.totalChunks;expected=msg.size;mime=msg.mimeType;chunks=new Array(total);return;
+          }
+          if(msg.type==='end'){
+            if(!started||done||received!==total||bytes!==expected)throw new Error('Incomplete audio');
+            done=true;loading=false;stopTransfer();blobUrl=URL.createObjectURL(new Blob(chunks,{type:mime}));chunks=[];audio.src=blobUrl;button.disabled=false;status.textContent='Siap';void play();return;
+          }
+          throw new Error('Unknown message');
+        }
+        if(!started||done||!(event.data instanceof ArrayBuffer)||event.data.byteLength<5||event.data.byteLength>65540)throw new Error('Invalid frame');
+        var index=new DataView(event.data).getUint32(0), part=event.data.slice(4);
+        if(index>=total||chunks[index]!==undefined||part.byteLength!==Math.min(65536,expected-index*65536)||bytes+part.byteLength>expected)throw new Error('Invalid chunk');
+        chunks[index]=part;received++;bytes+=part.byteLength;detail.textContent='Memuat '+Math.floor(bytes/expected*100)+'%';
+      }catch(error){var i1=base();i1.err=error&&error.message;fail('Audio yang diterima tidak lengkap atau tidak valid. Coba lagi.','AUDIO_INVALID',i1);}
+    };
+    // onerror carries no detail; the close event that follows has the code.
+    // No close event after an error means the socket was stopped inside the
+    // device (page policy/CSP or the app), not refused by the network: in that
+    // case browsers skip the 1006 close they send for refused connections.
+    ws.onerror=function(){if(seq!==attempt)return;errored=true;errTimer=setTimeout(function(){if(seq!==attempt)return;var i2=base();i2.close='none';
+      if(opened){fail('Koneksi terputus sebelum audio selesai.','WS_ERROR',i2);return;}
+      failWithProbe('Koneksi diblokir di perangkat sebelum mencapai server.','WS_POLICY',i2);},2500);};
+    ws.onclose=function(event){
+      clearTimeout(errTimer);if(seq!==attempt||done)return;
+      var i3=base();i3.close=event.code;i3.reason=event.reason?String(event.reason).slice(0,60):undefined;i3.clean=event.wasClean?'ya':'tidak';i3.error=errored?'ya':'tidak';
+      if(!opened){failConnect(i3);return;}
+      if(event.code===1008){fail('Sesi kedaluwarsa atau tidak tersedia. Jalankan playws lagi.','SESSION_GONE',i3);return;}
+      fail('Koneksi terputus sebelum audio selesai.','WS_CLOSED',i3);
+    };
+  };
+  audio.onloadedmetadata=function(){duration.textContent=fmt(audio.duration);seek.disabled=!Number.isFinite(audio.duration)||audio.duration<=0;};
+  audio.ontimeupdate=function(){current.textContent=fmt(audio.currentTime);if(Number.isFinite(audio.duration)&&audio.duration>0)seek.value=String(audio.currentTime/audio.duration*100);};
+  audio.onpause=audio.onplay=syncPlayback;audio.onended=function(){syncPlayback();detail.textContent='Ketuk Putar untuk mengulang.';};
+  audio.onerror=function(){var e=audio.error, i4={media:e?e.code:undefined,mime:track.mimeType};resetAudio();fail('Format audio tidak dapat diputar. Silakan coba lagi.','AUDIO_FORMAT',i4);};
+  seek.oninput=function(){if(!seek.disabled&&Number.isFinite(audio.duration))audio.currentTime=audio.duration*Number(seek.value)/100;};
+  window.addEventListener('pagehide',function(){attempt++;stopTransfer();resetAudio();loading=false;button.disabled=false;button.textContent='Putar';status.textContent='Siap';});
+})();
+</script></section>
