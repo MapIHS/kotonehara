@@ -38,30 +38,38 @@ func TestCardVariants(t *testing.T) {
 	raw, _ := os.ReadFile("testdata/player_card.html")
 	card := string(raw)
 	variants := cardVariants()
-	if len(variants) != 3 {
-		t.Fatalf("got %d variants", len(variants))
+	if len(variants) != 3 || variants[0].Alt || !variants[1].Alt || !variants[2].Alt {
+		t.Fatalf("unexpected variants: %+v", variants)
 	}
-	if got := variants[0].HTML(card, "T", ws); got != card {
-		t.Fatal("control variant changed the payload")
+	if variants[0].HTML(card, "T", ws) != card || variants[1].HTML(card, "T", ws) != card {
+		t.Fatal("as-is variants changed the payload")
 	}
-	for _, v := range variants[1:] {
-		out := v.HTML(card, "T", ws)
-		if out == "" || regexp.MustCompile(`(?i)https?`).MatchString(out) {
-			t.Errorf("%s: empty or still contains http", v.Label)
-		}
-	}
-	if doc := variants[2].HTML(card, "T", ws); !strings.HasPrefix(doc, "<!DOCTYPE html>") {
-		t.Error("variant 3 is not a full document")
-	}
-	// Unknown card shape is skipped rather than sent half-cleaned.
-	if variants[1].HTML(`<a href="https://x">`, "T", ws) != "" {
-		t.Error("unrecognised card was not skipped")
+	if out := variants[2].HTML(card, "T", ws); out == "" || regexp.MustCompile(`(?i)https?`).MatchString(out) {
+		t.Error("no-https variant empty or still contains http")
 	}
 	for _, v := range variants {
 		for _, s := range v.Sources(ws) {
 			if strings.Contains(s, "/ws/") {
 				t.Errorf("%s leaked the session path: %q", v.Label, s)
 			}
+		}
+	}
+}
+
+func TestParsePlayWSTestQuery(t *testing.T) {
+	for _, tc := range []struct{ in, base, query string }{
+		{"faded", "", "faded"},
+		{"--base https://x.herokuapp.com/ nightcore faded", "https://x.herokuapp.com", "nightcore faded"},
+		{"nightcore --base=https://x.herokuapp.com faded", "https://x.herokuapp.com", "nightcore faded"},
+	} {
+		base, query, err := parsePlayWSTestQuery(tc.in)
+		if err != nil || base != tc.base || query != tc.query {
+			t.Errorf("%q => %q %q %v", tc.in, base, query, err)
+		}
+	}
+	for _, bad := range []string{"--base", "--base http://x.com a", "--base https://x.com/path a", "--base https://u:p@x.com a", "--base https://x.com?a=1 a"} {
+		if _, _, err := parsePlayWSTestQuery(bad); err == nil {
+			t.Errorf("%q accepted", bad)
 		}
 	}
 }

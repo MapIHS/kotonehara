@@ -27,6 +27,7 @@ type cardVariant struct {
 	Label   string
 	Sources func(ws *url.URL) []string
 	HTML    func(fragment, title string, ws *url.URL) string
+	Alt     bool
 }
 
 // fullHTMLDocument wraps the card fragment in a complete document. csp, when
@@ -76,6 +77,8 @@ func withoutHTTPS(card string) (string, bool) {
 	return card, !httpWord.MatchString(card)
 }
 
+// cardVariant.Alt marks variants whose player session is created through the
+// --base origin (e.g. the raw Heroku URL) instead of BASEAPI_URL.
 func cardVariants() []cardVariant {
 	host := func(ws *url.URL) []string { return []string{ws.Hostname()} }
 	fragment := func(f, _ string, _ *url.URL) string { return f }
@@ -85,23 +88,47 @@ func cardVariants() []cardVariant {
 		}
 		return ""
 	}
-	noHTTPSDocument := func(f, title string, ws *url.URL) string {
-		if clean := noHTTPS(f, title, ws); clean != "" {
-			return fullHTMLDocument(clean, title, "")
-		}
-		return ""
-	}
 	return []cardVariant{
-		{"1 seperti sekarang", host, fragment},
-		{"2 tanpa https (potongan HTML)", host, noHTTPS},
-		{"3 tanpa https (dokumen lengkap)", host, noHTTPSDocument},
+		{Label: "1 BASEAPI_URL, seperti sekarang", Sources: host, HTML: fragment},
+		{Label: "2 --base, seperti sekarang", Sources: host, HTML: fragment, Alt: true},
+		{Label: "3 --base, tanpa https", Sources: host, HTML: noHTTPS, Alt: true},
 	}
+}
+
+// parsePlayWSTestQuery splits "--base <origin> <query>" (flag optional, any
+// position). The origin must be a bare https origin.
+func parsePlayWSTestQuery(raw string) (base, query string, err error) {
+	fields := strings.Fields(raw)
+	rest := fields[:0:0]
+	for i := 0; i < len(fields); i++ {
+		value, isFlag := "", false
+		switch {
+		case fields[i] == "--base":
+			if i+1 >= len(fields) {
+				return "", "", fmt.Errorf("--base butuh URL")
+			}
+			value, isFlag = fields[i+1], true
+			i++
+		case strings.HasPrefix(fields[i], "--base="):
+			value, isFlag = strings.TrimPrefix(fields[i], "--base="), true
+		}
+		if !isFlag {
+			rest = append(rest, fields[i])
+			continue
+		}
+		u, perr := url.Parse(value)
+		if perr != nil || u.Scheme != "https" || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || strings.Trim(u.Path, "/") != "" {
+			return "", "", fmt.Errorf("--base harus origin https tanpa path, contoh https://contoh.herokuapp.com")
+		}
+		base = "https://" + u.Host
+	}
+	return base, strings.Join(rest, " "), nil
 }
 
 func init() {
 	commands.Register(&commands.Command{
 		Name:        "playwstest",
-		Description: "Kirim kartu playws dalam beberapa bentuk HTML untuk diuji di HP",
+		Description: "Uji kartu playws di HP. Opsional: --base <origin https> untuk membuat sesi lewat alamat lain",
 		Tags:        "owner",
 		IsPrefix:    true,
 		IsOwner:     true,
@@ -109,35 +136,67 @@ func init() {
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 			defer cancel()
-			ap := api.Shared(cfg.BASEApiURL, 10*time.Minute)
-			handlePlayWSSourceTest(ctx, m, ap.CreatePlayer, client.WA.SendMessage)
+			base, query, err := parsePlayWSTestQuery(m.Query)
+			if err != nil {
+				_, _ = m.Reply(ctx, err.Error())
+				return
+			}
+			createAlt := (func(context.Context, string) (*api.PlayerSession, error))(nil)
+			if base != "" {
+				createAlt = api.Shared(base, 10*time.Minute).CreatePlayer
+			}
+			handlePlayWSSourceTest(ctx, m, query, api.Shared(cfg.BASEApiURL, 10*time.Minute).CreatePlayer, createAlt, client.WA.SendMessage)
 		},
 	})
 }
 
-func handlePlayWSSourceTest(ctx context.Context, m *message.Message,
-	create func(context.Context, string) (*api.PlayerSession, error),
+func handlePlayWSSourceTest(ctx context.Context, m *message.Message, query string,
+	create, createAlt func(context.Context, string) (*api.PlayerSession, error),
 	send func(context.Context, types.JID, *waE2E.Message, ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error),
 ) {
-	_, _ = m.Reply(ctx, "🧪 Menyiapkan satu sesi player untuk diuji dalam beberapa bentuk kartu…")
-	session, err := create(ctx, strings.TrimSpace(m.Query))
-	if err != nil {
-		_, _ = m.Reply(ctx, "Gagal menyiapkan player: "+err.Error())
+	if strings.TrimSpace(query) == "" {
+		_, _ = m.Reply(ctx, "Tulis judul lagu. Contoh: .playwstest --base https://contoh.herokuapp.com faded")
 		return
 	}
-	ws, err := url.Parse(session.WSURL)
-	if err != nil || ws.Hostname() == "" {
-		_, _ = m.Reply(ctx, "Alamat player tidak valid.")
-		return
+	_, _ = m.Reply(ctx, "🧪 Menyiapkan sesi player untuk diuji dalam beberapa bentuk kartu…")
+	type prepared struct {
+		session *api.PlayerSession
+		ws      *url.URL
+		err     error
+	}
+	cache := map[bool]*prepared{}
+	get := func(alt bool) *prepared {
+		if p, ok := cache[alt]; ok {
+			return p
+		}
+		p := &prepared{}
+		fn := create
+		if alt {
+			fn = createAlt
+		}
+		if fn == nil {
+			p.err = fmt.Errorf("dilewati: tambahkan --base <origin https> untuk varian ini")
+		} else if p.session, p.err = fn(ctx, query); p.err == nil {
+			if p.ws, p.err = url.Parse(p.session.WSURL); p.err == nil && p.ws.Hostname() == "" {
+				p.err = fmt.Errorf("alamat player tidak valid")
+			}
+		}
+		cache[alt] = p
+		return p
 	}
 	for _, variant := range cardVariants() {
-		sources := variant.Sources(ws)
-		payload := variant.HTML(session.HTML, session.Title, ws)
+		p := get(variant.Alt)
+		if p.err != nil {
+			_, _ = m.Reply(ctx, "Varian "+variant.Label+": "+p.err.Error())
+			continue
+		}
+		sources := variant.Sources(p.ws)
+		payload := variant.HTML(p.session.HTML, p.session.Title, p.ws)
 		if payload == "" {
 			_, _ = m.Reply(ctx, "Varian "+variant.Label+" dilewati: bentuk kartu dari Hararest tidak dikenali.")
 			continue
 		}
-		label := fmt.Sprintf("Varian %s\ntrusted_sources = %q\nTekan Putar pada kartu di bawah, lalu catat kode yang muncul.", variant.Label, sources)
+		label := fmt.Sprintf("Varian %s\nws = %s\ntrusted_sources = %q\nTekan Putar pada kartu di bawah, lalu catat kode yang muncul.", variant.Label, p.ws.Scheme+"://"+p.ws.Host, sources)
 		_, _ = m.Reply(ctx, label)
 		out, err := clients.BuildRichHTML(payload, sources...)
 		if err == nil {
