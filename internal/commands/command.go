@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -102,7 +103,7 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 		_, _ = m.Reply(ctx, "Media-nya dibutuhkan, yaa.")
 		return
 	}
-	if cmd.IsQuery && m.Query == "" {
+	if cmd.IsQuery {
 		m.Query = quotedQuery(cmd, m)
 	}
 	if cmd.IsQuery && m.Query == "" {
@@ -242,11 +243,26 @@ func fillAdminStatus(ctx context.Context, c *clients.Client, m *message.Message)
 	}
 }
 
+// qualityToken matches a bare quality option such as "720", "1080p" or "4k".
+var qualityToken = regexp.MustCompile(`(?i)^(\d{3,4}p?|\d{1,2}k)$`)
+
 // quotedQuery lets downloaders take the link from the replied-to message, so
-// replying ".ig" to a chat containing a link works like ".ig <link>".
+// replying ".ig" to a chat containing a link works like ".ig <link>", and
+// replying ".ytv 720" works like ".ytv <link> 720". A typed query that is
+// anything other than quality options is returned unchanged.
 func quotedQuery(cmd *Command, m *message.Message) string {
 	if !strings.EqualFold(strings.TrimSpace(cmd.Tags), "downloader") {
-		return ""
+		return m.Query
 	}
-	return message.FirstURL(m.QuotedText())
+	options := strings.Fields(m.Query)
+	for _, option := range options {
+		if !qualityToken.MatchString(option) {
+			return m.Query
+		}
+	}
+	link := message.FirstURL(m.QuotedText())
+	if link == "" {
+		return m.Query
+	}
+	return strings.Join(append([]string{link}, options...), " ")
 }

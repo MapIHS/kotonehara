@@ -293,6 +293,14 @@ func TestDownloaderTakesLinkFromQuotedMessage(t *testing.T) {
 	if len(got) != 2 || got[1] != "https://a.example/x" {
 		t.Fatalf("explicit link overridden: %v", got)
 	}
+	// Quality options typed alongside a reply are appended after the link.
+	CommandExec(context.Background(), nil, &message.Message{Body: ".ig 720p", Query: "720p", QuotedMsg: quoted, Reply: replyFn}, cfg)
+	// Any other typed text is left alone (e.g. a song title for .play).
+	CommandExec(context.Background(), nil, &message.Message{Body: ".ig coldplay yellow", Query: "coldplay yellow", QuotedMsg: quoted, Reply: replyFn}, cfg)
+	if len(got) != 4 || got[2] != "https://www.instagram.com/reel/abc123/?x=1 720p" || got[3] != "coldplay yellow" {
+		t.Fatalf("quality/typed handling: %v", got)
+	}
+	got = got[:2]
 	// Quoted text without a link still fails query validation.
 	noLink := &waE2E.Message{Conversation: proto.String("halo")}
 	CommandExec(context.Background(), nil, &message.Message{Body: ".ig", QuotedMsg: noLink, Reply: replyFn}, cfg)
