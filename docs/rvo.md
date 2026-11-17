@@ -17,7 +17,7 @@ tidak ditemukan. File yang sudah tidak tersedia di WhatsApp tetap bisa gagal.
 
 WhatsApp dapat tidak mengirim payload view-once ke perangkat tertaut bot sama
 sekali. Jika quote juga tidak memiliki direct path/key/hash, store tidak dapat
-menciptakannya. RVO kini memberi pesan khusus ketika metadata belum tersedia,
+menciptakannya. RVO membalas "Media belum bisa diambil, yaa." ketika metadata belum tersedia,
 dan `.ceksystem` menghitung event view-once yang dilaporkan tidak tersedia oleh
 WhatsApp sejak proses berjalan. Membalas pesan yang sama dari perangkat lain
 yang masih menyertakan metadata lengkap dapat menyediakan data untuk RVO.

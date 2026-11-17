@@ -29,20 +29,18 @@ func readViewOnce(ctx context.Context, client rvoClient, m *message.Message) {
 	defer cancel()
 	client.RestoreQuotedMessage(opCtx, m)
 	if !m.IsQuotedViewOnce || m.QuotedMsg == nil {
-		m.Reply(ctx, "Pesan asli sekali lihat belum ditemukan. Balas pesan sekali lihat yang sempat diterima bot, yaa.")
+		m.Reply(ctx, "Media belum bisa diambil, yaa.")
 		return
 	}
 	if _, err := client.SendViewOnceAsNormal(opCtx, m.From, m.QuotedMsg, m.ID); err != nil {
 		log.Printf("rvo: %v", err)
 		switch {
-		case errors.Is(err, clients.ErrViewOnceUnavailable):
-			m.Reply(ctx, "Data download pesan sekali lihat belum diterima bot, dan store belum punya salinan lengkapnya. Coba balas pesan yang sama dari perangkat lain yang masih memiliki medianya, yaa.")
 		case errors.Is(err, clients.ErrViewOnceTooLarge):
 			m.Reply(ctx, "Media sekali lihat maksimal 64 MiB, yaa.")
 		case errors.Is(err, clients.ErrViewOnceUnsupported):
 			m.Reply(ctx, "RVO mendukung gambar, video, dan voice note sekali lihat, yaa.")
 		default:
-			m.Reply(ctx, "Media sekali lihat belum bisa diambil atau dikirim. File-nya mungkin sudah tidak tersedia, yaa.")
+			m.Reply(ctx, "Media belum bisa diambil, yaa.")
 		}
 	}
 }

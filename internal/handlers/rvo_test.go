@@ -40,12 +40,12 @@ func TestRVOReplyValidationStoreFallbackAndErrors(t *testing.T) {
 		response                 string
 	}{
 		{name: "requires reply", response: "Balas"},
-		{name: "ordinary media rejected", reply: true, response: "belum ditemukan"},
+		{name: "ordinary media rejected", reply: true, response: "Media belum bisa diambil, yaa."},
 		{name: "original restored", reply: true, restore: true, sends: 1},
 		{name: "complete quote without store", reply: true, quotedVO: true, sends: 1},
 		{name: "size error", reply: true, restore: true, err: clients.ErrViewOnceTooLarge, sends: 1, response: "64 MiB"},
-		{name: "metadata absent", reply: true, restore: true, err: clients.ErrViewOnceUnavailable, sends: 1, response: "Data download"},
-		{name: "download error", reply: true, restore: true, err: whatsmeow.ErrMediaDownloadFailedWith404, sends: 1, response: "tidak tersedia"},
+		{name: "metadata absent", reply: true, restore: true, err: clients.ErrViewOnceUnavailable, sends: 1, response: "Media belum bisa diambil, yaa."},
+		{name: "download error", reply: true, restore: true, err: whatsmeow.ErrMediaDownloadFailedWith404, sends: 1, response: "Media belum bisa diambil, yaa."},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c := &rvoClientStub{restore: tc.restore, err: tc.err}
