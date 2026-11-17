@@ -62,25 +62,7 @@ func extractQuoteContext(mess *events.Message) *waE2E.ContextInfo {
 }
 
 func quoteContextInfo(mess *events.Message) *waE2E.ContextInfo {
-	msg := mess.Message
-	if msg == nil {
-		return nil
-	}
-
-	if ext := msg.GetExtendedTextMessage(); ext != nil {
-		return ext.GetContextInfo()
-	}
-	if vid := msg.GetVideoMessage(); vid != nil {
-		return vid.GetContextInfo()
-	}
-	if img := msg.GetImageMessage(); img != nil {
-		return img.GetContextInfo()
-	}
-	if st := msg.GetStickerMessage(); st != nil {
-		return st.GetContextInfo()
-	}
-
-	return nil
+	return ExtractContextInfo(mess.Message)
 }
 
 func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {

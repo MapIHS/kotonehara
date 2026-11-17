@@ -9,6 +9,7 @@ import (
 
 	"github.com/MapIHS/kotonehara/internal/message"
 	"github.com/MapIHS/kotonehara/internal/msgstore"
+	waE2E "go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types"
 )
 
@@ -39,12 +40,31 @@ func (c *Client) RestoreQuotedMessage(ctx context.Context, m *message.Message) b
 	}
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
-	participant, _ := types.ParseJID(m.ContextInfo.GetParticipant())
-	chatIdentity, err := c.ResolveIdentity(ctx, m.From, types.EmptyJID)
+	stored, err := c.lookupQuotedMessage(ctx, m, m.ContextInfo)
 	if err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			log.Printf("message store quote lookup: %v", err)
+		}
 		return false
 	}
-	key := msgstore.Key{Account: c.MessageStoreAccount(), Chat: m.From, ID: m.ContextInfo.GetStanzaID(), Sender: participant}
+	message.SetQuotedMessage(m, stored.Raw)
+	m.IsQuotedViewOnce = stored.IsViewOnce
+	return true
+}
+
+func (c *Client) lookupQuotedMessage(ctx context.Context, m *message.Message, ci *waE2E.ContextInfo) (*msgstore.Message, error) {
+	if c == nil || c.Messages == nil || m == nil || ci.GetStanzaID() == "" {
+		return nil, sql.ErrNoRows
+	}
+	participant, err := types.ParseJID(ci.GetParticipant())
+	if err != nil && ci.GetParticipant() != "" {
+		return nil, sql.ErrNoRows
+	}
+	chatIdentity, err := c.ResolveIdentity(ctx, m.From, types.EmptyJID)
+	if err != nil {
+		return nil, err
+	}
+	key := msgstore.Key{Account: c.MessageStoreAccount(), Chat: m.From, ID: ci.GetStanzaID(), Sender: participant}
 	if m.Msg != nil && !m.IsGroup {
 		if m.Msg.Info.IsFromMe {
 			key.ChatAlt = m.Msg.Info.RecipientAlt
@@ -57,10 +77,16 @@ func (c *Client) RestoreQuotedMessage(ctx context.Context, m *message.Message) b
 			key.ChatAlt = alias
 		}
 	}
+	if remote := ci.GetRemoteJID(); remote != "" {
+		remoteJID, err := types.ParseJID(remote)
+		if err != nil || (remoteJID.ToNonAD() != key.Chat.ToNonAD() && (key.ChatAlt.IsEmpty() || remoteJID.ToNonAD() != key.ChatAlt.ToNonAD())) {
+			return nil, ErrQuoteDifferentChat
+		}
+	}
 	if !participant.IsEmpty() {
 		senderIdentity, err := c.ResolveIdentity(ctx, participant, types.EmptyJID)
 		if err != nil {
-			return false
+			return nil, err
 		}
 		for _, alias := range senderIdentity.Aliases() {
 			if alias != participant.ToNonAD() {
@@ -74,13 +100,5 @@ func (c *Client) RestoreQuotedMessage(ctx context.Context, m *message.Message) b
 	if errors.Is(err, sql.ErrNoRows) {
 		stored, err = c.Messages.GetQuotedMedia(ctx, key)
 	}
-	if err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
-			log.Printf("message store quote lookup: %v", err)
-		}
-		return false
-	}
-	message.SetQuotedMessage(m, stored.Raw)
-	m.IsQuotedViewOnce = stored.IsViewOnce
-	return true
+	return stored, err
 }

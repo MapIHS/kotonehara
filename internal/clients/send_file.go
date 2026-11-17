@@ -80,7 +80,7 @@ func (c *Client) SendVideoFile(ctx context.Context, to types.JID, file *os.File,
 		msg.VideoMessage.Seconds = proto.Uint32(meta.Duration)
 	}
 
-	return c.WA.SendMessage(ctx, to, msg)
+	return c.SendMessage(ctx, to, msg)
 }
 
 func (c *Client) SendAudioFile(ctx context.Context, to types.JID, file *os.File, ptt bool, opts *waE2E.ContextInfo) (whatsmeow.SendResponse, error) {
@@ -103,7 +103,7 @@ func (c *Client) SendAudioFile(ctx context.Context, to types.JID, file *os.File,
 		},
 	}
 
-	return c.WA.SendMessage(ctx, to, msg)
+	return c.SendMessage(ctx, to, msg)
 }
 
 func (c *Client) SendDocumentFile(ctx context.Context, to types.JID, file *os.File, filename, caption string, opts *waE2E.ContextInfo) (whatsmeow.SendResponse, error) {
@@ -125,5 +125,5 @@ func (c *Client) SendDocumentFile(ctx context.Context, to types.JID, file *os.Fi
 			ContextInfo:   opts,
 		},
 	}
-	return c.WA.SendMessage(ctx, to, msg)
+	return c.SendMessage(ctx, to, msg)
 }

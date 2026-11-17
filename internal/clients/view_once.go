@@ -36,7 +36,7 @@ func (c *Client) SendViewOnceAsNormal(ctx context.Context, to types.JID, raw *wa
 	if c == nil || c.WA == nil {
 		return whatsmeow.SendResponse{}, ErrViewOnceUnavailable
 	}
-	return sendViewOnceAsNormal(ctx, c.WA, to, raw, quote)
+	return sendViewOnceAsNormal(ctx, storedViewOnceTransport{Client: c.WA, owner: c}, to, raw, quote)
 }
 
 func sendViewOnceAsNormal(ctx context.Context, transport viewOnceTransport, to types.JID, raw *waE2E.Message, quote *waE2E.ContextInfo) (whatsmeow.SendResponse, error) {

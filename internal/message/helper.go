@@ -73,31 +73,36 @@ func pickMedia(quoted *waE2E.Message, mess *events.Message) whatsmeow.Downloadab
 }
 
 func pickQuoted(mess *events.Message) *waE2E.Message {
-	if ext := mess.Message.GetExtendedTextMessage(); ext != nil {
-		if ctx := ext.GetContextInfo(); ctx != nil {
-			return ctx.GetQuotedMessage()
-		}
-	}
+	return ExtractContextInfo(mess.Message).GetQuotedMessage()
+}
 
-	if vid := mess.Message.GetVideoMessage(); vid != nil {
-		if ctx := vid.GetContextInfo(); ctx != nil {
-			return ctx.GetQuotedMessage()
-		}
+// ExtractContextInfo returns reply metadata for the message's content type.
+func ExtractContextInfo(raw *waE2E.Message) *waE2E.ContextInfo {
+	m := UnwrapMessage(raw)
+	switch {
+	case m.GetExtendedTextMessage() != nil:
+		return m.GetExtendedTextMessage().GetContextInfo()
+	case m.GetImageMessage() != nil:
+		return m.GetImageMessage().GetContextInfo()
+	case m.GetVideoMessage() != nil:
+		return m.GetVideoMessage().GetContextInfo()
+	case m.GetAudioMessage() != nil:
+		return m.GetAudioMessage().GetContextInfo()
+	case m.GetDocumentMessage() != nil:
+		return m.GetDocumentMessage().GetContextInfo()
+	case m.GetStickerMessage() != nil:
+		return m.GetStickerMessage().GetContextInfo()
+	case m.GetContactMessage() != nil:
+		return m.GetContactMessage().GetContextInfo()
+	case m.GetContactsArrayMessage() != nil:
+		return m.GetContactsArrayMessage().GetContextInfo()
+	case m.GetLocationMessage() != nil:
+		return m.GetLocationMessage().GetContextInfo()
+	case m.GetLiveLocationMessage() != nil:
+		return m.GetLiveLocationMessage().GetContextInfo()
+	default:
+		return nil
 	}
-
-	if img := mess.Message.GetImageMessage(); img != nil {
-		if ctx := img.GetContextInfo(); ctx != nil {
-			return ctx.GetQuotedMessage()
-		}
-	}
-
-	if st := mess.Message.GetStickerMessage(); st != nil {
-		if ctx := st.GetContextInfo(); ctx != nil {
-			return ctx.GetQuotedMessage()
-		}
-	}
-
-	return nil
 }
 
 // UnwrapMessage handles wrappers on quotes as well as top-level messages.
