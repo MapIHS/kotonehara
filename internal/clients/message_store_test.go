@@ -64,4 +64,20 @@ func TestRestoreViewOnceFlagWithCompleteQuoteAndMissingParticipant(t *testing.T)
 			}
 		})
 	}
+	// Production regression: no original event was delivered, the user's quote
+	// is redacted, but another group member's later reply includes the keys.
+	group := types.NewJID("group", types.GroupServer)
+	other := types.NewJID("456", types.DefaultUserServer)
+	full := &waE2E.ContextInfo{StanzaID: proto.String("withheld"), Participant: proto.String(sender.String()), QuotedMessage: rvoSource("image")}
+	observation := &events.Message{Info: types.MessageInfo{MessageSource: types.MessageSource{Chat: group, Sender: other, IsGroup: true}, ID: "observation", Timestamp: time.Now()}, Message: &waE2E.Message{ExtendedTextMessage: &waE2E.ExtendedTextMessage{Text: proto.String("reply"), ContextInfo: full}}}
+	observation.RawMessage = observation.Message
+	if !s.Capture(c.MessageStoreAccount(), observation) {
+		t.Fatal("complete quote rejected")
+	}
+	redacted := &waE2E.ContextInfo{StanzaID: proto.String("withheld"), Participant: proto.String(sender.String()), QuotedMessage: &waE2E.Message{ImageMessage: &waE2E.ImageMessage{ViewOnce: proto.Bool(true)}}}
+	command := &events.Message{Info: types.MessageInfo{MessageSource: types.MessageSource{Chat: group, Sender: sender, IsGroup: true}, ID: "rvo-withheld"}, Message: &waE2E.Message{ExtendedTextMessage: &waE2E.ExtendedTextMessage{Text: proto.String(".rvo"), ContextInfo: redacted}}}
+	m := message.NewParser(nil, config.Config{Prefix: "."}).Parse(context.Background(), command)
+	if !c.RestoreQuotedMessage(context.Background(), m) || !m.IsQuotedViewOnce || m.QuotedMsg.GetImageMessage().GetDirectPath() != "/old" {
+		t.Fatal("complete reply was not used to recover withheld media")
+	}
 }

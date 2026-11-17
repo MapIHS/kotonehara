@@ -45,6 +45,12 @@ func TestStoreCapturesEvenWhenCommandQueueIsFull(t *testing.T) {
 	raw := &waE2E.Message{Conversation: proto.String("ordinary chat")}
 	e := &events.Message{Info: types.MessageInfo{MessageSource: types.MessageSource{Chat: sender, Sender: sender}, ID: "first", Timestamp: time.Now()}, RawMessage: raw, Message: raw}
 	d.registerEventHandler(&whatsmeow.Client{Store: &store.Device{ID: &bot}}, nil)(e)
+	handler := d.registerEventHandler(&whatsmeow.Client{Store: &store.Device{ID: &bot}}, nil)
+	handler(&events.UndecryptableMessage{IsUnavailable: true, UnavailableType: events.UnavailableTypeViewOnce})
+	handler(&events.UndecryptableMessage{IsUnavailable: true})
+	if s.Stats().UnavailableViewOnce != 1 {
+		t.Fatal("unavailable view-once counter")
+	}
 	fromMe := false
 	if _, err := s.Get(context.Background(), msgstore.Key{Account: bot.String(), Chat: sender, Sender: sender, ID: e.Info.ID, FromMe: &fromMe}); err != nil {
 		t.Fatalf("command overload lost stored message: %v", err)

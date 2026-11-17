@@ -90,22 +90,24 @@ type Message struct {
 }
 
 type row struct {
-	Account    string `db:"account"`
-	Chat       string `db:"chat"`
-	ChatAlt    string `db:"chat_alt"`
-	ID         string `db:"message_id"`
-	Sender     string `db:"sender"`
-	SenderAlt  string `db:"sender_alt"`
-	FromMe     bool   `db:"from_me"`
-	IsGroup    bool   `db:"is_group"`
-	Timestamp  int64  `db:"message_time"`
-	Expires    int64  `db:"expires_at"`
-	ViewOnce   bool   `db:"view_once"`
-	AlbumID    string `db:"album_id"`
-	AlbumIndex int    `db:"album_index"`
-	Payload    []byte `db:"payload"`
-	lru        *list.Element
-	pending    bool
+	Account     string `db:"account"`
+	Chat        string `db:"chat"`
+	ChatAlt     string `db:"chat_alt"`
+	ID          string `db:"message_id"`
+	Sender      string `db:"sender"`
+	SenderAlt   string `db:"sender_alt"`
+	FromMe      bool   `db:"from_me"`
+	IsGroup     bool   `db:"is_group"`
+	Timestamp   int64  `db:"message_time"`
+	Expires     int64  `db:"expires_at"`
+	ViewOnce    bool   `db:"view_once"`
+	AlbumID     string `db:"album_id"`
+	AlbumIndex  int    `db:"album_index"`
+	Payload     []byte `db:"payload"`
+	QuoteID     string `db:"-"`
+	QuoteSender string `db:"-"`
+	lru         *list.Element
+	pending     bool
 }
 
 type rowKey struct {
@@ -119,10 +121,11 @@ func (r *row) key() rowKey { return rowKey{r.Account, r.Chat, r.ID, r.Sender, r.
 // Include a conservative allowance for metadata/index/list allocations. This is
 // an accounting budget, not a claim about the Go runtime's exact heap usage.
 func (r *row) size() int {
-	return len(r.Payload) + len(r.Account) + len(r.Chat) + len(r.ChatAlt) + len(r.ID) + len(r.Sender) + len(r.SenderAlt) + len(r.AlbumID) + 1024
+	return len(r.Payload) + len(r.Account) + len(r.Chat) + len(r.ChatAlt) + len(r.ID) + len(r.Sender) + len(r.SenderAlt) + len(r.AlbumID) + len(r.QuoteID) + len(r.QuoteSender) + 1024
 }
 
 type Stats struct {
+	UnavailableViewOnce                                                             uint64
 	Accepted, Skipped, Dropped, Written, WriteErrors, ReadErrors, CacheHits, DBHits uint64
 	PendingEntries, PendingBytes, CacheEntries, CacheBytes                          int
 	LastWriteDuration                                                               time.Duration
@@ -134,6 +137,7 @@ type Store struct {
 	opts             Options
 	mu               sync.Mutex
 	index            map[lookupKey]map[rowKey]*row
+	quotes           map[lookupKey]map[rowKey]*row
 	lru              list.List
 	queue            []*row
 	stats            Stats
@@ -149,6 +153,7 @@ func New(ctx context.Context, db *sqlx.DB, opts Options) (*Store, error) {
 		return nil, fmt.Errorf("unsupported message store driver")
 	}
 	s := &Store{db: db, opts: opts.defaults(), index: make(map[lookupKey]map[rowKey]*row), wake: make(chan struct{}, 1), stop: make(chan struct{}), done: make(chan struct{})}
+	s.quotes = make(map[lookupKey]map[rowKey]*row)
 	if err := s.migrate(ctx); err != nil {
 		return nil, err
 	}
@@ -205,6 +210,10 @@ func (s *Store) Capture(account string, evt *events.Message) bool {
 		return false
 	}
 	r := &row{Account: account, Chat: jid(evt.Info.Chat), ChatAlt: jid(chatAlt(evt.Info)), ID: evt.Info.ID, Sender: jid(evt.Info.Sender), SenderAlt: jid(evt.Info.SenderAlt), FromMe: evt.Info.IsFromMe, IsGroup: evt.Info.IsGroup, Timestamp: timestamp.UnixMilli(), Expires: timestamp.Add(s.opts.Retention).UnixMilli(), ViewOnce: evt.IsViewOnce || msg.GetImageMessage().GetViewOnce() || msg.GetVideoMessage().GetViewOnce() || msg.GetAudioMessage().GetViewOnce()}
+	if ci, _ := downloadableViewOnceQuote(msg); ci != nil {
+		r.QuoteID = ci.GetStanzaID()
+		r.QuoteSender = quoteSender(ci)
+	}
 	association := msg.GetMessageContextInfo().GetMessageAssociation()
 	if association.GetAssociationType() == waE2E.MessageAssociation_MEDIA_ALBUM {
 		r.AlbumID = association.GetParentMessageKey().GetID()
@@ -259,6 +268,13 @@ func (s *Store) addIndex(r *row) {
 			s.index[k] = make(map[rowKey]*row)
 		}
 		s.index[k][r.key()] = r
+		if r.QuoteID != "" {
+			qk := lookupKey{r.Account, chat, r.QuoteID}
+			if s.quotes[qk] == nil {
+				s.quotes[qk] = make(map[rowKey]*row)
+			}
+			s.quotes[qk][r.key()] = r
+		}
 	}
 }
 func (s *Store) forget(r *row) {
@@ -270,6 +286,11 @@ func (s *Store) forget(r *row) {
 		delete(s.index[k], r.key())
 		if len(s.index[k]) == 0 {
 			delete(s.index, k)
+		}
+		qk := lookupKey{r.Account, chat, r.QuoteID}
+		delete(s.quotes[qk], r.key())
+		if len(s.quotes[qk]) == 0 {
+			delete(s.quotes, qk)
 		}
 	}
 }
@@ -469,6 +490,8 @@ func (s *Store) Album(ctx context.Context, k Key, albumID string, limit int) ([]
 
 func (s *Store) Stats() Stats { s.mu.Lock(); defer s.mu.Unlock(); return s.stats }
 
+func (s *Store) NoteUnavailableViewOnce() { s.mu.Lock(); s.stats.UnavailableViewOnce++; s.mu.Unlock() }
+
 func (s *Store) Shutdown(ctx context.Context) error {
 	s.mu.Lock()
 	if !s.closing {
@@ -586,7 +609,7 @@ func (s *Store) run() {
 			if s.db.DriverName() == "postgres" {
 				ctx, cancel := context.WithTimeout(s.ctx, s.opts.DBTimeout)
 				var dbBytes, tableBytes int64
-				err := s.db.QueryRowContext(ctx, `SELECT pg_database_size(current_database()), pg_total_relation_size('bot_messages'::regclass)`).Scan(&dbBytes, &tableBytes)
+				err := s.db.QueryRowContext(ctx, `SELECT pg_database_size(current_database()), pg_total_relation_size('bot_messages'::regclass)+pg_total_relation_size('bot_message_quotes'::regclass)`).Scan(&dbBytes, &tableBytes)
 				cancel()
 				if err == nil {
 					s.mu.Lock()
@@ -596,6 +619,9 @@ func (s *Store) run() {
 				}
 			}
 			st := s.Stats()
+			if st.UnavailableViewOnce > 0 {
+				log.Printf("message store view-once: unavailable=%d", st.UnavailableViewOnce)
+			}
 			pool := s.db.Stats()
 			log.Printf("message store: accepted=%d skipped=%d dropped=%d written=%d write_errors=%d pending=%d pending_bytes=%d cache_bytes=%d cache_hits=%d db_hits=%d read_errors=%d last_write=%s db_in_use=%d db_wait_count=%d db_wait_duration=%s", st.Accepted, st.Skipped, st.Dropped, st.Written, st.WriteErrors, st.PendingEntries, st.PendingBytes, st.CacheBytes, st.CacheHits, st.DBHits, st.ReadErrors, st.LastWriteDuration, pool.InUse, pool.WaitCount, pool.WaitDuration)
 			if s.db.DriverName() == "postgres" {

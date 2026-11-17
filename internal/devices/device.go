@@ -202,6 +202,10 @@ func (d *Devices) registerEventHandler(client *whatsmeow.Client, callClient *meo
 				commands.CommandExec(d.ctx, c, parse, d.cfg)
 			})
 
+		case *events.UndecryptableMessage:
+			if d.Messages != nil && v.IsUnavailable && v.UnavailableType == events.UnavailableTypeViewOnce {
+				d.Messages.NoteUnavailableViewOnce()
+			}
 		case *events.Connected:
 			if d.cfg.DisableContactImport {
 				disableContactImportForDevice(client.Store)

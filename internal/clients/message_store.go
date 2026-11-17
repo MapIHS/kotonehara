@@ -71,6 +71,9 @@ func (c *Client) RestoreQuotedMessage(ctx context.Context, m *message.Message) b
 		key.FromMe = &fromMe
 	}
 	stored, err := c.Messages.Get(ctx, key)
+	if errors.Is(err, sql.ErrNoRows) {
+		stored, err = c.Messages.GetQuotedMedia(ctx, key)
+	}
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			log.Printf("message store quote lookup: %v", err)

@@ -7,10 +7,20 @@ cooldown dan quota standar bot, serta tampil otomatis di menu.
 
 RVO mencari pesan asli di store berdasarkan akun, chat, ID, pengirim, dan arah
 pesan. Flag sekali lihat dipulihkan juga, karena isi quote dapat kehilangan flag
-atau metadata download. Jika store tidak menemukan pesan, quote lengkap yang
+atau metadata download. Jika pesan asli tidak ada, RVO mencari metadata lengkap
+di quote pesan lain yang sudah diterima di chat yang sama, dengan ID dan pengirim
+target yang cocok. Quote dicatat sebagai pengamatan, tidak menggantikan atau
+dianggap sebagai event asli pengirim. Jika store tidak menemukan pesan, quote lengkap yang
 masih memiliki flag sekali lihat tetap dapat dipakai. Pesan media biasa ditolak.
 Pesan sebelum store aktif, yang kedaluwarsa, atau yang tidak diterima bot dapat
 tidak ditemukan. File yang sudah tidak tersedia di WhatsApp tetap bisa gagal.
+
+WhatsApp dapat tidak mengirim payload view-once ke perangkat tertaut bot sama
+sekali. Jika quote juga tidak memiliki direct path/key/hash, store tidak dapat
+menciptakannya. RVO kini memberi pesan khusus ketika metadata belum tersedia,
+dan `.ceksystem` menghitung event view-once yang dilaporkan tidak tersedia oleh
+WhatsApp sejak proses berjalan. Membalas pesan yang sama dari perangkat lain
+yang masih menyertakan metadata lengkap dapat menyediakan data untuk RVO.
 
 Download/dekripsi dan upload/enkripsi memakai file sementara, tanpa membaca
 seluruh file ke RAM atau menjalankan ffmpeg. Data hasil upload memakai media key

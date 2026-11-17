@@ -35,6 +35,8 @@ func readViewOnce(ctx context.Context, client rvoClient, m *message.Message) {
 	if _, err := client.SendViewOnceAsNormal(opCtx, m.From, m.QuotedMsg, m.ID); err != nil {
 		log.Printf("rvo: %v", err)
 		switch {
+		case errors.Is(err, clients.ErrViewOnceUnavailable):
+			m.Reply(ctx, "Data download pesan sekali lihat belum diterima bot, dan store belum punya salinan lengkapnya. Coba balas pesan yang sama dari perangkat lain yang masih memiliki medianya, yaa.")
 		case errors.Is(err, clients.ErrViewOnceTooLarge):
 			m.Reply(ctx, "Media sekali lihat maksimal 64 MiB, yaa.")
 		case errors.Is(err, clients.ErrViewOnceUnsupported):

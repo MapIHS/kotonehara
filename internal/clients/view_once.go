@@ -72,7 +72,7 @@ func sendViewOnceAsNormal(ctx context.Context, transport viewOnceTransport, to t
 		return empty, ErrViewOnceTooLarge
 	}
 	if media.GetDirectPath() == "" || len(media.GetMediaKey()) != 32 || len(media.GetFileSHA256()) != 32 || len(media.GetFileEncSHA256()) != 32 {
-		return empty, ErrViewOnceUnavailable
+		return empty, fmt.Errorf("%w: direct_path=%t media_key_length=%d file_hash_length=%d encrypted_hash_length=%d", ErrViewOnceUnavailable, media.GetDirectPath() != "", len(media.GetMediaKey()), len(media.GetFileSHA256()), len(media.GetFileEncSHA256()))
 	}
 	select {
 	case viewOnceSlots <- struct{}{}:

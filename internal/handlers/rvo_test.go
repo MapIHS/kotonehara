@@ -44,6 +44,7 @@ func TestRVOReplyValidationStoreFallbackAndErrors(t *testing.T) {
 		{name: "original restored", reply: true, restore: true, sends: 1},
 		{name: "complete quote without store", reply: true, quotedVO: true, sends: 1},
 		{name: "size error", reply: true, restore: true, err: clients.ErrViewOnceTooLarge, sends: 1, response: "64 MiB"},
+		{name: "metadata absent", reply: true, restore: true, err: clients.ErrViewOnceUnavailable, sends: 1, response: "Data download"},
 		{name: "download error", reply: true, restore: true, err: whatsmeow.ErrMediaDownloadFailedWith404, sends: 1, response: "tidak tersedia"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

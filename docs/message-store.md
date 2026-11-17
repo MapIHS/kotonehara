@@ -4,6 +4,17 @@ Store aktif secara default. Migrasi idempotent membuat tabel `bot_messages` pada
 database bot yang sama (PostgreSQL production, SQLite dev). Tidak mengubah tabel
 `whatsmeow_*` dan tidak membuat koneksi pool baru.
 
+Tabel tambahan `bot_message_quotes` mengindeks ID/pengirim target quote lengkap
+view-once dan merujuk ke baris pesan yang menyertakannya. Payload tidak disalin
+lagi, dan pengamatan quote tidak dimasukkan sebagai pesan asli. Indeks memori
+berbagi snapshot serta ikut dibuang saat keluar dari cache/pending. Referensi
+database dibersihkan bersama pesan sumbernya. Batch yang berisi quote lengkap
+memakai transaksi untuk pesan+referensi; batch biasa tetap satu INSERT.
+
+Saat tabel quote pertama kali dibuat, migrasi hanya memeriksa maksimal 256 event
+belum kedaluwarsa terbaru melalui indeks expiry. Quote lengkap lama di luar batas
+ini tidak otomatis diindeks. Restart berikutnya tidak mengulang pemindaian itu.
+
 ## Pengaturan awal
 
 | Variabel | Default |
@@ -72,6 +83,10 @@ shutdown ditolak.
   berdasarkan index/waktu/ID. Limit maksimal 100. Hasil dapat belum lengkap ketika
   anggota album masih dikirim WhatsApp. Operasi ini memerlukan DB.
 - `Stats()`: counter dan accounting memori saat ini, tanpa query.
+- `GetQuotedMedia(ctx, key)`: metadata view-once lengkap dari quote di chat yang
+  sama, dengan pengirim target diketahui. Mencari indeks cache/pending lalu indeks
+  database, tanpa scan seluruh riwayat atau menyalin payload. Retensi mengikuti
+  waktu event yang membawa quote; waktu kirim asli tidak diketahui dari quote.
 
 Account memakai PN bot bila tersedia. Chat/sender memakai JID `ToNonAD` lengkap
 dengan namespace. Alias PN/LID hanya dari event/resolver identitas; angka yang
