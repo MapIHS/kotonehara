@@ -20,6 +20,9 @@ func init() {
 	commands.Register(&commands.Command{
 		Name:        "playws",
 		Description: "Cari lagu lalu kirim kartu player web untuk diputar", As: []string{"playhtml"}, Tags: "downloader", IsPrefix: true,
+		// The card is blocked (WS_POLICY) by some WhatsApp builds; disabled until
+		// a delivery that works on every device exists.
+		Disable: true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 			defer cancel()

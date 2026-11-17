@@ -133,6 +133,7 @@ func init() {
 		IsPrefix:    true,
 		IsOwner:     true,
 		IsQuery:     true,
+		Disable:     true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 			defer cancel()
