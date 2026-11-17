@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"html"
 	"net/url"
 	"strings"
 	"time"
@@ -17,45 +18,67 @@ import (
 	"go.mau.fi/whatsmeow/types"
 )
 
-// trustedSourceVariant is one candidate format for the rich HTML card's
-// trusted_sources field. The field is not documented; the playws card fails
-// with WS_POLICY on some WhatsApp builds, so these are compared on a device.
-type trustedSourceVariant struct {
+// cardVariant is one candidate way to package the playws card. On some
+// WhatsApp builds every network request from the card is blocked (WS_POLICY);
+// trusted_sources formats alone made no difference, so the HTML document shape
+// is compared too: a bare fragment versus a complete HTML document.
+type cardVariant struct {
 	Label   string
 	Sources func(ws *url.URL) []string
+	HTML    func(fragment, title string, ws *url.URL) string
 }
 
-func trustedSourceVariants() []trustedSourceVariant {
-	httpsOrigin := func(ws *url.URL) string {
-		scheme := "https"
-		if ws.Scheme == "ws" {
-			scheme = "http"
-		}
-		return scheme + "://" + ws.Host
+func httpsOrigin(ws *url.URL) string {
+	scheme := "https"
+	if ws.Scheme == "ws" {
+		scheme = "http"
 	}
-	parentDomain := func(ws *url.URL) string {
-		parts := strings.Split(ws.Hostname(), ".")
-		if len(parts) <= 2 {
-			return ws.Hostname()
-		}
-		return strings.Join(parts[len(parts)-2:], ".")
+	return scheme + "://" + ws.Host
+}
+
+// fullHTMLDocument wraps the card fragment in a complete document. csp, when
+// set, is added as a meta Content-Security-Policy.
+func fullHTMLDocument(fragment, title, csp string) string {
+	var b strings.Builder
+	b.WriteString(`<!DOCTYPE html><html lang="id"><head><meta charset="utf-8">`)
+	b.WriteString(`<meta name="viewport" content="width=device-width, initial-scale=1">`)
+	if csp != "" {
+		b.WriteString(`<meta http-equiv="Content-Security-Policy" content="`)
+		b.WriteString(html.EscapeString(csp))
+		b.WriteString(`">`)
 	}
-	return []trustedSourceVariant{
-		{"A host (sekarang)", func(ws *url.URL) []string { return []string{ws.Hostname()} }},
-		{"B origin https", func(ws *url.URL) []string { return []string{httpsOrigin(ws)} }},
-		{"C origin wss", func(ws *url.URL) []string { return []string{ws.Scheme + "://" + ws.Host} }},
-		{"D https + wss + host", func(ws *url.URL) []string {
-			return []string{httpsOrigin(ws), ws.Scheme + "://" + ws.Host, ws.Hostname()}
-		}},
-		{"E domain induk", func(ws *url.URL) []string { return []string{parentDomain(ws)} }},
-		{"F kosong", func(*url.URL) []string { return nil }},
+	b.WriteString(`<title>`)
+	b.WriteString(html.EscapeString(title))
+	b.WriteString(`</title></head><body>`)
+	b.WriteString(fragment)
+	b.WriteString(`</body></html>`)
+	return b.String()
+}
+
+func cardVariants() []cardVariant {
+	host := func(ws *url.URL) []string { return []string{ws.Hostname()} }
+	all := func(ws *url.URL) []string {
+		return []string{httpsOrigin(ws), ws.Scheme + "://" + ws.Host, ws.Hostname()}
+	}
+	fragment := func(f, _ string, _ *url.URL) string { return f }
+	document := func(f, title string, _ *url.URL) string { return fullHTMLDocument(f, title, "") }
+	documentCSP := func(f, title string, ws *url.URL) string {
+		csp := "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; media-src blob:; connect-src " +
+			ws.Scheme + "://" + ws.Host + " " + httpsOrigin(ws)
+		return fullHTMLDocument(f, title, csp)
+	}
+	return []cardVariant{
+		{"1 potongan HTML (sekarang)", host, fragment},
+		{"2 dokumen lengkap", host, document},
+		{"3 dokumen lengkap + meta CSP", host, documentCSP},
+		{"4 dokumen lengkap + semua sumber", all, document},
 	}
 }
 
 func init() {
 	commands.Register(&commands.Command{
 		Name:        "playwstest",
-		Description: "Kirim kartu playws dengan beberapa format trusted_sources untuk diuji di HP",
+		Description: "Kirim kartu playws dalam beberapa bentuk HTML untuk diuji di HP",
 		Tags:        "owner",
 		IsPrefix:    true,
 		IsOwner:     true,
@@ -73,7 +96,7 @@ func handlePlayWSSourceTest(ctx context.Context, m *message.Message,
 	create func(context.Context, string) (*api.PlayerSession, error),
 	send func(context.Context, types.JID, *waE2E.Message, ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error),
 ) {
-	_, _ = m.Reply(ctx, "🧪 Menyiapkan satu sesi player untuk diuji dengan beberapa format trusted_sources…")
+	_, _ = m.Reply(ctx, "🧪 Menyiapkan satu sesi player untuk diuji dalam beberapa bentuk kartu…")
 	session, err := create(ctx, strings.TrimSpace(m.Query))
 	if err != nil {
 		_, _ = m.Reply(ctx, "Gagal menyiapkan player: "+err.Error())
@@ -84,11 +107,12 @@ func handlePlayWSSourceTest(ctx context.Context, m *message.Message,
 		_, _ = m.Reply(ctx, "Alamat player tidak valid.")
 		return
 	}
-	for _, variant := range trustedSourceVariants() {
+	for _, variant := range cardVariants() {
 		sources := variant.Sources(ws)
+		payload := variant.HTML(session.HTML, session.Title, ws)
 		label := fmt.Sprintf("Varian %s\ntrusted_sources = %q\nTekan Putar pada kartu di bawah, lalu catat kode yang muncul.", variant.Label, sources)
 		_, _ = m.Reply(ctx, label)
-		out, err := clients.BuildRichHTML(session.HTML, sources...)
+		out, err := clients.BuildRichHTML(payload, sources...)
 		if err == nil {
 			_, err = send(ctx, m.From, out)
 		}
@@ -102,5 +126,5 @@ func handlePlayWSSourceTest(ctx context.Context, m *message.Message,
 		case <-time.After(1500 * time.Millisecond):
 		}
 	}
-	_, _ = m.Reply(ctx, "Selesai. Kirim screenshot hasil tiap varian. Satu sesi melayani maksimal 4 koneksi bersamaan, jadi tekan Putar satu per satu.")
+	_, _ = m.Reply(ctx, "Selesai. Kirim screenshot hasil tiap varian. Tekan Putar satu per satu.")
 }
