@@ -58,3 +58,12 @@ func textEvent(sender, senderAlt types.JID) *events.Message {
 		Message: &waE2E.Message{Conversation: proto.String("hello")},
 	}
 }
+
+func TestQuotedViewOnceWrapperIsUnwrappedWithoutStore(t *testing.T) {
+	e := textEvent(types.NewJID("123", types.DefaultUserServer), types.EmptyJID)
+	e.Message = &waE2E.Message{ExtendedTextMessage: &waE2E.ExtendedTextMessage{Text: proto.String(".toimg"), ContextInfo: &waE2E.ContextInfo{QuotedMessage: &waE2E.Message{ViewOnceMessageV2Extension: &waE2E.FutureProofMessage{Message: &waE2E.Message{ImageMessage: &waE2E.ImageMessage{DirectPath: proto.String("/quoted")}}}}}}}
+	m := NewParser(nil, config.Config{Prefix: "."}).Parse(context.Background(), e)
+	if m.Media == nil || m.Media.GetDirectPath() != "/quoted" || !m.IsQuotedImage || !m.IsQuotedViewOnce {
+		t.Fatal("wrapped quote lost")
+	}
+}

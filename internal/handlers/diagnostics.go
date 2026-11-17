@@ -111,6 +111,10 @@ func cekSystem(ctx context.Context, client *clients.Client, m *message.Message, 
 		formatDuration(uptime),
 	)
 
+	if client != nil && client.Messages != nil {
+		st := client.Messages.Stats()
+		response += fmt.Sprintf("\n\n*乂 MESSAGE STORE*\n\n• Pending: %d (%.2f MiB)\n• Cache: %d (%.2f MiB)\n• Persisted: %d\n• Dropped: %d\n• Write errors: %d", st.PendingEntries, float64(st.PendingBytes)/(1<<20), st.CacheEntries, float64(st.CacheBytes)/(1<<20), st.Written, st.Dropped, st.WriteErrors)
+	}
 	m.Reply(ctx, response)
 }
 

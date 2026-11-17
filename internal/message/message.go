@@ -51,6 +51,7 @@ type Message struct {
 	IsQuotedSticker    bool
 	IsQuotedGif        bool
 	IsQuotedStickerGif bool
+	IsQuotedViewOnce   bool
 
 	ContextInfo *waE2E.ContextInfo
 

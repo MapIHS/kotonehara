@@ -172,11 +172,18 @@ func (d *Devices) NewClient(dev *store.Device) *whatsmeow.Client {
 
 func (d *Devices) registerEventHandler(client *whatsmeow.Client, callClient *meowcaller.Client) func(evt interface{}) {
 	c := clients.New(client, d.cfg, callClient)
+	c.Messages = d.Messages
 	m := message.NewParser(c, d.cfg)
 	m.ResolveIdentity = c.ResolveIdentity
 	return func(evt interface{}) {
 		switch v := evt.(type) {
 		case *events.Message:
+			if d.ctx.Err() != nil {
+				return
+			}
+			if d.Messages != nil {
+				d.Messages.Capture(c.MessageStoreAccount(), v)
+			}
 			parse := m.Parse(d.ctx, v)
 
 			d.tryStartCommand(func() {

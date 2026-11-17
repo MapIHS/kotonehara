@@ -52,6 +52,11 @@ jobs:
           RPG_TEST_POSTGRES_URL: postgres://postgres:rpg-test-only@127.0.0.1:5432/rpg_test?sslmode=disable
         run: go test -race -count=1 ./internal/rpg
 
+      - name: Run message store suite against disposable PostgreSQL
+        env:
+          MESSAGE_STORE_TEST_POSTGRES_URL: postgres://postgres:rpg-test-only@127.0.0.1:5432/rpg_test?sslmode=disable
+        run: go test -race -count=1 ./internal/msgstore
+
       - name: Validate deployment config checks
         run: python3 -m unittest discover -s scripts -p '*_test.py'
 

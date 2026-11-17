@@ -99,6 +99,9 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 		}
 		return
 	}
+	if cmd.IsMedia && c != nil {
+		c.RestoreQuotedMedia(ctx, m)
+	}
 	if cmd.IsMedia && m.Media == nil {
 		_, _ = m.Reply(ctx, "Media-nya dibutuhkan, yaa.")
 		return

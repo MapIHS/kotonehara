@@ -36,6 +36,11 @@ type Config struct {
 	OpenAITimeout        time.Duration
 	FreeDailyLimit       int
 	QuotaFailOpen        bool
+
+	MessageStoreEnabled    bool
+	MessageStoreRetention  time.Duration
+	MessageStoreCacheBytes int
+	MessageStoreQueueBytes int
 }
 
 // OpenAIProvider describes one OpenAI-compatible upstream. Models can contain
@@ -125,7 +130,20 @@ func Load() Config {
 		OpenAITimeout:        openAITimeout,
 		FreeDailyLimit:       freeDailyLimit,
 		QuotaFailOpen:        parseBoolDefault(os.Getenv("QUOTA_FAIL_OPEN"), true),
+
+		MessageStoreEnabled:    parseBoolDefault(os.Getenv("MESSAGE_STORE_ENABLED"), true),
+		MessageStoreRetention:  parseDurationOrSeconds(os.Getenv("MESSAGE_STORE_RETENTION"), 24*time.Hour),
+		MessageStoreCacheBytes: positiveInt(os.Getenv("MESSAGE_STORE_CACHE_BYTES"), 4<<20),
+		MessageStoreQueueBytes: positiveInt(os.Getenv("MESSAGE_STORE_QUEUE_BYTES"), 4<<20),
 	}
+}
+
+func positiveInt(raw string, fallback int) int {
+	n, err := strconv.Atoi(strings.TrimSpace(raw))
+	if err != nil || n <= 0 {
+		return fallback
+	}
+	return n
 }
 
 // loadOpenAIProviders accepts either OPENAI_PROVIDERS (a JSON array) or

@@ -60,6 +60,9 @@ func pickMedia(quoted *waE2E.Message, mess *events.Message) whatsmeow.Downloadab
 		}
 	}
 
+	if mess == nil {
+		return nil
+	}
 	if msg := mess.Message.GetImageMessage(); msg != nil {
 		return msg
 	}
@@ -95,6 +98,39 @@ func pickQuoted(mess *events.Message) *waE2E.Message {
 	}
 
 	return nil
+}
+
+// UnwrapMessage handles wrappers on quotes as well as top-level messages.
+func UnwrapMessage(raw *waE2E.Message) *waE2E.Message {
+	if raw == nil {
+		return nil
+	}
+	return (&events.Message{RawMessage: raw}).UnwrapRaw().Message
+}
+
+// IsViewOnceMessage retains the view-once signal before a quote is unwrapped.
+func IsViewOnceMessage(raw *waE2E.Message) bool {
+	if raw == nil {
+		return false
+	}
+	evt := (&events.Message{RawMessage: raw}).UnwrapRaw()
+	return evt.IsViewOnce || evt.Message.GetImageMessage().GetViewOnce() || evt.Message.GetVideoMessage().GetViewOnce() || evt.Message.GetAudioMessage().GetViewOnce()
+}
+
+// SetQuotedMessage keeps command media flags consistent after store lookup.
+func SetQuotedMessage(m *Message, quoted *waE2E.Message) {
+	m.IsQuotedViewOnce = IsViewOnceMessage(quoted)
+	q := UnwrapMessage(quoted)
+	m.QuotedMsg = q
+	m.Media = pickMedia(q, m.Msg)
+	if strings.EqualFold(m.Command, "tomp3") && q.GetAudioMessage() != nil {
+		m.Media = q.GetAudioMessage()
+	}
+	m.IsQuotedImage = q.GetImageMessage() != nil
+	m.IsQuotedVideo = q.GetVideoMessage() != nil
+	m.IsQuotedSticker = q.GetStickerMessage() != nil
+	m.IsQuotedGif = q.GetImageMessage().GetMimetype() == "image/gif"
+	m.IsQuotedStickerGif = q.GetStickerMessage().GetIsAnimated()
 }
 
 // QuotedText returns the text or caption of the replied-to message.

@@ -108,7 +108,9 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 		splitBody = strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(body), pfx))
 	}
 	cmd, query := splitCommand(splitBody)
-	quotedMsg := pickQuoted(mess)
+	quotedRaw := pickQuoted(mess)
+	isQuotedViewOnce := IsViewOnceMessage(quotedRaw)
+	quotedMsg := UnwrapMessage(quotedRaw)
 	media := pickMedia(quotedMsg, mess)
 	if strings.EqualFold(cmd, "tomp3") {
 		if audio := quotedMsg.GetAudioMessage(); audio != nil {
@@ -164,6 +166,7 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 		IsQuotedGif:     isQuotedGif,
 
 		IsQuotedStickerGif: isQuotedStickerGif,
+		IsQuotedViewOnce:   isQuotedViewOnce,
 
 		Msg:         mess,
 		ContextInfo: quoteContextInfo(mess),

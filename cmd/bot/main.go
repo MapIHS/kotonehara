@@ -16,6 +16,7 @@ import (
 	dbInfra "github.com/MapIHS/kotonehara/internal/infra/db"
 	"github.com/MapIHS/kotonehara/internal/infra/store"
 	"github.com/MapIHS/kotonehara/internal/menfess"
+	"github.com/MapIHS/kotonehara/internal/msgstore"
 	"github.com/MapIHS/kotonehara/internal/quota"
 	"github.com/MapIHS/kotonehara/internal/rpg"
 	"github.com/mdp/qrterminal"
@@ -139,6 +140,18 @@ func main() {
 	}
 
 	d := devices.New(container, cfg, ctx)
+	var messages *msgstore.Store
+	if cfg.MessageStoreEnabled {
+		initCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+		messages, err = msgstore.New(initCtx, db, msgstore.Options{
+			Retention: cfg.MessageStoreRetention, CacheBytes: cfg.MessageStoreCacheBytes, QueueBytes: cfg.MessageStoreQueueBytes,
+		})
+		cancel()
+		if err != nil {
+			log.Fatal("message store init: ", err)
+		}
+		d.Messages = messages
+	}
 	dev, err := d.GetDefaultDevice(ctx)
 	if err != nil {
 		log.Fatal("get default device: ", err)
@@ -179,12 +192,19 @@ func main() {
 
 	<-ctx.Done()
 
-	shutdownCtx, cancelShutdown := context.WithTimeout(context.Background(), 30*time.Second)
+	shutdownCtx, cancelShutdown := context.WithTimeout(context.Background(), 25*time.Second)
 	defer cancelShutdown()
 	if err := d.Shutdown(shutdownCtx); err != nil {
 		log.Printf("graceful shutdown command: %v", err)
 	}
 	client.Disconnect()
+	if messages != nil {
+		flushCtx, cancelFlush := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancelFlush()
+		if err := messages.Shutdown(flushCtx); err != nil {
+			log.Printf("message store shutdown: %v", err)
+		}
+	}
 }
 
 func runPairingLogin(ctx context.Context, client *whatsmeow.Client, qrChan <-chan whatsmeow.QRChannelItem, phoneNumber string) error {
