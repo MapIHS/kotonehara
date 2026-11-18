@@ -217,6 +217,34 @@ func TestOriginalSurvivesRevokeEditDuplicateAndFilters(t *testing.T) {
 	}
 }
 
+func TestSenderKeyDistributionDoesNotOccupyRealMessageID(t *testing.T) {
+	db, s := fixture(t, Options{})
+	e := event("shared-id")
+	e.Message = &waE2E.Message{SenderKeyDistributionMessage: &waE2E.SenderKeyDistributionMessage{AxolotlSenderKeyDistributionMessage: []byte("group key")}, MessageContextInfo: &waE2E.MessageContextInfo{MessageSecret: []byte("metadata")}}
+	e.RawMessage = e.Message
+	if s.Capture("bot", e) {
+		t.Fatal("encryption-only event occupied a message ID")
+	}
+	actual := event("shared-id")
+	actual.Message.SenderKeyDistributionMessage = &waE2E.SenderKeyDistributionMessage{AxolotlSenderKeyDistributionMessage: []byte("group key")}
+	if !s.Capture("bot", actual) {
+		t.Fatal("real content with sender-key sidecar was dropped")
+	}
+	shutdown(t, s)
+	restarted, err := New(context.Background(), db, Options{CacheBytes: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer shutdown(t, restarted)
+	m, err := restarted.Get(context.Background(), key(actual))
+	if err != nil || m.Raw.GetConversation() != "original shared-id" {
+		t.Fatalf("message body lost after key event: %+v %v", m, err)
+	}
+	if st := s.Stats(); st.Skipped != 1 || st.Written != 1 {
+		t.Fatalf("unexpected store stats: %+v", st)
+	}
+}
+
 func TestAmbiguousAndDirectionIsolation(t *testing.T) {
 	_, s := fixture(t, Options{})
 	e := event("same")

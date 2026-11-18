@@ -202,7 +202,7 @@ func (s *Store) Capture(account string, evt *events.Message) bool {
 	}
 	if account == "" || evt.Info.ID == "" || evt.Info.Chat.IsEmpty() || evt.Info.Sender.IsEmpty() || raw == nil || msg == nil ||
 		evt.Info.Chat.Server == types.BroadcastServer || evt.Info.Chat.Server == types.NewsletterServer ||
-		evt.IsEdit || msg.GetProtocolMessage() != nil || msg.GetReactionMessage() != nil || msg.GetEncReactionMessage() != nil ||
+		evt.IsEdit || msg.GetProtocolMessage() != nil || msg.GetReactionMessage() != nil || msg.GetEncReactionMessage() != nil || senderKeyOnly(msg) ||
 		!timestamp.Add(s.opts.Retention).After(now) || proto.Size(raw) == 0 || proto.Size(raw) > s.opts.MaxMessageBytes {
 		s.mu.Lock()
 		s.stats.Skipped++
