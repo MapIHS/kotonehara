@@ -5,16 +5,14 @@ import (
 	"time"
 
 	"github.com/MapIHS/kotonehara/internal/infra/config"
-	"github.com/MapIHS/kotonehara/internal/msgstore"
 	"github.com/MapIHS/kotonehara/internal/service/httpclient"
 	meowcaller "github.com/purpshell/meowcaller"
 	"go.mau.fi/whatsmeow"
 )
 
 type Client struct {
-	WA       *whatsmeow.Client
-	Calls    *meowcaller.Client
-	Messages *msgstore.Store
+	WA    *whatsmeow.Client
+	Calls *meowcaller.Client
 
 	admins *adminCache
 	cfg    config.Config

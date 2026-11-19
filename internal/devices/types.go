@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/MapIHS/kotonehara/internal/infra/config"
-	"github.com/MapIHS/kotonehara/internal/msgstore"
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/store/sqlstore"
@@ -14,7 +13,6 @@ import (
 )
 
 type Devices struct {
-	Messages  *msgstore.Store // Set before NewClient; independent of command slots.
 	container *sqlstore.Container
 	log       waLog.Logger
 	timeout   time.Duration

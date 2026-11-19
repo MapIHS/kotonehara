@@ -172,7 +172,6 @@ func (d *Devices) NewClient(dev *store.Device) *whatsmeow.Client {
 
 func (d *Devices) registerEventHandler(client *whatsmeow.Client, callClient *meowcaller.Client) func(evt interface{}) {
 	c := clients.New(client, d.cfg, callClient)
-	c.Messages = d.Messages
 	m := message.NewParser(c, d.cfg)
 	m.ResolveIdentity = c.ResolveIdentity
 	return func(evt interface{}) {
@@ -180,9 +179,6 @@ func (d *Devices) registerEventHandler(client *whatsmeow.Client, callClient *meo
 		case *events.Message:
 			if d.ctx.Err() != nil {
 				return
-			}
-			if d.Messages != nil {
-				d.Messages.Capture(c.MessageStoreAccount(), v)
 			}
 			parse := m.Parse(d.ctx, v)
 
@@ -202,10 +198,6 @@ func (d *Devices) registerEventHandler(client *whatsmeow.Client, callClient *meo
 				commands.CommandExec(d.ctx, c, parse, d.cfg)
 			})
 
-		case *events.UndecryptableMessage:
-			if d.Messages != nil && v.IsUnavailable && v.UnavailableType == events.UnavailableTypeViewOnce {
-				d.Messages.NoteUnavailableViewOnce()
-			}
 		case *events.Connected:
 			if d.cfg.DisableContactImport {
 				disableContactImportForDevice(client.Store)

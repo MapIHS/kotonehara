@@ -20,7 +20,7 @@ const maxFetchedMediaSize = 256 << 20
 var errFetchedMediaTooLarge = errors.New("media melebihi batas")
 
 func (c *Client) SendText(ctx context.Context, to types.JID, txt string, opts *waE2E.ContextInfo, extra ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error) {
-	return c.SendMessage(ctx, to, &waE2E.Message{
+	return c.WA.SendMessage(ctx, to, &waE2E.Message{
 		ExtendedTextMessage: &waE2E.ExtendedTextMessage{
 			Text:        proto.String(txt),
 			ContextInfo: opts,
@@ -52,7 +52,7 @@ func (c *Client) SendSticker(ctx context.Context, to types.JID, data []byte, isL
 			ContextInfo:   opts,
 		},
 	}
-	return c.SendMessage(ctx, to, msg)
+	return c.WA.SendMessage(ctx, to, msg)
 }
 
 func (c *Client) FetchBytes(u string) ([]byte, error) {
@@ -167,7 +167,7 @@ func (c *Client) SendVideo(ctx context.Context, to types.JID, data []byte, gifPl
 		msg.VideoMessage.Seconds = proto.Uint32(meta.Duration)
 	}
 
-	return c.SendMessage(ctx, to, msg)
+	return c.WA.SendMessage(ctx, to, msg)
 }
 
 func (c *Client) SendAudio(ctx context.Context, to types.JID, data []byte, ptt bool, opts *waE2E.ContextInfo) (whatsmeow.SendResponse, error) {
@@ -201,7 +201,7 @@ func (c *Client) SendAudio(ctx context.Context, to types.JID, data []byte, ptt b
 		},
 	}
 
-	return c.SendMessage(ctx, to, msg)
+	return c.WA.SendMessage(ctx, to, msg)
 }
 
 func (c *Client) SendImage(ctx context.Context, to types.JID, data []byte, caption string, opts *waE2E.ContextInfo) (whatsmeow.SendResponse, error) {
@@ -250,7 +250,7 @@ func (c *Client) SendImage(ctx context.Context, to types.JID, data []byte, capti
 			ContextInfo:   opts,
 		},
 	}
-	return c.SendMessage(ctx, to, msg)
+	return c.WA.SendMessage(ctx, to, msg)
 }
 
 func (c *Client) SendDocument(ctx context.Context, to types.JID, data []byte, filename, caption string, opts *waE2E.ContextInfo) (whatsmeow.SendResponse, error) {
@@ -272,5 +272,5 @@ func (c *Client) SendDocument(ctx context.Context, to types.JID, data []byte, fi
 			ContextInfo:   opts,
 		},
 	}
-	return c.SendMessage(ctx, to, msg)
+	return c.WA.SendMessage(ctx, to, msg)
 }

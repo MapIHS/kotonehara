@@ -122,22 +122,6 @@ func IsViewOnceMessage(raw *waE2E.Message) bool {
 	return evt.IsViewOnce || evt.Message.GetImageMessage().GetViewOnce() || evt.Message.GetVideoMessage().GetViewOnce() || evt.Message.GetAudioMessage().GetViewOnce()
 }
 
-// SetQuotedMessage keeps command media flags consistent after store lookup.
-func SetQuotedMessage(m *Message, quoted *waE2E.Message) {
-	m.IsQuotedViewOnce = IsViewOnceMessage(quoted)
-	q := UnwrapMessage(quoted)
-	m.QuotedMsg = q
-	m.Media = pickMedia(q, m.Msg)
-	if strings.EqualFold(m.Command, "tomp3") && q.GetAudioMessage() != nil {
-		m.Media = q.GetAudioMessage()
-	}
-	m.IsQuotedImage = q.GetImageMessage() != nil
-	m.IsQuotedVideo = q.GetVideoMessage() != nil
-	m.IsQuotedSticker = q.GetStickerMessage() != nil
-	m.IsQuotedGif = q.GetImageMessage().GetMimetype() == "image/gif"
-	m.IsQuotedStickerGif = q.GetStickerMessage().GetIsAnimated()
-}
-
 // QuotedText returns the text or caption of the replied-to message.
 func (m *Message) QuotedText() string {
 	q := m.QuotedMsg
