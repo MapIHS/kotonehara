@@ -39,7 +39,7 @@ func init() {
 			}
 
 			caption := fmt.Sprintf("*Title* :%s", res.Title)
-			err = sendTikTokMedia(res.Images, res.Video, caption, client.FetchBytes,
+			err = sendTikTokMedia(res.Images, res.Video, caption,
 				func(medias []clients.AlbumMedia) error {
 					_, err := client.SendAlbum(ctx, m.From, medias, m.ID)
 					return err
@@ -52,37 +52,26 @@ func init() {
 	})
 }
 
-func sendTikTokMedia(images []string, video *string, caption string, fetch func(string) ([]byte, error), sendMedia func([]clients.AlbumMedia) error) error {
-	var albumMedia []clients.AlbumMedia
-	for _, imageURL := range images {
-		if strings.TrimSpace(imageURL) == "" {
+func sendTikTokMedia(images []string, video *string, caption string, sendMedia func([]clients.AlbumMedia) error) error {
+	var medias []clients.AlbumMedia
+	for _, url := range images {
+		if strings.TrimSpace(url) == "" {
 			continue
 		}
-		data, err := fetch(imageURL)
-		if err != nil {
-			continue
+		text := ""
+		if len(medias) == 0 {
+			text = caption
 		}
-		itemCaption := ""
-		if len(albumMedia) == 0 {
-			itemCaption = caption
-		}
-		albumMedia = append(albumMedia, clients.NewAlbumImage(data, itemCaption))
+		medias = append(medias, clients.NewAlbumImageURL(url, text))
 	}
-	if len(albumMedia) > 0 {
-		if err := sendMedia(albumMedia); err != nil {
-			return fmt.Errorf("Gagal mengirim gambar TikTok: %w", err)
-		}
-		return nil
+	if len(medias) == 0 && video != nil && strings.TrimSpace(*video) != "" {
+		medias = append(medias, clients.NewAlbumVideoURL(*video, false, caption))
 	}
-	if video == nil || strings.TrimSpace(*video) == "" {
+	if len(medias) == 0 {
 		return fmt.Errorf("Media TikTok tidak ditemukan.")
 	}
-	data, err := fetch(*video)
-	if err != nil {
-		return fmt.Errorf("Gagal mengunduh video TikTok: %w", err)
-	}
-	if err := sendMedia([]clients.AlbumMedia{clients.NewAlbumVideo(data, false, caption)}); err != nil {
-		return fmt.Errorf("Gagal mengirim video TikTok: %w", err)
+	if err := sendMedia(medias); err != nil {
+		return fmt.Errorf("Gagal mengirim media TikTok: %w", err)
 	}
 	return nil
 }

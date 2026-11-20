@@ -43,11 +43,6 @@ func init() {
 
 			var albumMedia []clients.AlbumMedia
 			for i := 0; i < limit; i++ {
-				imgData, err := client.FetchBytesWithHeaders(res.URLs[i], headers)
-				if err != nil {
-					continue
-				}
-
 				cap := ""
 				if i == 0 {
 					cap = caption
@@ -56,7 +51,9 @@ func init() {
 					}
 				}
 
-				albumMedia = append(albumMedia, clients.NewAlbumImage(imgData, cap))
+				item := clients.NewAlbumImageURL(res.URLs[i], cap)
+				item.Headers = headers
+				albumMedia = append(albumMedia, item)
 			}
 
 			if len(albumMedia) == 0 {
@@ -107,12 +104,9 @@ func init() {
 
 				caption := fmt.Sprintf("🔍 *%s*\n👤 %s\n🔗 %s", item.Title, item.Author, url)
 
-				imgData, err := client.FetchBytesWithHeaders(item.URL, headers)
-				if err != nil {
-					continue
-				}
-
-				albumMedia = append(albumMedia, clients.NewAlbumImage(imgData, caption))
+				media := clients.NewAlbumImageURL(item.URL, caption)
+				media.Headers = headers
+				albumMedia = append(albumMedia, media)
 			}
 
 			if len(albumMedia) == 0 {

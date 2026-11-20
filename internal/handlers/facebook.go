@@ -39,11 +39,7 @@ func init() {
 
 			var albumMedia []clients.AlbumMedia
 			for _, p := range res.Videos {
-				buff, err := client.FetchBytes(p.URL)
-				if err != nil {
-					continue
-				}
-				albumMedia = append(albumMedia, clients.NewAlbumVideo(buff, false))
+				albumMedia = append(albumMedia, clients.NewAlbumVideoURL(p.URL, false))
 			}
 
 			if _, err := client.SendAlbum(ctx, m.From, albumMedia, m.ID); err != nil {

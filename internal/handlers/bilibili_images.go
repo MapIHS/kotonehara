@@ -3,8 +3,6 @@ package handlers
 import (
 	"context"
 	"errors"
-	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/MapIHS/kotonehara/internal/clients"
@@ -31,42 +29,21 @@ func sendBilibiliImages(ctx context.Context, result *api.BilibiliResult,
 	if len(caption) > 900 {
 		caption = append(caption[:900], []rune("...")...)
 	}
-	remaining := int64(256 << 20)
-
-	var albumMedia []clients.AlbumMedia
-	var lastErr error
-	for _, item := range result.Media {
+	medias := make([]clients.AlbumMedia, 0, len(result.Media))
+	for i, item := range result.Media {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
-		data, err := fetch(ctx, item, remaining)
-		if err != nil {
-			lastErr = err
-			continue
+		text := ""
+		if i == 0 {
+			text = string(caption)
 		}
-		remaining -= int64(len(data))
-		if remaining < 0 {
-			return errors.New("total media Opus melebihi batas 256 MiB")
-		}
-		itemCaption := ""
-		if len(albumMedia) == 0 {
-			itemCaption = string(caption)
-		}
-		isGif := http.DetectContentType(data) == "image/gif"
-		albumMedia = append(albumMedia, clients.AlbumMedia{
-			Data:        data,
-			Caption:     itemCaption,
-			IsVideo:     isGif,
-			GifPlayback: isGif,
+		medias = append(medias, clients.AlbumMedia{
+			Caption: text, IsVideo: item.Type == "gif", GifPlayback: item.Type == "gif",
+			Fetch: func(ctx context.Context, limit int64) ([]byte, error) {
+				return fetch(ctx, item, limit)
+			},
 		})
 	}
-
-	if len(albumMedia) > 0 {
-		return sendAlbum(ctx, albumMedia)
-	}
-
-	if lastErr != nil {
-		return fmt.Errorf("gagal mengunduh media Opus: %w", lastErr)
-	}
-	return errors.New("tidak ada media Opus yang berhasil diunduh")
+	return sendAlbum(ctx, medias)
 }

@@ -183,16 +183,12 @@ func init() {
 			var albumMedia []clients.AlbumMedia
 			for _, media := range mediaLinks {
 				mediaURL := resolveSnapCDNURL(media.URL)
-				buff, err := client.FetchBytes(mediaURL)
-				if err != nil {
-					continue
-				}
 
 				switch media.MediaType {
 				case api.TwitterMediaTypeVideo:
-					albumMedia = append(albumMedia, clients.NewAlbumVideo(buff, false))
+					albumMedia = append(albumMedia, clients.NewAlbumVideoURL(mediaURL, false))
 				case api.TwitterMediaTypeImage:
-					albumMedia = append(albumMedia, clients.NewAlbumImage(buff))
+					albumMedia = append(albumMedia, clients.NewAlbumImageURL(mediaURL))
 				}
 			}
 

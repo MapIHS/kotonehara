@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/proto/waCommon"
@@ -14,7 +16,20 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+const (
+	MaxAlbumItems             = 20
+	MaxAlbumMediaBytes  int64 = 32 << 20
+	MaxAlbumTotalBytes  int64 = 128 << 20
+	maxAlbumImagePixels int64 = 16_000_000
+)
+
+var ErrAlbumLimit = errors.New("album melebihi batas ukuran atau jumlah media")
+var albumSlots = make(chan struct{}, 1)
+
 type AlbumMedia struct {
+	URL         string
+	Headers     map[string]string
+	Fetch       func(context.Context, int64) ([]byte, error)
 	Data        []byte
 	Caption     string
 	IsVideo     bool
@@ -46,12 +61,24 @@ func NewAlbumVideo(data []byte, gifPlayback bool, caption ...string) AlbumMedia 
 	}
 }
 
+func NewAlbumImageURL(url string, caption ...string) AlbumMedia {
+	item := NewAlbumImage(nil, caption...)
+	item.URL = url
+	return item
+}
+
+func NewAlbumVideoURL(url string, gifPlayback bool, caption ...string) AlbumMedia {
+	item := NewAlbumVideo(nil, gifPlayback, caption...)
+	item.URL = url
+	return item
+}
+
 func (c *Client) detectAlbumMediaType(item AlbumMedia) (bool, error) {
-	if item.IsVideo {
-		return true, nil
-	}
 	if len(item.Data) == 0 {
 		return false, errors.New("data media kosong")
+	}
+	if item.IsVideo {
+		return true, nil
 	}
 
 	mime := http.DetectContentType(item.Data)
@@ -81,6 +108,9 @@ func (c *Client) prepareAlbumImage(ctx context.Context, item AlbumMedia) (*waE2E
 		return nil, fmt.Errorf("gagal mendeteksi info gambar: %w", err)
 	}
 
+	if width <= 0 || height <= 0 || int64(width) > maxAlbumImagePixels/int64(height) {
+		return nil, fmt.Errorf("%w: gambar maksimal 16 megapiksel", ErrAlbumLimit)
+	}
 	if mime == "image/webp" {
 		jpegData, err := c.ConvertToJPEG(data)
 		if err == nil {
@@ -97,6 +127,9 @@ func (c *Client) prepareAlbumImage(ctx context.Context, item AlbumMedia) (*waE2E
 		heightVal = proto.Uint32(uint32(height))
 	}
 
+	if int64(len(data)) > MaxAlbumMediaBytes {
+		return nil, ErrAlbumLimit
+	}
 	up, err := c.WA.Upload(ctx, data, whatsmeow.MediaImage)
 	if err != nil {
 		return nil, fmt.Errorf("gagal upload gambar: %w", err)
@@ -133,8 +166,15 @@ func (c *Client) prepareAlbumVideo(ctx context.Context, item AlbumMedia) (*waE2E
 	}
 	gifPlayback := item.GifPlayback
 	if mime == "image/gif" {
+		_, width, height, err := c.DetectImageInfo(data)
+		if err != nil {
+			return nil, err
+		}
+		if width <= 0 || height <= 0 || int64(width) > maxAlbumImagePixels/int64(height) {
+			return nil, ErrAlbumLimit
+		}
 		gifPlayback = true
-		if mp4Data, err := c.ConvertGifToMP4(ctx, data); err == nil {
+		if mp4Data, err := c.convertGifToMP4(ctx, data, MaxAlbumMediaBytes); err == nil {
 			data = mp4Data
 			mime = "video/mp4"
 		}
@@ -143,6 +183,9 @@ func (c *Client) prepareAlbumVideo(ctx context.Context, item AlbumMedia) (*waE2E
 		return nil, fmt.Errorf("data bukan video valid (mime: %s)", mime)
 	}
 
+	if int64(len(data)) > MaxAlbumMediaBytes {
+		return nil, ErrAlbumLimit
+	}
 	up, err := c.WA.Upload(ctx, data, whatsmeow.MediaVideo)
 	if err != nil {
 		return nil, fmt.Errorf("gagal upload video: %w", err)
@@ -180,104 +223,169 @@ func (c *Client) prepareAlbumVideo(ctx context.Context, item AlbumMedia) (*waE2E
 	}, nil
 }
 
+// SendAlbum keeps only one raw attachment at a time; callers should pass URL
+// descriptors or Fetch callbacks instead of collecting downloads in memory.
 func (c *Client) SendAlbum(ctx context.Context, to types.JID, medias []AlbumMedia, opts *waE2E.ContextInfo) ([]whatsmeow.SendResponse, error) {
-	if len(medias) == 0 {
-		return nil, errors.New("media album kosong")
+	if len(medias) == 0 || len(medias) > MaxAlbumItems {
+		return nil, ErrAlbumLimit
 	}
-
-	if len(medias) == 1 {
-		item := medias[0]
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
+	defer cancel()
+	select {
+	case albumSlots <- struct{}{}:
+		defer func() { <-albumSlots }()
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+	remaining := MaxAlbumTotalBytes
+	prepare := func(ctx context.Context, item AlbumMedia) (*waE2E.Message, error) {
+		var err error
+		item.Data, err = c.loadAlbumMedia(ctx, item, min(MaxAlbumMediaBytes, remaining))
+		if err != nil {
+			return nil, err
+		}
+		remaining -= int64(len(item.Data))
 		isVideo, err := c.detectAlbumMediaType(item)
 		if err != nil {
 			return nil, err
 		}
 		if isVideo {
-			resp, err := c.SendVideo(ctx, to, item.Data, item.GifPlayback, item.Caption, opts)
-			if err != nil {
-				return nil, err
-			}
-			return []whatsmeow.SendResponse{resp}, nil
+			return c.prepareAlbumVideo(ctx, item)
 		}
-		resp, err := c.SendImage(ctx, to, item.Data, item.Caption, opts)
-		if err != nil {
+		return c.prepareAlbumImage(ctx, item)
+	}
+	return sendAlbum(ctx, to, medias, opts, prepare, c.WA.SendMessage)
+}
+
+func (c *Client) loadAlbumMedia(ctx context.Context, item AlbumMedia, limit int64) ([]byte, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if limit <= 0 {
+		return nil, ErrAlbumLimit
+	}
+	data := item.Data
+	var err error
+	switch {
+	case item.Fetch != nil:
+		data, err = item.Fetch(ctx, limit)
+	case item.URL != "":
+		data, err = c.fetchAlbumBytes(ctx, item.URL, item.Headers, limit)
+	}
+	if err != nil {
+		return nil, err
+	}
+	if len(data) == 0 {
+		return nil, errors.New("data media kosong")
+	}
+	if int64(len(data)) > limit {
+		return nil, ErrAlbumLimit
+	}
+	return data, nil
+}
+
+func (c *Client) fetchAlbumBytes(ctx context.Context, url string, headers map[string]string, limit int64) ([]byte, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; kotonehara/1.0)")
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
+	resp, err := c.HTTP.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("download media: HTTP %d", resp.StatusCode)
+	}
+	if resp.ContentLength > limit {
+		return nil, ErrAlbumLimit
+	}
+	data, err := io.ReadAll(io.LimitReader(resp.Body, limit+1))
+	if err != nil {
+		return nil, err
+	}
+	if int64(len(data)) > limit {
+		return nil, ErrAlbumLimit
+	}
+	return data, nil
+}
+
+type albumSend func(context.Context, types.JID, *waE2E.Message, ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error)
+
+func sendAlbum(ctx context.Context, to types.JID, medias []AlbumMedia, opts *waE2E.ContextInfo,
+	prepare func(context.Context, AlbumMedia) (*waE2E.Message, error), send albumSend,
+) ([]whatsmeow.SendResponse, error) {
+	if len(medias) == 0 || len(medias) > MaxAlbumItems {
+		return nil, ErrAlbumLimit
+	}
+	prepared := make([]*waE2E.Message, 0, len(medias))
+	var failures []error
+	var images, videos uint32
+	for i, item := range medias {
+		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
-		return []whatsmeow.SendResponse{resp}, nil
-	}
-
-	type preparedItem struct {
-		msg     *waE2E.Message
-		isVideo bool
-	}
-
-	prepared := make([]preparedItem, 0, len(medias))
-	var expectedImages, expectedVideos uint32
-
-	for i, media := range medias {
-		isVideo, err := c.detectAlbumMediaType(media)
+		msg, err := prepare(ctx, item)
 		if err != nil {
-			return nil, fmt.Errorf("media album index %d: %w", i, err)
-		}
-
-		var msg *waE2E.Message
-		if isVideo {
-			msg, err = c.prepareAlbumVideo(ctx, media)
-			if err != nil {
-				return nil, fmt.Errorf("gagal menyiapkan video index %d: %w", i, err)
-			}
-			expectedVideos++
-		} else {
-			msg, err = c.prepareAlbumImage(ctx, media)
-			if err != nil {
-				return nil, fmt.Errorf("gagal menyiapkan gambar index %d: %w", i, err)
-			}
-			expectedImages++
-		}
-		prepared = append(prepared, preparedItem{msg: msg, isVideo: isVideo})
-	}
-
-	albumMsg := &waE2E.Message{
-		AlbumMessage: &waE2E.AlbumMessage{
-			ExpectedImageCount: proto.Uint32(expectedImages),
-			ExpectedVideoCount: proto.Uint32(expectedVideos),
-			ContextInfo:        opts,
-		},
-	}
-
-	albumResp, err := c.WA.SendMessage(ctx, to, albumMsg)
-	if err != nil {
-		return nil, fmt.Errorf("gagal mengirim album message container: %w", err)
-	}
-
-	responses := make([]whatsmeow.SendResponse, 0, len(prepared)+1)
-	responses = append(responses, albumResp)
-
-	parentKey := &waCommon.MessageKey{
-		ID:        proto.String(string(albumResp.ID)),
-		RemoteJID: proto.String(to.ToNonAD().String()),
-		FromMe:    proto.Bool(true),
-	}
-
-	var sendErrors []error
-	for i, item := range prepared {
-		item.msg.MessageContextInfo = &waE2E.MessageContextInfo{
-			MessageAssociation: &waE2E.MessageAssociation{
-				AssociationType:  waE2E.MessageAssociation_MEDIA_ALBUM.Enum(),
-				ParentMessageKey: parentKey,
-			},
-		}
-
-		childResp, err := c.WA.SendMessage(ctx, to, item.msg)
-		if err != nil {
-			sendErrors = append(sendErrors, fmt.Errorf("gagal mengirim media album index %d: %w", i, err))
+			failures = append(failures, fmt.Errorf("media album %d: %w", i+1, err))
 			continue
 		}
-		responses = append(responses, childResp)
+		switch {
+		case msg.GetImageMessage() != nil:
+			images++
+		case msg.GetVideoMessage() != nil:
+			videos++
+		default:
+			return nil, errors.New("tipe media album tidak didukung")
+		}
+		prepared = append(prepared, msg)
 	}
-
-	if len(sendErrors) > 0 {
-		return responses, errors.Join(sendErrors...)
+	if err := ctx.Err(); err != nil {
+		return nil, err
 	}
-
-	return responses, nil
+	if len(prepared) == 0 {
+		return nil, errors.Join(failures...)
+	}
+	if len(prepared) == 1 {
+		msg := prepared[0]
+		if msg.ImageMessage != nil {
+			msg.ImageMessage.ContextInfo = opts
+		}
+		if msg.VideoMessage != nil {
+			msg.VideoMessage.ContextInfo = opts
+		}
+		resp, err := send(ctx, to, msg)
+		if err != nil {
+			return nil, errors.Join(append(failures, err)...)
+		}
+		return []whatsmeow.SendResponse{resp}, errors.Join(failures...)
+	}
+	album := &waE2E.Message{AlbumMessage: &waE2E.AlbumMessage{
+		ExpectedImageCount: proto.Uint32(images), ExpectedVideoCount: proto.Uint32(videos), ContextInfo: opts,
+	}}
+	resp, err := send(ctx, to, album)
+	if err != nil {
+		return nil, errors.Join(append(failures, err)...)
+	}
+	responses := []whatsmeow.SendResponse{resp}
+	key := &waCommon.MessageKey{ID: proto.String(string(resp.ID)), RemoteJID: proto.String(to.ToNonAD().String()), FromMe: proto.Bool(true)}
+	for i, msg := range prepared {
+		if err := ctx.Err(); err != nil {
+			return responses, errors.Join(append(failures, err)...)
+		}
+		msg.MessageContextInfo = &waE2E.MessageContextInfo{MessageAssociation: &waE2E.MessageAssociation{
+			AssociationType: waE2E.MessageAssociation_MEDIA_ALBUM.Enum(), ParentMessageKey: key,
+		}}
+		child, err := send(ctx, to, msg)
+		if err != nil {
+			failures = append(failures, fmt.Errorf("kirim media album %d: %w", i+1, err))
+			continue
+		}
+		responses = append(responses, child)
+	}
+	return responses, errors.Join(failures...)
 }

@@ -30,6 +30,10 @@ func (c *Client) ConvertToJPEG(src []byte) ([]byte, error) {
 }
 
 func (c *Client) ConvertGifToMP4(ctx context.Context, src []byte) ([]byte, error) {
+	return c.convertGifToMP4(ctx, src, 0)
+}
+
+func (c *Client) convertGifToMP4(ctx context.Context, src []byte, maxBytes int64) ([]byte, error) {
 	dir, err := os.MkdirTemp("", "gif2mp4")
 	if err != nil {
 		return nil, err
@@ -43,18 +47,25 @@ func (c *Client) ConvertGifToMP4(ctx context.Context, src []byte) ([]byte, error
 		return nil, err
 	}
 
-	cmd := exec.CommandContext(ctx, "ffmpeg",
-		"-y",
-		"-i", inFile,
-		"-movflags", "faststart",
-		"-pix_fmt", "yuv420p",
-		"-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2",
-		outFile,
-	)
+	args := []string{"-y", "-i", inFile, "-movflags", "faststart", "-pix_fmt", "yuv420p", "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2"}
+	if maxBytes > 0 {
+		args = append(args, "-fs", strconv.FormatInt(maxBytes, 10))
+	}
+	args = append(args, outFile)
+	cmd := exec.CommandContext(ctx, "ffmpeg", args...)
 	if err := cmd.Run(); err != nil {
 		return nil, err
 	}
 
+	if maxBytes > 0 {
+		info, err := os.Stat(outFile)
+		if err != nil {
+			return nil, err
+		}
+		if info.Size() >= maxBytes {
+			return nil, ErrAlbumLimit
+		}
+	}
 	return os.ReadFile(outFile)
 }
 

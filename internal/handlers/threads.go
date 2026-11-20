@@ -34,17 +34,14 @@ func threads(ctx context.Context, client *clients.Client, m *message.Message, cf
 		if mediaURL == "" {
 			continue
 		}
-		buff, err := client.FetchBytes(mediaURL)
-		if err != nil {
-			continue
-		}
+
 		caption := ""
 		if len(albumMedia) == 0 {
 			caption = threadsCaption(item)
 		}
 		isVideo := item.MediaType == api.ThreadsMediaTypeVideo || item.MediaType == api.ThreadsMediaTypeGIF
 		albumMedia = append(albumMedia, clients.AlbumMedia{
-			Data:        buff,
+			URL:         mediaURL,
 			Caption:     caption,
 			IsVideo:     isVideo,
 			GifPlayback: item.MediaType == api.ThreadsMediaTypeGIF,

@@ -75,13 +75,8 @@ func init() {
 					continue
 				}
 
-				imgData, err := client.FetchBytes(item.Images[0])
-				if err != nil {
-					continue
-				}
-
 				caption := fmt.Sprintf("🔍 *%s*\n🔗 %s", item.Title, item.Link)
-				albumMedia = append(albumMedia, clients.NewAlbumImage(imgData, caption))
+				albumMedia = append(albumMedia, clients.NewAlbumImageURL(item.Images[0], caption))
 			}
 
 			if len(albumMedia) == 0 {

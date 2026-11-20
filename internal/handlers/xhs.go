@@ -51,23 +51,11 @@ func init() {
 
 			var albumMedia []clients.AlbumMedia
 			for _, p := range res.Images {
-				buff, err := client.FetchBytes(p.URL)
-				if err != nil {
-					continue
-				}
-				albumMedia = append(albumMedia, clients.NewAlbumImage(buff))
+				albumMedia = append(albumMedia, clients.NewAlbumImageURL(p.URL))
 			}
 
 			if res.Video != nil {
-				buff, err := client.FetchBytes(res.Video.URL)
-				if err != nil {
-					if len(albumMedia) == 0 {
-						m.Reply(ctx, "Maaf Terjadi kesalahan, yaa.")
-						return
-					}
-				} else {
-					albumMedia = append(albumMedia, clients.NewAlbumVideo(buff, false))
-				}
+				albumMedia = append(albumMedia, clients.NewAlbumVideoURL(res.Video.URL, false))
 			}
 
 			if len(albumMedia) == 0 {
