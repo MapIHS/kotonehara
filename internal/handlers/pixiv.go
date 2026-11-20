@@ -32,7 +32,7 @@ func init() {
 
 			limit := len(res.URLs)
 			if limit > 5 {
-				limit = 5 // Batasi maksimal 5 gambar agar tidak spam
+				limit = 5
 			}
 
 			headers := map[string]string{
@@ -41,7 +41,7 @@ func init() {
 
 			caption := fmt.Sprintf("🎨 *%s*\n👤 %s", res.Title, res.Author)
 
-			var successCount int
+			var albumMedia []clients.AlbumMedia
 			for i := 0; i < limit; i++ {
 				imgData, err := client.FetchBytesWithHeaders(res.URLs[i], headers)
 				if err != nil {
@@ -56,14 +56,16 @@ func init() {
 					}
 				}
 
-				_, err = client.SendImage(ctx, m.From, imgData, cap, m.ID)
-				if err == nil {
-					successCount++
-				}
+				albumMedia = append(albumMedia, clients.NewAlbumImage(imgData, cap))
 			}
 
-			if successCount == 0 {
+			if len(albumMedia) == 0 {
 				m.Reply(ctx, "Gagal mengirim gambar Pixiv.")
+				return
+			}
+
+			if _, err := client.SendAlbum(ctx, m.From, albumMedia, m.ID); err != nil {
+				m.Reply(ctx, "Gagal mengirim gambar Pixiv: "+err.Error())
 			}
 		},
 	})
@@ -94,11 +96,11 @@ func init() {
 				limit = len(res.Results)
 			}
 
-			var successCount int
 			headers := map[string]string{
 				"Referer": "https://www.pixiv.net/",
 			}
 
+			var albumMedia []clients.AlbumMedia
 			for i := 0; i < limit; i++ {
 				item := res.Results[i]
 				url := fmt.Sprintf("https://www.pixiv.net/en/artworks/%s", item.ID)
@@ -107,18 +109,19 @@ func init() {
 
 				imgData, err := client.FetchBytesWithHeaders(item.URL, headers)
 				if err != nil {
-					client.SendText(ctx, m.From, caption+"\n_(Gagal memuat gambar)_", m.ID)
 					continue
 				}
 
-				_, err = client.SendImage(ctx, m.From, imgData, caption, m.ID)
-				if err == nil {
-					successCount++
-				}
+				albumMedia = append(albumMedia, clients.NewAlbumImage(imgData, caption))
 			}
 
-			if successCount == 0 {
+			if len(albumMedia) == 0 {
 				m.Reply(ctx, "Gagal mengirim gambar dari hasil pencarian Pixiv.")
+				return
+			}
+
+			if _, err := client.SendAlbum(ctx, m.From, albumMedia, m.ID); err != nil {
+				m.Reply(ctx, "Gagal mengirim gambar dari hasil pencarian Pixiv: "+err.Error())
 			}
 		},
 	})

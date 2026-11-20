@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 	"strings"
 	"time"
 
@@ -30,38 +28,36 @@ func threads(ctx context.Context, client *clients.Client, m *message.Message, cf
 		return
 	}
 
-	sent := 0
-	var lastErr error
+	var albumMedia []clients.AlbumMedia
 	for _, item := range res.Items {
 		mediaURL := strings.TrimSpace(item.BestURL())
 		if mediaURL == "" {
 			continue
 		}
-
 		buff, err := client.FetchBytes(mediaURL)
 		if err != nil {
-			lastErr = err
 			continue
 		}
-
 		caption := ""
-		if sent == 0 {
+		if len(albumMedia) == 0 {
 			caption = threadsCaption(item)
 		}
-
-		if err := sendThreadsItem(ctx, client, m, item, buff, caption); err != nil {
-			lastErr = err
-			continue
-		}
-		sent++
+		isVideo := item.MediaType == api.ThreadsMediaTypeVideo || item.MediaType == api.ThreadsMediaTypeGIF
+		albumMedia = append(albumMedia, clients.AlbumMedia{
+			Data:        buff,
+			Caption:     caption,
+			IsVideo:     isVideo,
+			GifPlayback: item.MediaType == api.ThreadsMediaTypeGIF,
+		})
 	}
 
-	if sent == 0 {
-		if lastErr != nil {
-			m.Reply(ctx, "Media Threads ditemukan, tapi gagal dikirim: "+lastErr.Error())
-			return
-		}
+	if len(albumMedia) == 0 {
 		m.Reply(ctx, "Media Threads tidak ditemukan.")
+		return
+	}
+
+	if _, err := client.SendAlbum(ctx, m.From, albumMedia, m.ID); err != nil {
+		m.Reply(ctx, "Gagal mengirim media Threads: "+err.Error())
 	}
 }
 
@@ -78,43 +74,6 @@ func threadsCaption(item api.ThreadsMediaItem) string {
 		caption = caption[:900] + "..."
 	}
 	return caption
-}
-
-func sendThreadsItem(ctx context.Context, client *clients.Client, m *message.Message, item api.ThreadsMediaItem, data []byte, caption string) error {
-	switch item.MediaType {
-	case api.ThreadsMediaTypeVideo:
-		_, err := client.SendVideo(ctx, m.From, data, false, caption, m.ID)
-		return err
-	case api.ThreadsMediaTypeGIF:
-		var videoErr error
-		if _, err := client.SendVideo(ctx, m.From, data, true, caption, m.ID); err == nil {
-			return nil
-		} else {
-			videoErr = err
-		}
-		if _, err := client.SendImage(ctx, m.From, data, caption, m.ID); err == nil {
-			return nil
-		}
-		return videoErr
-	case api.ThreadsMediaTypeImage:
-		_, err := client.SendImage(ctx, m.From, data, caption, m.ID)
-		return err
-	default:
-		mime := http.DetectContentType(data)
-		if strings.HasPrefix(mime, "video/") {
-			_, err := client.SendVideo(ctx, m.From, data, false, caption, m.ID)
-			return err
-		}
-		if strings.HasPrefix(mime, "image/") {
-			_, err := client.SendImage(ctx, m.From, data, caption, m.ID)
-			return err
-		}
-		if mime == "application/octet-stream" {
-			_, err := client.SendVideo(ctx, m.From, data, false, caption, m.ID)
-			return err
-		}
-		return fmt.Errorf("tipe media Threads tidak didukung: %s", mime)
-	}
 }
 
 func init() {

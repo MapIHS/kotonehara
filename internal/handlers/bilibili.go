@@ -121,12 +121,8 @@ func init() {
 						func(ctx context.Context, item api.BilibiliMedia, remaining int64) ([]byte, error) {
 							return bilimedia.FetchImage(ctx, ap.HTTP, item, result.Headers, remaining)
 						},
-						func(ctx context.Context, data []byte, gif bool, caption string) error {
-							if gif {
-								_, err := client.SendVideo(ctx, m.From, data, true, caption, m.ID)
-								return err
-							}
-							_, err := client.SendImage(ctx, m.From, data, caption, m.ID)
+						func(ctx context.Context, medias []clients.AlbumMedia) error {
+							_, err := client.SendAlbum(ctx, m.From, medias, m.ID)
 							return err
 						},
 					)

@@ -68,29 +68,28 @@ func init() {
 				limit = len(res.Results)
 			}
 
-			var successCount int
+			var albumMedia []clients.AlbumMedia
 			for i := 0; i < limit; i++ {
 				item := res.Results[i]
-				caption := fmt.Sprintf("🔍 *%s*\n🔗 %s", item.Title, item.Link)
-
 				if len(item.Images) == 0 {
-					client.SendText(ctx, m.From, caption+"\n_(Tidak ada gambar)_", m.ID)
 					continue
 				}
 
 				imgData, err := client.FetchBytes(item.Images[0])
 				if err != nil {
-					client.SendText(ctx, m.From, caption+"\n_(Gagal memuat gambar)_", m.ID)
 					continue
 				}
 
-				_, err = client.SendImage(ctx, m.From, imgData, caption, m.ID)
-				if err == nil {
-					successCount++
-				}
+				caption := fmt.Sprintf("🔍 *%s*\n🔗 %s", item.Title, item.Link)
+				albumMedia = append(albumMedia, clients.NewAlbumImage(imgData, caption))
 			}
 
-			if successCount == 0 {
+			if len(albumMedia) == 0 {
+				m.Reply(ctx, "Gagal mengunduh gambar dari hasil pencarian Pinterest.")
+				return
+			}
+
+			if _, err := client.SendAlbum(ctx, m.From, albumMedia, m.ID); err != nil {
 				m.Reply(ctx, "Gagal mengirim gambar dari hasil pencarian Pinterest.")
 			}
 		},

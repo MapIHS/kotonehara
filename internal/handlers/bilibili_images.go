@@ -7,12 +7,13 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/MapIHS/kotonehara/internal/clients"
 	"github.com/MapIHS/kotonehara/internal/service/api"
 )
 
 func sendBilibiliImages(ctx context.Context, result *api.BilibiliResult,
 	fetch func(context.Context, api.BilibiliMedia, int64) ([]byte, error),
-	send func(context.Context, []byte, bool, string) error,
+	sendAlbum func(context.Context, []clients.AlbumMedia) error,
 ) error {
 	if len(result.Media) == 0 || len(result.Media) > 20 {
 		return errors.New("Opus harus berisi 1–20 gambar/GIF")
@@ -31,7 +32,8 @@ func sendBilibiliImages(ctx context.Context, result *api.BilibiliResult,
 		caption = append(caption[:900], []rune("...")...)
 	}
 	remaining := int64(256 << 20)
-	sent := 0
+
+	var albumMedia []clients.AlbumMedia
 	var lastErr error
 	for _, item := range result.Media {
 		if err := ctx.Err(); err != nil {
@@ -47,17 +49,24 @@ func sendBilibiliImages(ctx context.Context, result *api.BilibiliResult,
 			return errors.New("total media Opus melebihi batas 256 MiB")
 		}
 		itemCaption := ""
-		if sent == 0 {
+		if len(albumMedia) == 0 {
 			itemCaption = string(caption)
 		}
-		if err := send(ctx, data, http.DetectContentType(data) == "image/gif", itemCaption); err != nil {
-			lastErr = err
-			continue
-		}
-		sent++
+		isGif := http.DetectContentType(data) == "image/gif"
+		albumMedia = append(albumMedia, clients.AlbumMedia{
+			Data:        data,
+			Caption:     itemCaption,
+			IsVideo:     isGif,
+			GifPlayback: isGif,
+		})
 	}
-	if sent != len(result.Media) {
-		return fmt.Errorf("%d dari %d media berhasil dikirim: %w", sent, len(result.Media), lastErr)
+
+	if len(albumMedia) > 0 {
+		return sendAlbum(ctx, albumMedia)
 	}
-	return nil
+
+	if lastErr != nil {
+		return fmt.Errorf("gagal mengunduh media Opus: %w", lastErr)
+	}
+	return errors.New("tidak ada media Opus yang berhasil diunduh")
 }

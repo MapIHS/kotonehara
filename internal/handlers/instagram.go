@@ -37,26 +37,24 @@ func init() {
 				return
 			}
 
-			totalMedia := len(res.Photos) + len(res.Videos)
-
-			if totalMedia > 0 {
-				for _, p := range res.Videos {
-					buff, err := client.FetchBytes(p.URL)
-					if err != nil {
-						continue
-					}
-
-					client.SendVideo(ctx, m.From, buff, false, "", m.ID)
+			var albumMedia []clients.AlbumMedia
+			for _, p := range res.Videos {
+				buff, err := client.FetchBytes(p.URL)
+				if err != nil {
+					continue
 				}
-
-				for _, p := range res.Photos {
-					buff, err := client.FetchBytes(p.URL)
-					if err != nil {
-						continue
-					}
-
-					client.SendImage(ctx, m.From, buff, "", m.ID)
+				albumMedia = append(albumMedia, clients.NewAlbumVideo(buff, false))
+			}
+			for _, p := range res.Photos {
+				buff, err := client.FetchBytes(p.URL)
+				if err != nil {
+					continue
 				}
+				albumMedia = append(albumMedia, clients.NewAlbumImage(buff))
+			}
+
+			if _, err := client.SendAlbum(ctx, m.From, albumMedia, m.ID); err != nil {
+				m.Reply(ctx, "Gagal mengirim media Instagram.")
 			}
 
 		},

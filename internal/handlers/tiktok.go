@@ -40,12 +40,8 @@ func init() {
 
 			caption := fmt.Sprintf("*Title* :%s", res.Title)
 			err = sendTikTokMedia(res.Images, res.Video, caption, client.FetchBytes,
-				func(data []byte, caption string) error {
-					_, err := client.SendImage(ctx, m.From, data, caption, m.ID)
-					return err
-				},
-				func(data []byte, caption string) error {
-					_, err := client.SendVideo(ctx, m.From, data, false, caption, m.ID)
+				func(medias []clients.AlbumMedia) error {
+					_, err := client.SendAlbum(ctx, m.From, medias, m.ID)
 					return err
 				})
 			if err != nil {
@@ -56,29 +52,25 @@ func init() {
 	})
 }
 
-// Keep media dispatch separate so photo posts and failed downloads can be tested
-// without a WhatsApp connection.
-func sendTikTokMedia(images []string, video *string, caption string, fetch func(string) ([]byte, error), sendImage, sendVideo func([]byte, string) error) error {
-	if len(images) > 0 {
-		sent := 0
-		for _, imageURL := range images {
-			if strings.TrimSpace(imageURL) == "" {
-				continue
-			}
-			data, err := fetch(imageURL)
-			if err != nil {
-				continue
-			}
-			imageCaption := ""
-			if sent == 0 {
-				imageCaption = caption
-			}
-			if err := sendImage(data, imageCaption); err == nil {
-				sent++
-			}
+func sendTikTokMedia(images []string, video *string, caption string, fetch func(string) ([]byte, error), sendMedia func([]clients.AlbumMedia) error) error {
+	var albumMedia []clients.AlbumMedia
+	for _, imageURL := range images {
+		if strings.TrimSpace(imageURL) == "" {
+			continue
 		}
-		if sent == 0 {
-			return fmt.Errorf("Gagal mengunduh atau mengirim gambar TikTok.")
+		data, err := fetch(imageURL)
+		if err != nil {
+			continue
+		}
+		itemCaption := ""
+		if len(albumMedia) == 0 {
+			itemCaption = caption
+		}
+		albumMedia = append(albumMedia, clients.NewAlbumImage(data, itemCaption))
+	}
+	if len(albumMedia) > 0 {
+		if err := sendMedia(albumMedia); err != nil {
+			return fmt.Errorf("Gagal mengirim gambar TikTok: %w", err)
 		}
 		return nil
 	}
@@ -89,7 +81,7 @@ func sendTikTokMedia(images []string, video *string, caption string, fetch func(
 	if err != nil {
 		return fmt.Errorf("Gagal mengunduh video TikTok: %w", err)
 	}
-	if err := sendVideo(data, caption); err != nil {
+	if err := sendMedia([]clients.AlbumMedia{clients.NewAlbumVideo(data, false, caption)}); err != nil {
 		return fmt.Errorf("Gagal mengirim video TikTok: %w", err)
 	}
 	return nil

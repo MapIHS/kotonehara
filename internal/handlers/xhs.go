@@ -49,27 +49,34 @@ func init() {
 				return
 			}
 
-			totalMedia := len(res.Images)
-
-			if totalMedia > 0 {
-				for _, p := range res.Images {
-					buff, err := client.FetchBytes(p.URL)
-					if err != nil {
-						continue
-					}
-
-					client.SendImage(ctx, m.From, buff, "", m.ID)
+			var albumMedia []clients.AlbumMedia
+			for _, p := range res.Images {
+				buff, err := client.FetchBytes(p.URL)
+				if err != nil {
+					continue
 				}
+				albumMedia = append(albumMedia, clients.NewAlbumImage(buff))
 			}
 
 			if res.Video != nil {
 				buff, err := client.FetchBytes(res.Video.URL)
 				if err != nil {
-					m.Reply(ctx, "Maaf Terjadi kesalahan, yaa.")
-					return
+					if len(albumMedia) == 0 {
+						m.Reply(ctx, "Maaf Terjadi kesalahan, yaa.")
+						return
+					}
+				} else {
+					albumMedia = append(albumMedia, clients.NewAlbumVideo(buff, false))
 				}
-				client.SendVideo(ctx, m.From, buff, false, "", m.ID)
+			}
 
+			if len(albumMedia) == 0 {
+				m.Reply(ctx, "Media Rednote tidak ditemukan.")
+				return
+			}
+
+			if _, err := client.SendAlbum(ctx, m.From, albumMedia, m.ID); err != nil {
+				m.Reply(ctx, "Gagal mengirim media Rednote.")
 			}
 		},
 	})

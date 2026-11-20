@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"net/url"
 	"path"
 	"regexp"
@@ -181,35 +180,24 @@ func init() {
 				return
 			}
 
+			var albumMedia []clients.AlbumMedia
 			for _, media := range mediaLinks {
 				mediaURL := resolveSnapCDNURL(media.URL)
+				buff, err := client.FetchBytes(mediaURL)
+				if err != nil {
+					continue
+				}
 
 				switch media.MediaType {
 				case api.TwitterMediaTypeVideo:
-					buff, err := client.FetchBytes(mediaURL)
-					if err != nil {
-						m.Reply(ctx, "Gagal mengambil video: "+err.Error())
-						return
-					}
-
-					if _, err := client.SendVideo(ctx, m.From, buff, false, "", m.ID); err != nil {
-						m.Reply(ctx, fmt.Sprintf("Gagal mengirim video (%s): %v", media.Quality, err))
-						return
-					}
-
+					albumMedia = append(albumMedia, clients.NewAlbumVideo(buff, false))
 				case api.TwitterMediaTypeImage:
-					buff, err := client.FetchBytes(mediaURL)
-					if err != nil {
-						m.Reply(ctx, "Gagal mengambil gambar: "+err.Error())
-						return
-					}
-
-					if _, err := client.SendImage(ctx, m.From, buff, "", m.ID); err != nil {
-						m.Reply(ctx, fmt.Sprintf("Gagal mengirim gambar (%s): %v", media.Quality, err))
-						return
-					}
+					albumMedia = append(albumMedia, clients.NewAlbumImage(buff))
 				}
+			}
 
+			if _, err := client.SendAlbum(ctx, m.From, albumMedia, m.ID); err != nil {
+				m.Reply(ctx, "Gagal mengirim media X/Twitter: "+err.Error())
 			}
 		},
 	})
