@@ -45,7 +45,7 @@ func init() {
 					return err
 				})
 			if err != nil {
-				m.Reply(ctx, err.Error())
+				replyAlbumFailure(ctx, m, err, "Gagal mengirim media TikTok.")
 			}
 
 		},

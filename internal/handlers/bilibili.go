@@ -74,7 +74,7 @@ func handleBilibili(ctx context.Context, m *message.Message,
 	}
 	if result != nil && result.Format == "images" {
 		if err := sendImages(workCtx, result); err != nil {
-			m.Reply(ctx, "Gagal mengirim media Opus: "+err.Error())
+			replyAlbumFailure(ctx, m, err, "Gagal mengirim media Opus.")
 		}
 		return
 	}

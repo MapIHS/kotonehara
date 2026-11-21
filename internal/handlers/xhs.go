@@ -64,7 +64,7 @@ func init() {
 			}
 
 			if _, err := client.SendAlbum(ctx, m.From, albumMedia, m.ID); err != nil {
-				m.Reply(ctx, "Gagal mengirim media Rednote.")
+				replyAlbumFailure(ctx, m, err, "Gagal mengirim media Rednote.")
 			}
 		},
 	})

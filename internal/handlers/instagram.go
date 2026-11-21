@@ -46,7 +46,7 @@ func init() {
 			}
 
 			if _, err := client.SendAlbum(ctx, m.From, albumMedia, m.ID); err != nil {
-				m.Reply(ctx, "Gagal mengirim media Instagram.")
+				replyAlbumFailure(ctx, m, err, "Gagal mengirim media Instagram.")
 			}
 
 		},

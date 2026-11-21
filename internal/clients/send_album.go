@@ -299,7 +299,7 @@ func (c *Client) fetchAlbumBytes(ctx context.Context, url string, headers map[st
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("download media: HTTP %d", resp.StatusCode)
+		return nil, &AlbumHTTPError{StatusCode: resp.StatusCode}
 	}
 	if resp.ContentLength > limit {
 		return nil, ErrAlbumLimit
@@ -362,7 +362,7 @@ func sendAlbum(ctx context.Context, to types.JID, medias []AlbumMedia, opts *waE
 		if err != nil {
 			return nil, errors.Join(append(failures, err)...)
 		}
-		return []whatsmeow.SendResponse{resp}, errors.Join(failures...)
+		return []whatsmeow.SendResponse{resp}, albumResultError(errors.Join(failures...), 1, len(medias))
 	}
 	album := &waE2E.Message{AlbumMessage: &waE2E.AlbumMessage{
 		ExpectedImageCount: proto.Uint32(images), ExpectedVideoCount: proto.Uint32(videos), ContextInfo: opts,
@@ -375,7 +375,7 @@ func sendAlbum(ctx context.Context, to types.JID, medias []AlbumMedia, opts *waE
 	key := &waCommon.MessageKey{ID: proto.String(string(resp.ID)), RemoteJID: proto.String(to.ToNonAD().String()), FromMe: proto.Bool(true)}
 	for i, msg := range prepared {
 		if err := ctx.Err(); err != nil {
-			return responses, errors.Join(append(failures, err)...)
+			return responses, albumResultError(errors.Join(append(failures, err)...), len(responses)-1, len(medias))
 		}
 		msg.MessageContextInfo = &waE2E.MessageContextInfo{MessageAssociation: &waE2E.MessageAssociation{
 			AssociationType: waE2E.MessageAssociation_MEDIA_ALBUM.Enum(), ParentMessageKey: key,
@@ -387,5 +387,5 @@ func sendAlbum(ctx context.Context, to types.JID, medias []AlbumMedia, opts *waE
 		}
 		responses = append(responses, child)
 	}
-	return responses, errors.Join(failures...)
+	return responses, albumResultError(errors.Join(failures...), len(responses)-1, len(medias))
 }

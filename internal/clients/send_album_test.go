@@ -198,3 +198,59 @@ func TestAlbumRejectsOversizedGIFCanvasBeforeConversionOrUpload(t *testing.T) {
 		t.Fatalf("canvas limit: %v", err)
 	}
 }
+
+func TestAlbumPartialDeliveryCountsAttachmentsWithoutContainer(t *testing.T) {
+	for _, valid := range []int{1, 4} {
+		t.Run(fmt.Sprint(valid), func(t *testing.T) {
+			index, calls := 0, 0
+			cause := &AlbumHTTPError{StatusCode: 403}
+			prepare := func(context.Context, AlbumMedia) (*waE2E.Message, error) {
+				index++
+				if index > valid {
+					return nil, cause
+				}
+				return &waE2E.Message{ImageMessage: &waE2E.ImageMessage{}}, nil
+			}
+			send := func(context.Context, types.JID, *waE2E.Message, ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error) {
+				calls++
+				return whatsmeow.SendResponse{ID: types.MessageID(fmt.Sprint(calls))}, nil
+			}
+			responses, err := sendAlbum(context.Background(), types.EmptyJID, make([]AlbumMedia, 5), nil, prepare, send)
+			var partial *PartialAlbumError
+			if !errors.As(err, &partial) || partial.Sent != valid || partial.Total != 5 || !errors.Is(err, cause) {
+				t.Fatalf("partial=%+v err=%v", partial, err)
+			}
+			expected := valid
+			if valid > 1 {
+				expected++
+			}
+			if len(responses) != expected {
+				t.Fatalf("responses=%d expected=%d", len(responses), expected)
+			}
+			var status *AlbumHTTPError
+			if !errors.As(err, &status) || status.StatusCode != 403 {
+				t.Fatalf("underlying status lost: %v", err)
+			}
+		})
+	}
+}
+
+func TestAlbumContainerAcknowledgementAloneIsNotPartialDelivery(t *testing.T) {
+	calls := 0
+	cause := errors.New("child failed")
+	prepare := func(context.Context, AlbumMedia) (*waE2E.Message, error) {
+		return &waE2E.Message{ImageMessage: &waE2E.ImageMessage{}}, nil
+	}
+	send := func(context.Context, types.JID, *waE2E.Message, ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error) {
+		calls++
+		if calls > 1 {
+			return whatsmeow.SendResponse{}, cause
+		}
+		return whatsmeow.SendResponse{ID: "container"}, nil
+	}
+	responses, err := sendAlbum(context.Background(), types.EmptyJID, []AlbumMedia{{}, {}}, nil, prepare, send)
+	var partial *PartialAlbumError
+	if len(responses) != 1 || !errors.Is(err, cause) || errors.As(err, &partial) {
+		t.Fatalf("responses=%d partial=%v err=%v", len(responses), partial, err)
+	}
+}

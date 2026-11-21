@@ -54,7 +54,7 @@ func threads(ctx context.Context, client *clients.Client, m *message.Message, cf
 	}
 
 	if _, err := client.SendAlbum(ctx, m.From, albumMedia, m.ID); err != nil {
-		m.Reply(ctx, "Gagal mengirim media Threads: "+err.Error())
+		replyAlbumFailure(ctx, m, err, "Gagal mengirim media Threads.")
 	}
 }
 

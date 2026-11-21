@@ -43,7 +43,7 @@ func init() {
 			}
 
 			if _, err := client.SendAlbum(ctx, m.From, albumMedia, m.ID); err != nil {
-				m.Reply(ctx, "Gagal mengirim video Facebook.")
+				replyAlbumFailure(ctx, m, err, "Gagal mengirim video Facebook.")
 			}
 
 		},
