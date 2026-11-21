@@ -254,7 +254,16 @@ func (c *Client) SendAlbum(ctx context.Context, to types.JID, medias []AlbumMedi
 		}
 		return c.prepareAlbumImage(ctx, item)
 	}
-	return sendAlbum(ctx, to, medias, opts, prepare, c.WA.SendMessage)
+	send := func(ctx context.Context, to types.JID, msg *waE2E.Message, extra ...whatsmeow.SendRequestExtra) (whatsmeow.SendResponse, error) {
+		resp, err := c.WA.SendMessage(ctx, to, msg, extra...)
+		if err == nil {
+			// The bot's own sends do not come back as events; remember them so
+			// replying to a downloader album with .s still works.
+			c.albums.remember(to, string(resp.ID), msg)
+		}
+		return resp, err
+	}
+	return sendAlbum(ctx, to, medias, opts, prepare, send)
 }
 
 func (c *Client) loadAlbumMedia(ctx context.Context, item AlbumMedia, limit int64) ([]byte, error) {

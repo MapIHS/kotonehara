@@ -27,6 +27,9 @@ type Command struct {
 	// OwnHelpFlag lets the command handle "--d" itself instead of the
 	// generic description reply (used by menu to show all descriptions).
 	OwnHelpFlag bool
-	After       func(ctx context.Context, client *clients.Client, m *message.Message)
-	Exec        func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config)
+	// AllowAlbum lets an IsMedia command run when the user replies to a
+	// media album parent; the handler resolves the album's children itself.
+	AllowAlbum bool
+	After      func(ctx context.Context, client *clients.Client, m *message.Message)
+	Exec       func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config)
 }

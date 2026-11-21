@@ -21,6 +21,11 @@ import (
 )
 
 func stc(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
+	if m.Media == nil && m.QuotedAlbumID != "" {
+		stickerFromAlbum(ctx, client, m)
+		return
+	}
+
 	opCtx, cancel := context.WithTimeout(ctx, 90*time.Second)
 	defer cancel()
 
@@ -124,6 +129,7 @@ func init() {
 		Tags:        "convert",
 		IsPrefix:    true,
 		IsMedia:     true,
+		AllowAlbum:  true,
 		Exec:        stc,
 	})
 }

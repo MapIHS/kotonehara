@@ -99,7 +99,7 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 		}
 		return
 	}
-	if cmd.IsMedia && m.Media == nil {
+	if cmd.IsMedia && m.Media == nil && !(cmd.AllowAlbum && m.QuotedAlbumID != "") {
 		_, _ = m.Reply(ctx, "Media-nya dibutuhkan, yaa.")
 		return
 	}

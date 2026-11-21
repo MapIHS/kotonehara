@@ -180,6 +180,7 @@ func (d *Devices) registerEventHandler(client *whatsmeow.Client, callClient *meo
 			if d.ctx.Err() != nil {
 				return
 			}
+			c.RememberAlbumChild(v)
 			parse := m.Parse(d.ctx, v)
 
 			d.tryStartCommand(func() {

@@ -67,3 +67,23 @@ func TestQuotedViewOnceWrapperIsUnwrappedWithoutStore(t *testing.T) {
 		t.Fatal("wrapped quote lost")
 	}
 }
+
+func TestQuotedAlbumParentExposesAlbumIDWithoutMedia(t *testing.T) {
+	e := textEvent(types.NewJID("628123456789", types.DefaultUserServer), types.EmptyJID)
+	e.Message = &waE2E.Message{ExtendedTextMessage: &waE2E.ExtendedTextMessage{
+		Text: proto.String(".s"),
+		ContextInfo: &waE2E.ContextInfo{
+			StanzaID:      proto.String("ALBUM1"),
+			QuotedMessage: &waE2E.Message{AlbumMessage: &waE2E.AlbumMessage{ExpectedImageCount: proto.Uint32(2)}},
+		},
+	}}
+	m := NewParser(nil, config.Config{Prefix: "."}).Parse(context.Background(), e)
+	if m.QuotedAlbumID != "ALBUM1" || m.Media != nil {
+		t.Fatalf("album id=%q media=%v", m.QuotedAlbumID, m.Media)
+	}
+
+	e.Message.ExtendedTextMessage.ContextInfo.QuotedMessage = &waE2E.Message{ImageMessage: &waE2E.ImageMessage{}}
+	if m := NewParser(nil, config.Config{Prefix: "."}).Parse(context.Background(), e); m.QuotedAlbumID != "" {
+		t.Fatalf("plain image must not set album id: %q", m.QuotedAlbumID)
+	}
+}

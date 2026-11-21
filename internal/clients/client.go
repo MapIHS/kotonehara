@@ -15,6 +15,7 @@ type Client struct {
 	Calls *meowcaller.Client
 
 	admins *adminCache
+	albums *albumCache
 	cfg    config.Config
 	HTTP   *http.Client
 }
@@ -25,6 +26,7 @@ func New(c *whatsmeow.Client, cfg config.Config, callClient *meowcaller.Client) 
 		Calls:  callClient,
 		cfg:    cfg,
 		admins: newAdminCache(cfg.AdminTTL),
+		albums: newAlbumCache(),
 		HTTP:   httpclient.New("", 20*time.Second).HTTP,
 	}
 }

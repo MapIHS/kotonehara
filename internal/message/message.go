@@ -45,6 +45,9 @@ type Message struct {
 
 	QuotedMsg *waE2E.Message
 	ID        *waE2E.ContextInfo
+	// QuotedAlbumID is the message ID of a replied-to media album parent.
+	// The parent itself carries no media; its children are looked up by ID.
+	QuotedAlbumID string
 
 	IsQuotedImage      bool
 	IsQuotedVideo      bool
