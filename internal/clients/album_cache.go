@@ -43,18 +43,43 @@ func albumKey(chat types.JID, parentID string) string {
 	return chat.ToNonAD().String() + "|" + parentID
 }
 
-// albumParentID returns the parent album ID when msg is a media album child.
-func albumParentID(msg *waE2E.Message) string {
-	assoc := msg.GetMessageContextInfo().GetMessageAssociation()
-	if assoc.GetAssociationType() != waE2E.MessageAssociation_MEDIA_ALBUM {
-		return ""
+// extractAlbumChild walks wrapper envelopes (such as DeviceSentMessage,
+// EphemeralMessage, and AssociatedChildMessage) to find both the MEDIA_ALBUM
+// parent ID and the underlying media message, which may live at different
+// layers depending on the WhatsApp client.
+func extractAlbumChild(msgs ...*waE2E.Message) (parentID string, media *waE2E.Message) {
+	for _, root := range msgs {
+		cur := root
+		for depth := 0; depth < 8 && cur != nil; depth++ {
+			if parentID == "" {
+				if assoc := cur.GetMessageContextInfo().GetMessageAssociation(); assoc.GetAssociationType() == waE2E.MessageAssociation_MEDIA_ALBUM {
+					parentID = assoc.GetParentMessageKey().GetID()
+				}
+			}
+			if media == nil && (cur.GetImageMessage() != nil || cur.GetVideoMessage() != nil) {
+				media = cur
+			}
+			switch {
+			case cur.GetAssociatedChildMessage().GetMessage() != nil:
+				cur = cur.GetAssociatedChildMessage().GetMessage()
+			case cur.GetDeviceSentMessage().GetMessage() != nil:
+				cur = cur.GetDeviceSentMessage().GetMessage()
+			case cur.GetEphemeralMessage().GetMessage() != nil:
+				cur = cur.GetEphemeralMessage().GetMessage()
+			default:
+				cur = nil
+			}
+		}
 	}
-	return assoc.GetParentMessageKey().GetID()
+	return parentID, media
 }
 
 // albumDescriptor keeps only what is needed to download and convert the media.
 func albumDescriptor(msg *waE2E.Message) whatsmeow.DownloadableMessage {
 	if img := msg.GetImageMessage(); img != nil {
+		if img.GetViewOnce() {
+			return nil
+		}
 		return &waE2E.ImageMessage{
 			URL: img.URL, DirectPath: img.DirectPath, MediaKey: img.MediaKey,
 			FileSHA256: img.FileSHA256, FileEncSHA256: img.FileEncSHA256,
@@ -62,6 +87,9 @@ func albumDescriptor(msg *waE2E.Message) whatsmeow.DownloadableMessage {
 		}
 	}
 	if vid := msg.GetVideoMessage(); vid != nil {
+		if vid.GetViewOnce() {
+			return nil
+		}
 		return &waE2E.VideoMessage{
 			URL: vid.URL, DirectPath: vid.DirectPath, MediaKey: vid.MediaKey,
 			FileSHA256: vid.FileSHA256, FileEncSHA256: vid.FileEncSHA256,
@@ -79,13 +107,13 @@ func mediaURL(msg *waE2E.Message) string {
 	return msg.GetVideoMessage().GetURL()
 }
 
-func (c *albumCache) remember(chat types.JID, childID string, msg *waE2E.Message) {
-	parentID := albumParentID(msg)
-	if c == nil || parentID == "" || childID == "" {
+func (c *albumCache) remember(chat types.JID, childID string, msgs ...*waE2E.Message) {
+	parentID, media := extractAlbumChild(msgs...)
+	if c == nil || parentID == "" || childID == "" || media == nil {
 		return
 	}
-	item := albumDescriptor(msg)
-	if item == nil || len(item.GetMediaKey()) == 0 || item.GetDirectPath() == "" && mediaURL(msg) == "" {
+	item := albumDescriptor(media)
+	if item == nil || len(item.GetMediaKey()) == 0 || item.GetDirectPath() == "" && mediaURL(media) == "" {
 		return
 	}
 
@@ -148,7 +176,7 @@ func (c *Client) RememberAlbumChild(evt *events.Message) {
 	if c == nil || evt == nil {
 		return
 	}
-	c.albums.remember(evt.Info.Chat, string(evt.Info.ID), evt.Message)
+	c.albums.remember(evt.Info.Chat, string(evt.Info.ID), evt.Message, evt.RawMessage)
 }
 
 // AlbumMedia returns the remembered media of an album, in arrival order.

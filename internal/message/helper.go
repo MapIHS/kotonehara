@@ -110,7 +110,11 @@ func UnwrapMessage(raw *waE2E.Message) *waE2E.Message {
 	if raw == nil {
 		return nil
 	}
-	return (&events.Message{RawMessage: raw}).UnwrapRaw().Message
+	msg := (&events.Message{RawMessage: raw}).UnwrapRaw().Message
+	for i := 0; i < 4 && msg.GetAssociatedChildMessage().GetMessage() != nil; i++ {
+		msg = (&events.Message{RawMessage: msg.GetAssociatedChildMessage().GetMessage()}).UnwrapRaw().Message
+	}
+	return msg
 }
 
 // IsViewOnceMessage retains the view-once signal before a quote is unwrapped.

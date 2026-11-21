@@ -77,3 +77,57 @@ func TestAlbumCacheExpiresAndBoundsAlbums(t *testing.T) {
 		t.Fatalf("items=%d", got)
 	}
 }
+
+func TestAlbumCacheUnwrapsAssociatedChildAndDeviceSent(t *testing.T) {
+	c := newAlbumCache()
+	chat := types.NewJID("123", types.GroupServer)
+
+	// AssociatedChildMessage with association on the outer message.
+	outerAssoc := &waE2E.Message{
+		MessageContextInfo: &waE2E.MessageContextInfo{MessageAssociation: &waE2E.MessageAssociation{
+			AssociationType:  waE2E.MessageAssociation_MEDIA_ALBUM.Enum(),
+			ParentMessageKey: &waCommon.MessageKey{ID: proto.String("p-wrap")},
+		}},
+		AssociatedChildMessage: &waE2E.FutureProofMessage{Message: &waE2E.Message{
+			ImageMessage: &waE2E.ImageMessage{DirectPath: proto.String("/w1"), MediaKey: []byte("k1")},
+		}},
+	}
+	// DeviceSentMessage wrapping EphemeralMessage + AssociatedChildMessage, with association inside.
+	nested := &waE2E.Message{
+		DeviceSentMessage: &waE2E.DeviceSentMessage{Message: &waE2E.Message{
+			EphemeralMessage: &waE2E.FutureProofMessage{Message: &waE2E.Message{
+				AssociatedChildMessage: &waE2E.FutureProofMessage{Message: albumChild("p-wrap", true)},
+			}},
+		}},
+	}
+	// Association only on raw outer envelope while inner message also has its own MessageContextInfo.
+	innerOnly := &waE2E.Message{
+		MessageContextInfo: &waE2E.MessageContextInfo{MessageSecret: []byte("s")},
+		ImageMessage:       &waE2E.ImageMessage{DirectPath: proto.String("/w3"), MediaKey: []byte("k3")},
+	}
+	rawOuter := &waE2E.Message{
+		MessageContextInfo: &waE2E.MessageContextInfo{MessageAssociation: &waE2E.MessageAssociation{
+			AssociationType:  waE2E.MessageAssociation_MEDIA_ALBUM.Enum(),
+			ParentMessageKey: &waCommon.MessageKey{ID: proto.String("p-wrap")},
+		}},
+	}
+	// View-once media must never be cached.
+	viewOnce := albumChild("p-wrap", false)
+	viewOnce.ImageMessage.ViewOnce = proto.Bool(true)
+
+	c.remember(chat, "c1", outerAssoc)
+	c.remember(chat, "c2", nested)
+	c.remember(chat, "c3", innerOnly, rawOuter)
+	c.remember(chat, "c4", viewOnce)
+
+	items := c.get(chat, "p-wrap")
+	if len(items) != 3 {
+		t.Fatalf("items=%d, want 3", len(items))
+	}
+	if items[0].GetDirectPath() != "/w1" || items[2].GetDirectPath() != "/w3" {
+		t.Fatalf("unexpected direct paths: %q, %q", items[0].GetDirectPath(), items[2].GetDirectPath())
+	}
+	if _, ok := items[1].(*waE2E.VideoMessage); !ok {
+		t.Fatalf("second item = %T, want *waE2E.VideoMessage", items[1])
+	}
+}

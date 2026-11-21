@@ -87,3 +87,22 @@ func TestQuotedAlbumParentExposesAlbumIDWithoutMedia(t *testing.T) {
 		t.Fatalf("plain image must not set album id: %q", m.QuotedAlbumID)
 	}
 }
+
+func TestQuotedAssociatedChildMessageIsUnwrapped(t *testing.T) {
+	e := textEvent(types.NewJID("628123456789", types.DefaultUserServer), types.EmptyJID)
+	e.Message = &waE2E.Message{ExtendedTextMessage: &waE2E.ExtendedTextMessage{
+		Text: proto.String(".s"),
+		ContextInfo: &waE2E.ContextInfo{
+			StanzaID: proto.String("CHILD1"),
+			QuotedMessage: &waE2E.Message{
+				AssociatedChildMessage: &waE2E.FutureProofMessage{Message: &waE2E.Message{
+					ImageMessage: &waE2E.ImageMessage{DirectPath: proto.String("/img")},
+				}},
+			},
+		},
+	}}
+	m := NewParser(nil, config.Config{Prefix: "."}).Parse(context.Background(), e)
+	if !m.IsQuotedImage || m.Media == nil || m.Media.GetDirectPath() != "/img" {
+		t.Fatalf("isQuotedImage=%v media=%v", m.IsQuotedImage, m.Media)
+	}
+}
