@@ -31,6 +31,46 @@ type videoInfo struct {
 	Videos      []string    `json:"videos"`
 }
 
+type YoutubePostResult struct {
+	ID     string `json:"id"`
+	URL    string `json:"url"`
+	Text   string `json:"text"`
+	Author string `json:"author"`
+	Photos []struct {
+		URL string `json:"url"`
+	} `json:"photos"`
+	VideoURL string `json:"videoUrl,omitempty"`
+}
+
+func (c *Client) YoutubePost(ctx context.Context, targetURL string) (*YoutubePostResult, error) {
+	u, err := neturl.Parse(c.BaseURL)
+	if err != nil {
+		return nil, err
+	}
+	u.Path = "/api/youtube/post"
+	q := u.Query()
+	q.Set("url", targetURL)
+	u.RawQuery = q.Encode()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "application/json")
+	resp, err := c.HTTP.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, readAPIError("YouTube post", resp)
+	}
+	var out APIResponse[YoutubePostResult]
+	if err := decodeAPIResponse(resp, &out); err != nil {
+		return nil, err
+	}
+	return &out.Data, nil
+}
+
 func (c *Client) YoutubeInfo(ctx context.Context, targetURL string) (*videoInfo, error) {
 	u, err := neturl.Parse(c.BaseURL)
 	if err != nil {

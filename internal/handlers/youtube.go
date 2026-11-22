@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	neturl "net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -33,6 +34,29 @@ func ytv(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 	if len(args) > 1 {
 		quality = strings.TrimSuffix(args[1], "p") + "p"
 		qualityRequested = true
+	}
+
+	if isYoutubePostURL(targetURL) {
+		post, err := ap.YoutubePost(ctx, targetURL)
+		if err != nil {
+			m.Reply(ctx, "Gagal mengambil post YouTube. Coba lagi sebentar, yaa.")
+			return
+		}
+		if len(post.Photos) > 0 {
+			err := sendYoutubePostPhotos(post, func(items []clients.AlbumMedia) error {
+				_, err := client.SendAlbum(ctx, m.From, items, m.ID)
+				return err
+			})
+			if err != nil {
+				replyAlbumFailure(ctx, m, err, "Gagal mengirim gambar post YouTube.")
+			}
+			return
+		}
+		if post.VideoURL == "" {
+			m.Reply(ctx, "Post YouTube ini tidak memiliki gambar atau video, yaa.")
+			return
+		}
+		targetURL = post.VideoURL
 	}
 
 	info, err := ap.YoutubeInfo(ctx, targetURL)
@@ -88,6 +112,43 @@ func ytv(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 
 }
 
+func isYoutubePostURL(raw string) bool {
+	u, err := neturl.Parse(raw)
+	if err != nil || u.User != nil || u.Port() != "" || (u.Scheme != "https" && u.Scheme != "http") {
+		return false
+	}
+	host := strings.ToLower(u.Hostname())
+	return (host == "youtube.com" || host == "www.youtube.com" || host == "m.youtube.com") && strings.HasPrefix(u.Path, "/post/")
+}
+
+func sendYoutubePostPhotos(post *api.YoutubePostResult, send func([]clients.AlbumMedia) error) error {
+	if post == nil || len(post.Photos) == 0 || len(post.Photos) > clients.MaxAlbumItems {
+		return clients.ErrAlbumLimit
+	}
+	caption := post.Text
+	if post.Author != "" {
+		caption = post.Author + "\n\n" + caption
+	}
+	if text := []rune(caption); len(text) > 1024 {
+		caption = string(text[:1024])
+	}
+	medias := make([]clients.AlbumMedia, 0, len(post.Photos))
+	for _, photo := range post.Photos {
+		if strings.TrimSpace(photo.URL) == "" {
+			continue
+		}
+		item := clients.NewAlbumImageURL(photo.URL)
+		if len(medias) == 0 {
+			item.Caption = caption
+		}
+		medias = append(medias, item)
+	}
+	if len(medias) == 0 {
+		return clients.ErrAlbumLimit
+	}
+	return send(medias)
+}
+
 func yta(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 	args := strings.Fields(m.Query)
 	if len(args) == 0 || !message.IsValidURL(args[0]) {
@@ -129,7 +190,7 @@ func yta(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 func init() {
 	commands.Register(&commands.Command{
 		Name:        "youtubevideo",
-		Description: "Download video dari link YouTube",
+		Description: "Download video atau gambar post dari link YouTube",
 		As:          []string{"ytv"},
 		Tags:        "downloader",
 		IsQuery:     true,

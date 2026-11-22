@@ -2,9 +2,14 @@ package api
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	neturl "net/url"
 )
+
+var ErrInstagramUnavailable = errors.New("media Instagram tidak tersedia untuk akses publik")
+var ErrInstagramBusy = errors.New("extractor Instagram sedang sibuk")
 
 type instagramResult struct {
 	Thumbnail string      `json:"thumbnail,omitempty"`
@@ -43,6 +48,12 @@ func (c *Client) Instagram(ctx context.Context, targetURL string) (*instagramRes
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		if resp.StatusCode == http.StatusNotFound {
+			return nil, fmt.Errorf("%w: %v", ErrInstagramUnavailable, readAPIError("instagram", resp))
+		}
+		if resp.StatusCode == http.StatusServiceUnavailable {
+			return nil, fmt.Errorf("%w: %v", ErrInstagramBusy, readAPIError("instagram", resp))
+		}
 		return nil, readAPIError("instagram", resp)
 	}
 

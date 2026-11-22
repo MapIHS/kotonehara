@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"time"
 
@@ -33,7 +34,7 @@ func init() {
 
 			res, err := ap.Instagram(ctx, args[0])
 			if err != nil {
-				m.Reply(ctx, "Gagal.")
+				m.Reply(ctx, instagramFailureReply(err))
 				return
 			}
 
@@ -51,4 +52,15 @@ func init() {
 
 		},
 	})
+}
+
+func instagramFailureReply(err error) string {
+	switch {
+	case errors.Is(err, api.ErrInstagramUnavailable):
+		return "Media Instagram tidak tersedia untuk akses publik, yaa."
+	case errors.Is(err, api.ErrInstagramBusy):
+		return "Instagram sedang sibuk. Coba lagi sebentar, yaa."
+	default:
+		return "Gagal mengambil media Instagram. Coba lagi sebentar, yaa."
+	}
 }
