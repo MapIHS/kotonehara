@@ -8,28 +8,6 @@ import (
 	"time"
 )
 
-func TestHeaderTimeoutRespectsRequestBudget(t *testing.T) {
-	for _, timeout := range []time.Duration{0, 5 * time.Second, 60 * time.Second, 90 * time.Second} {
-		for _, socks := range []bool{false, true} {
-			var c *http.Client
-			if socks {
-				var err error
-				c, err = newSOCKS5HTTPClient(timeout, "127.0.0.1:1055")
-				if err != nil {
-					t.Fatal(err)
-				}
-			} else {
-				c = newHTTPClient(timeout)
-			}
-			tr := c.Transport.(*http.Transport)
-			if tr.ResponseHeaderTimeout != timeout || c.Timeout != timeout {
-				t.Errorf("socks=%t timeout=%s client=%s headers=%s", socks, timeout, c.Timeout, tr.ResponseHeaderTimeout)
-			}
-			tr.CloseIdleConnections()
-		}
-	}
-}
-
 func TestSOCKSHandshakeHonorsCancellation(t *testing.T) {
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {

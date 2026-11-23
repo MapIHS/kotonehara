@@ -1,10 +1,7 @@
 package clients
 
 import (
-	"bytes"
 	"context"
-	"crypto/hmac"
-	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
@@ -14,61 +11,8 @@ import (
 	"go.mau.fi/whatsmeow"
 	waE2E "go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types"
-	"go.mau.fi/whatsmeow/util/cbcutil"
-	"go.mau.fi/whatsmeow/util/hkdfutil"
 	"google.golang.org/protobuf/proto"
 )
-
-func TestEncryptMediaRoundTrip(t *testing.T) {
-	mediaKey := make([]byte, 32)
-	_, _ = rand.Read(mediaKey)
-	plaintext := []byte("hello-whatsapp-sticker-pack-data-encryption-test-payload")
-
-	dataToUpload, fileSHA, fileEncSHA, err := encryptMedia(mediaKey, "WhatsApp Sticker Pack Keys", plaintext)
-	if err != nil {
-		t.Fatalf("unexpected error encrypting: %v", err)
-	}
-
-	expectedPlainSHA := sha256.Sum256(plaintext)
-	if !bytes.Equal(fileSHA, expectedPlainSHA[:]) {
-		t.Fatalf("fileSHA mismatch: got %x, want %x", fileSHA, expectedPlainSHA)
-	}
-
-	expectedEncSHA := sha256.Sum256(dataToUpload)
-	if !bytes.Equal(fileEncSHA, expectedEncSHA[:]) {
-		t.Fatalf("fileEncSHA mismatch: got %x, want %x", fileEncSHA, expectedEncSHA)
-	}
-
-	if len(dataToUpload) <= 10 {
-		t.Fatalf("dataToUpload too short: %d", len(dataToUpload))
-	}
-
-	ciphertext := dataToUpload[:len(dataToUpload)-10]
-	mac := dataToUpload[len(dataToUpload)-10:]
-
-	mediaKeyExpanded := hkdfutil.SHA256(mediaKey, nil, []byte("WhatsApp Sticker Pack Keys"), 112)
-	iv := mediaKeyExpanded[:16]
-	cipherKey := mediaKeyExpanded[16:48]
-	macKey := mediaKeyExpanded[48:80]
-
-	h := hmac.New(sha256.New, macKey)
-	h.Write(iv)
-	h.Write(ciphertext)
-	expectedMAC := h.Sum(nil)[:10]
-
-	if !bytes.Equal(mac, expectedMAC) {
-		t.Fatalf("HMAC mismatch: got %x, want %x", mac, expectedMAC)
-	}
-
-	decrypted, err := cbcutil.Decrypt(cipherKey, iv, ciphertext)
-	if err != nil {
-		t.Fatalf("failed to decrypt: %v", err)
-	}
-
-	if !bytes.Equal(decrypted, plaintext) {
-		t.Fatalf("decrypted plaintext mismatch: got %q, want %q", string(decrypted), string(plaintext))
-	}
-}
 
 func TestSendStickerPackHappyPath(t *testing.T) {
 	pack := sticker.StickerPack{

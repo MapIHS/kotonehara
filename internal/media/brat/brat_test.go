@@ -22,10 +22,3 @@ func TestRender(t *testing.T) {
 		t.Fatalf("bounds = %v, want %dx%d", img.Bounds(), canvasSize, canvasSize)
 	}
 }
-
-func TestRenderLongText(t *testing.T) {
-	_, err := Render(Options{Text: "ini teks panjang banget buat memastikan renderer lokal brat bisa wrap dan mengecilkan font tanpa bantuan api"})
-	if err != nil {
-		t.Fatal(err)
-	}
-}

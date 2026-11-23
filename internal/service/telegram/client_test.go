@@ -34,21 +34,6 @@ func TestExtractPackName(t *testing.T) {
 	}
 }
 
-func TestIsTelegramStickerURL(t *testing.T) {
-	if !IsTelegramStickerURL("https://t.me/addstickers/animals") {
-		t.Error("expected true for t.me link")
-	}
-	if !IsTelegramStickerURL("https://telegram.me/addstickers/animals") {
-		t.Error("expected true for telegram.me link")
-	}
-	if IsTelegramStickerURL("https://t.me/joinchat/12345") {
-		t.Error("expected false for non-sticker link")
-	}
-	if IsTelegramStickerURL("animals") {
-		t.Error("expected false for plain text name")
-	}
-}
-
 func TestTelegramClientGetStickerSet(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {

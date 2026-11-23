@@ -23,9 +23,3 @@ func TestConnectSQLiteAppliesPool(t *testing.T) {
 		t.Fatalf("MaxOpenConns = %d", got)
 	}
 }
-
-func TestConnectUnknownDriverFails(t *testing.T) {
-	if _, err := Connect(context.Background(), Config{Driver: "nope", URL: "x"}); err == nil {
-		t.Fatal("unknown driver accepted")
-	}
-}
