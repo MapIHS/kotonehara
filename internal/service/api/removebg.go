@@ -9,7 +9,43 @@ import (
 	"net/http"
 	"net/textproto"
 	"strings"
+	"time"
 )
+
+// Shared across clients so simultaneous commands cannot flood the backend.
+var removeBGRequests = &removeBGLimiter{slot: make(chan struct{}, 1), delay: 2 * time.Second}
+
+type removeBGLimiter struct {
+	slot  chan struct{}
+	delay time.Duration
+	next  time.Time // accessed only while holding slot
+}
+
+func (l *removeBGLimiter) acquire(ctx context.Context) (func(), error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	select {
+	case l.slot <- struct{}{}:
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+	if wait := time.Until(l.next); wait > 0 {
+		timer := time.NewTimer(wait)
+		defer timer.Stop()
+		select {
+		case <-timer.C:
+		case <-ctx.Done():
+			<-l.slot
+			return nil, ctx.Err()
+		}
+	}
+	if err := ctx.Err(); err != nil {
+		<-l.slot
+		return nil, err
+	}
+	return func() { l.next = time.Now().Add(l.delay); <-l.slot }, nil
+}
 
 type RemoveBGResult struct {
 	Message          string `json:"message"`
@@ -21,6 +57,11 @@ type RemoveBGResult struct {
 }
 
 func (c *Client) RemoveBG(ctx context.Context, imageData []byte, filename, quality string) (*RemoveBGResult, error) {
+	release, err := removeBGRequests.acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
 	if quality == "" {
 		quality = "fast"
 	}
