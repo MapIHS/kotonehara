@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/MapIHS/kotonehara/internal/media/sticker"
@@ -166,7 +167,101 @@ func TestSendTelegramStickersPackFallbackToIndividual(t *testing.T) {
 	}
 }
 
-func TestSendTelegramStickersCapsMaxStickers(t *testing.T) {
+func TestSendTelegramStickersSplitsMultiplePacks50(t *testing.T) {
+	stickers := make([]telegram.Sticker, 50)
+	for i := range stickers {
+		stickers[i] = telegram.Sticker{FileID: "s"}
+	}
+	set := &telegram.StickerSet{
+		Name:     "fifty_pack",
+		Title:    "Fifty Pack",
+		Stickers: stickers,
+	}
+
+	var capturedPacks []sticker.StickerPack
+	deps := telegramStickerDeps{
+		getFile: func(_ context.Context, _ string) (*telegram.FileInfo, error) {
+			return &telegram.FileInfo{FilePath: "s.webp"}, nil
+		},
+		downloadFile: func(_ context.Context, _ string) ([]byte, error) { return []byte{1}, nil },
+		build:        func(_ context.Context, raw []byte, _ bool, _ bool) ([]byte, error) { return raw, nil },
+		sendPack: func(_ context.Context, pack sticker.StickerPack) error {
+			capturedPacks = append(capturedPacks, pack)
+			return nil
+		},
+		packName:  "Fifty Pack",
+		publisher: "Alice",
+	}
+
+	sent, total, tooLarge := sendTelegramStickers(context.Background(), set, deps)
+	if sent != 50 || total != 50 || tooLarge != 0 {
+		t.Fatalf("sent=%d total=%d tooLarge=%d, want sent=50 total=50 tooLarge=0", sent, total, tooLarge)
+	}
+	if len(capturedPacks) != 2 {
+		t.Fatalf("capturedPacks = %d, want 2", len(capturedPacks))
+	}
+	if len(capturedPacks[0].Stickers) != 30 {
+		t.Errorf("pack 0 sticker count = %d, want 30", len(capturedPacks[0].Stickers))
+	}
+	if capturedPacks[0].Name != "Fifty Pack (1/2)" {
+		t.Errorf("pack 0 name = %q, want %q", capturedPacks[0].Name, "Fifty Pack (1/2)")
+	}
+	if len(capturedPacks[1].Stickers) != 20 {
+		t.Errorf("pack 1 sticker count = %d, want 20", len(capturedPacks[1].Stickers))
+	}
+	if capturedPacks[1].Name != "Fifty Pack (2/2)" {
+		t.Errorf("pack 1 name = %q, want %q", capturedPacks[1].Name, "Fifty Pack (2/2)")
+	}
+	if capturedPacks[0].ID == capturedPacks[1].ID {
+		t.Errorf("pack IDs should be unique, got identical %q", capturedPacks[0].ID)
+	}
+}
+
+func TestSendTelegramStickersSplitsMultiplePacks90(t *testing.T) {
+	stickers := make([]telegram.Sticker, 90)
+	for i := range stickers {
+		stickers[i] = telegram.Sticker{FileID: "s"}
+	}
+	set := &telegram.StickerSet{
+		Name:     "ninety_pack",
+		Title:    "Ninety Pack",
+		Stickers: stickers,
+	}
+
+	var capturedPacks []sticker.StickerPack
+	deps := telegramStickerDeps{
+		getFile: func(_ context.Context, _ string) (*telegram.FileInfo, error) {
+			return &telegram.FileInfo{FilePath: "s.webp"}, nil
+		},
+		downloadFile: func(_ context.Context, _ string) ([]byte, error) { return []byte{1}, nil },
+		build:        func(_ context.Context, raw []byte, _ bool, _ bool) ([]byte, error) { return raw, nil },
+		sendPack: func(_ context.Context, pack sticker.StickerPack) error {
+			capturedPacks = append(capturedPacks, pack)
+			return nil
+		},
+		packName:  "Ninety Pack",
+		publisher: "Alice",
+	}
+
+	sent, total, tooLarge := sendTelegramStickers(context.Background(), set, deps)
+	if sent != 90 || total != 90 || tooLarge != 0 {
+		t.Fatalf("sent=%d total=%d tooLarge=%d, want sent=90 total=90 tooLarge=0", sent, total, tooLarge)
+	}
+	if len(capturedPacks) != 3 {
+		t.Fatalf("capturedPacks = %d, want 3", len(capturedPacks))
+	}
+	for i := 0; i < 3; i++ {
+		if len(capturedPacks[i].Stickers) != 30 {
+			t.Errorf("pack %d sticker count = %d, want 30", i, len(capturedPacks[i].Stickers))
+		}
+		expectedName := fmt.Sprintf("Ninety Pack (%d/3)", i+1)
+		if capturedPacks[i].Name != expectedName {
+			t.Errorf("pack %d name = %q, want %q", i, capturedPacks[i].Name, expectedName)
+		}
+	}
+}
+
+func TestSendTelegramStickersLegacySendsAllWithoutCapping(t *testing.T) {
 	stickers := make([]telegram.Sticker, maxTelegramStickers+15)
 	for i := range stickers {
 		stickers[i] = telegram.Sticker{FileID: "s"}
@@ -187,8 +282,9 @@ func TestSendTelegramStickersCapsMaxStickers(t *testing.T) {
 	}
 
 	sent, total, _ := sendTelegramStickers(context.Background(), set, deps)
-	if sent != maxTelegramStickers || total != maxTelegramStickers || calls != maxTelegramStickers {
-		t.Fatalf("sent=%d total=%d calls=%d, want %d", sent, total, calls, maxTelegramStickers)
+	want := maxTelegramStickers + 15
+	if sent != want || total != want || calls != want {
+		t.Fatalf("sent=%d total=%d calls=%d, want %d", sent, total, calls, want)
 	}
 }
 

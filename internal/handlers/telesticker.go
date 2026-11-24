@@ -17,8 +17,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// maxTelegramStickers bounds one download so a large sticker pack does not
-// exceed WhatsApp's sticker pack limit (30 stickers per pack) and keeps RAM flat.
 const maxTelegramStickers = 30
 
 type telegramStickerDeps struct {
@@ -76,9 +74,6 @@ func sendTelegramStickers(ctx context.Context, set *telegram.StickerSet, deps te
 	}
 
 	stickers := set.Stickers
-	if len(stickers) > maxTelegramStickers {
-		stickers = stickers[:maxTelegramStickers]
-	}
 	total = len(stickers)
 
 	// If no sticker pack sender is configured, use legacy sequential sending
@@ -118,90 +113,14 @@ func sendTelegramStickers(ctx context.Context, set *telegram.StickerSet, deps te
 		return
 	}
 
-	// When sendPack is available: download and build all stickers first
-	var converted []sticker.StickerPackItem
-	var firstThumb []byte
-
-	for _, s := range stickers {
-		if ctx.Err() != nil {
-			return
+	basePackName := deps.packName
+	if basePackName == "" {
+		basePackName = set.Title
+		if basePackName == "" {
+			basePackName = set.Name
 		}
-		isLottie := s.IsAnimated
-		isAnimated := s.IsAnimated || s.IsVideo
-		err := func() error {
-			opCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
-			defer cancel()
-			raw, err := fetchStickerBytes(opCtx, s, deps)
-			if err != nil || len(raw) == 0 {
-				return errors.New("download failed")
-			}
-			data, err := deps.build(opCtx, raw, isLottie, isAnimated)
-			if err != nil {
-				return err
-			}
-
-			if len(firstThumb) == 0 && deps.makeThumb != nil {
-				if isLottie {
-					if thumbRaw, err := fetchStickerThumbBytes(opCtx, s, deps); err == nil && len(thumbRaw) > 0 {
-						if thumb, err := deps.makeThumb(opCtx, thumbRaw, false); err == nil && len(thumb) > 0 {
-							firstThumb = thumb
-						}
-					}
-				} else {
-					if thumb, err := deps.makeThumb(opCtx, raw, isAnimated); err == nil && len(thumb) > 0 {
-						firstThumb = thumb
-					}
-				}
-			}
-
-			fileName := fmt.Sprintf("sticker_%d.webp", len(converted)+1)
-			mimeType := "image/webp"
-			if isLottie {
-				fileName = fmt.Sprintf("sticker_%d.was", len(converted)+1)
-				mimeType = "application/was"
-			}
-
-			emojis := []string{"✨"}
-			if s.Emoji != "" {
-				emojis = []string{s.Emoji}
-			}
-
-			converted = append(converted, sticker.StickerPackItem{
-				FileName:   fileName,
-				Data:       data,
-				IsAnimated: isAnimated,
-				IsLottie:   isLottie,
-				Mimetype:   mimeType,
-				Emojis:     emojis,
-			})
-			return nil
-		}()
-		if err != nil && errors.Is(err, sticker.ErrAnimatedStickerTooLarge) {
-			tooLarge++
-		}
-	}
-
-	if len(converted) == 0 {
-		return 0, total, tooLarge
-	}
-
-	// Single sticker: send individually
-	if len(converted) == 1 && deps.send != nil {
-		if err := deps.send(ctx, converted[0].Data, converted[0].IsLottie, converted[0].IsAnimated); err == nil {
-			sent = 1
-		}
-		return sent, total, tooLarge
-	}
-
-	// Multiple stickers: send as Sticker Pack
-	packName := deps.packName
-	if packName == "" {
-		packName = set.Title
-		if packName == "" {
-			packName = set.Name
-		}
-		if packName == "" {
-			packName = "Sticker Pack"
+		if basePackName == "" {
+			basePackName = "Sticker Pack"
 		}
 	}
 	publisher := deps.publisher
@@ -209,36 +128,140 @@ func sendTelegramStickers(ctx context.Context, set *telegram.StickerSet, deps te
 		publisher = "Kotonehara"
 	}
 
-	pack := sticker.StickerPack{
-		ID:             uuid.NewString(),
-		Name:           packName,
-		Publisher:      publisher,
-		Stickers:       converted,
-		CoverThumbnail: firstThumb,
-	}
+	chunkSize := maxTelegramStickers
+	totalChunks := (len(stickers) + chunkSize - 1) / chunkSize
 
-	err := deps.sendPack(ctx, pack)
-	if err == nil {
-		sent = len(converted)
-		return sent, total, tooLarge
-	}
+	for chunkIdx := 0; chunkIdx < totalChunks; chunkIdx++ {
+		if ctx.Err() != nil {
+			return
+		}
 
-	// Fallback to sending individual stickers if sticker pack transmission fails
-	log.Print("telegram sticker pack send failed; falling back to individual stickers")
-	if deps.send != nil {
-		for i, s := range converted {
+		start := chunkIdx * chunkSize
+		end := start + chunkSize
+		if end > len(stickers) {
+			end = len(stickers)
+		}
+		chunk := stickers[start:end]
+
+		// Download and build stickers for this chunk
+		var converted []sticker.StickerPackItem
+		var firstThumb []byte
+
+		for _, s := range chunk {
 			if ctx.Err() != nil {
 				return
 			}
-			if i > 0 && deps.pause > 0 {
-				select {
-				case <-ctx.Done():
-					return
-				case <-time.After(deps.pause):
+			isLottie := s.IsAnimated
+			isAnimated := s.IsAnimated || s.IsVideo
+			err := func() error {
+				opCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
+				defer cancel()
+				raw, err := fetchStickerBytes(opCtx, s, deps)
+				if err != nil || len(raw) == 0 {
+					return errors.New("download failed")
+				}
+				data, err := deps.build(opCtx, raw, isLottie, isAnimated)
+				if err != nil {
+					return err
+				}
+
+				if len(firstThumb) == 0 && deps.makeThumb != nil {
+					if isLottie {
+						if thumbRaw, err := fetchStickerThumbBytes(opCtx, s, deps); err == nil && len(thumbRaw) > 0 {
+							if thumb, err := deps.makeThumb(opCtx, thumbRaw, false); err == nil && len(thumb) > 0 {
+								firstThumb = thumb
+							}
+						}
+					} else {
+						if thumb, err := deps.makeThumb(opCtx, raw, isAnimated); err == nil && len(thumb) > 0 {
+							firstThumb = thumb
+						}
+					}
+				}
+
+				fileName := fmt.Sprintf("sticker_%d.webp", len(converted)+1)
+				mimeType := "image/webp"
+				if isLottie {
+					fileName = fmt.Sprintf("sticker_%d.was", len(converted)+1)
+					mimeType = "application/was"
+				}
+
+				emojis := []string{"✨"}
+				if s.Emoji != "" {
+					emojis = []string{s.Emoji}
+				}
+
+				converted = append(converted, sticker.StickerPackItem{
+					FileName:   fileName,
+					Data:       data,
+					IsAnimated: isAnimated,
+					IsLottie:   isLottie,
+					Mimetype:   mimeType,
+					Emojis:     emojis,
+				})
+				return nil
+			}()
+			if err != nil && errors.Is(err, sticker.ErrAnimatedStickerTooLarge) {
+				tooLarge++
+			}
+		}
+
+		if len(converted) == 0 {
+			continue
+		}
+
+		// Single sticker overall: send individually
+		if total == 1 && len(converted) == 1 && deps.send != nil {
+			if err := deps.send(ctx, converted[0].Data, converted[0].IsLottie, converted[0].IsAnimated); err == nil {
+				sent++
+			}
+			continue
+		}
+
+		// Multiple stickers: send as Sticker Pack
+		packName := basePackName
+		if totalChunks > 1 {
+			packName = fmt.Sprintf("%s (%d/%d)", basePackName, chunkIdx+1, totalChunks)
+		}
+
+		pack := sticker.StickerPack{
+			ID:             uuid.NewString(),
+			Name:           packName,
+			Publisher:      publisher,
+			Stickers:       converted,
+			CoverThumbnail: firstThumb,
+		}
+
+		err := deps.sendPack(ctx, pack)
+		if err == nil {
+			sent += len(converted)
+		} else {
+			// Fallback to sending individual stickers if sticker pack transmission fails
+			log.Print("telegram sticker pack send failed; falling back to individual stickers")
+			if deps.send != nil {
+				for i, s := range converted {
+					if ctx.Err() != nil {
+						return
+					}
+					if i > 0 && deps.pause > 0 {
+						select {
+						case <-ctx.Done():
+							return
+						case <-time.After(deps.pause):
+						}
+					}
+					if err := deps.send(ctx, s.Data, s.IsLottie, s.IsAnimated); err == nil {
+						sent++
+					}
 				}
 			}
-			if err := deps.send(ctx, s.Data, s.IsLottie, s.IsAnimated); err == nil {
-				sent++
+		}
+
+		if chunkIdx < totalChunks-1 && deps.pause > 0 {
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(deps.pause):
 			}
 		}
 	}
