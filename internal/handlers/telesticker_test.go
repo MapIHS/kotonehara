@@ -261,8 +261,8 @@ func TestSendTelegramStickersSplitsMultiplePacks90(t *testing.T) {
 	}
 }
 
-func TestSendTelegramStickersLegacySendsAllWithoutCapping(t *testing.T) {
-	stickers := make([]telegram.Sticker, maxTelegramStickers+15)
+func TestSendTelegramStickersLegacyRespectsRequestCap(t *testing.T) {
+	stickers := make([]telegram.Sticker, maxTelegramStickersPerCall+15)
 	for i := range stickers {
 		stickers[i] = telegram.Sticker{FileID: "s"}
 	}
@@ -282,9 +282,63 @@ func TestSendTelegramStickersLegacySendsAllWithoutCapping(t *testing.T) {
 	}
 
 	sent, total, _ := sendTelegramStickers(context.Background(), set, deps)
-	want := maxTelegramStickers + 15
+	want := maxTelegramStickersPerCall
 	if sent != want || total != want || calls != want {
 		t.Fatalf("sent=%d total=%d calls=%d, want %d", sent, total, calls, want)
+	}
+}
+
+func TestSendTelegramStickersBoundsConvertedPackBytes(t *testing.T) {
+	set := &telegram.StickerSet{
+		Title: "Oversized Lottie Pack",
+		Stickers: []telegram.Sticker{
+			{FileID: "lottie", IsAnimated: true},
+		},
+	}
+	var packCalls int
+	deps := telegramStickerDeps{
+		getFile: func(context.Context, string) (*telegram.FileInfo, error) {
+			return &telegram.FileInfo{FilePath: "large.was"}, nil
+		},
+		downloadFile: func(context.Context, string) ([]byte, error) { return []byte{1}, nil },
+		build: func(context.Context, []byte, bool, bool) ([]byte, error) {
+			return make([]byte, maxTelegramLottieBytes+1), nil
+		},
+		sendPack: func(context.Context, sticker.StickerPack) error {
+			packCalls++
+			return nil
+		},
+	}
+	sent, total, tooLarge := sendTelegramStickers(context.Background(), set, deps)
+	if sent != 0 || total != 1 || tooLarge != 1 || packCalls != 0 {
+		t.Fatalf("sent=%d total=%d tooLarge=%d packCalls=%d", sent, total, tooLarge, packCalls)
+	}
+}
+
+func TestSendTelegramStickersCapsRequestAt120(t *testing.T) {
+	stickers := make([]telegram.Sticker, maxTelegramStickersPerCall+1)
+	for i := range stickers {
+		stickers[i] = telegram.Sticker{FileID: "s"}
+	}
+	set := &telegram.StickerSet{Title: "Large Pack", Stickers: stickers}
+	var packs []sticker.StickerPack
+	deps := telegramStickerDeps{
+		getFile: func(context.Context, string) (*telegram.FileInfo, error) {
+			return &telegram.FileInfo{FilePath: "s.webp"}, nil
+		},
+		downloadFile: func(context.Context, string) ([]byte, error) { return []byte{1}, nil },
+		build:        func(_ context.Context, raw []byte, _, _ bool) ([]byte, error) { return raw, nil },
+		sendPack: func(_ context.Context, pack sticker.StickerPack) error {
+			packs = append(packs, pack)
+			return nil
+		},
+	}
+	sent, total, tooLarge := sendTelegramStickers(context.Background(), set, deps)
+	if sent != maxTelegramStickersPerCall || total != maxTelegramStickersPerCall || tooLarge != 0 {
+		t.Fatalf("sent=%d total=%d tooLarge=%d", sent, total, tooLarge)
+	}
+	if len(packs) != 4 {
+		t.Fatalf("packs = %d, want 4", len(packs))
 	}
 }
 

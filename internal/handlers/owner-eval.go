@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/MapIHS/kotonehara/internal/clients"
 	"github.com/MapIHS/kotonehara/internal/commands"
@@ -18,17 +19,65 @@ import (
 	"github.com/MapIHS/kotonehara/internal/message"
 	"github.com/traefik/yaegi/interp"
 	"github.com/traefik/yaegi/stdlib"
+	"github.com/traefik/yaegi/stdlib/unrestricted"
 )
 
 const (
-	ownerEvalTimeout      = 30 * time.Second
-	ownerEvalMaxReplySize = 65536
+	ownerEvalTimeout       = 10 * time.Second
+	ownerEvalMaxQuerySize  = 64 * 1024
+	ownerEvalMaxOutputSize = 256 * 1024
+	ownerEvalMaxReplySize  = 65536
 )
+
+// Eval remains a trusted-owner administration tool, not an untrusted-code
+// sandbox. Bound concurrency and buffers so accidental output cannot grow RAM.
+var ownerEvalSlot = make(chan struct{}, 1)
+
+type limitedBuffer struct {
+	buf       bytes.Buffer
+	remaining int
+	truncated bool
+}
+
+func newLimitedBuffer(limit int) *limitedBuffer {
+	return &limitedBuffer{remaining: limit}
+}
+
+func (b *limitedBuffer) Write(p []byte) (int, error) {
+	original := len(p)
+	if b.remaining <= 0 {
+		b.truncated = true
+		return original, nil
+	}
+	if len(p) > b.remaining {
+		p = p[:b.remaining]
+		b.truncated = true
+	}
+	n, err := b.buf.Write(p)
+	b.remaining -= n
+	return original, err
+}
+
+func (b *limitedBuffer) String() string {
+	return b.buf.String()
+}
 
 func ownerEval(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 	query := strings.TrimSpace(m.Query)
+	if body := strings.TrimSpace(m.Body); body != "" {
+		for _, prefix := range []string{"=>", ">"} {
+			if strings.HasPrefix(body, prefix) {
+				query = strings.TrimSpace(strings.TrimPrefix(body, prefix))
+				break
+			}
+		}
+	}
 	if query == "" {
-		_, _ = m.Reply(ctx, "Kode Go dibutuhkan, yaa.\n\nContoh:\n> 1 + 1\n> time.Now().Format(time.RFC3339)\n> strings.ToUpper(\"halo\")\n> Msg.Sender.User")
+		_, _ = m.Reply(ctx, "Kode Go dibutuhkan, yaa.\n\nContoh:\n> 1 + 1\n> time.Now().Format(time.RFC3339)\n> strings.ToUpper(\"halo\")\n> M.Sender.User")
+		return
+	}
+	if len(query) > ownerEvalMaxQuerySize {
+		_, _ = m.Reply(ctx, "Kode terlalu panjang. Maksimum 64 KiB, yaa.")
 		return
 	}
 
@@ -37,28 +86,47 @@ func ownerEval(ctx context.Context, client *clients.Client, m *message.Message, 
 		return
 	}
 
-	var stdout, stderr bytes.Buffer
+	select {
+	case ownerEvalSlot <- struct{}{}:
+		defer func() { <-ownerEvalSlot }()
+	case <-ctx.Done():
+		return
+	default:
+		_, _ = m.Reply(ctx, "Eval lain masih berjalan. Tunggu sampai selesai, yaa.")
+		return
+	}
+
+	stdout := newLimitedBuffer(ownerEvalMaxOutputSize)
+	stderr := newLimitedBuffer(ownerEvalMaxOutputSize)
 	i := interp.New(interp.Options{
-		Stdout:       &stdout,
-		Stderr:       &stderr,
+		Stdout:       stdout,
+		Stderr:       stderr,
 		Unrestricted: true,
 	})
 
-	// Load standard library symbols into the interpreter
-	_ = i.Use(stdlib.Symbols)
-
-	// Load custom symbols for the bot context into the interpreter
-	_ = i.Use(interp.Exports{
+	// Full host access is intentional for trusted-owner debugging. Do not
+	// present this interpreter as a sandbox or accept code from other users.
+	if err := i.Use(stdlib.Symbols); err != nil {
+		_, _ = m.Reply(ctx, "Runtime Go belum bisa disiapkan, yaa.")
+		return
+	}
+	if err := i.Use(unrestricted.Symbols); err != nil {
+		_, _ = m.Reply(ctx, "Runtime Go belum bisa disiapkan, yaa.")
+		return
+	}
+	if err := i.Use(interp.Exports{
 		"bot/bot": {
 			"Client": reflect.ValueOf(client),
 			"M":      reflect.ValueOf(m),
 			"Ctx":    reflect.ValueOf(ctx),
 			"Cfg":    reflect.ValueOf(cfg),
 		},
-	})
+	}); err != nil {
+		_, _ = m.Reply(ctx, "Konteks bot belum bisa disiapkan, yaa.")
+		return
+	}
 
-	// Pre-import commonly used packages for convenience
-	_, _ = i.Eval(`import (
+	if _, err := i.Eval(`import (
 		. "bot/bot"
 		"context"
 		"encoding/json"
@@ -72,23 +140,31 @@ func ownerEval(ctx context.Context, client *clients.Client, m *message.Message, 
 		"strings"
 		"sync"
 		"time"
-	)`)
+	)`); err != nil {
+		_, _ = m.Reply(ctx, "Package runtime Go belum bisa dimuat, yaa.")
+		return
+	}
 
 	evalCtx, cancel := context.WithTimeout(ctx, ownerEvalTimeout)
 	defer cancel()
 
 	res, err := i.EvalWithContext(evalCtx, query)
-
-	if errors.Is(evalCtx.Err(), context.DeadlineExceeded) {
-		_, _ = m.Reply(ctx, "Evaluasi Go timeout (30 detik), yaa.")
+	if evalCtx.Err() != nil {
+		if errors.Is(evalCtx.Err(), context.DeadlineExceeded) {
+			_, _ = m.Reply(ctx, "Evaluasi Go timeout (10 detik), yaa.")
+		}
 		return
 	}
 
 	var parts []string
-
 	outText := strings.TrimSpace(stdout.String())
 	errText := strings.TrimSpace(stderr.String())
-
+	if stdout.truncated {
+		outText = strings.TrimSpace(outText) + "\n... [output dipotong]"
+	}
+	if stderr.truncated {
+		errText = strings.TrimSpace(errText) + "\n... [stderr dipotong]"
+	}
 	if outText != "" {
 		if pretty, ok := tryPrettyJSON(outText); ok {
 			outText = pretty
@@ -98,64 +174,74 @@ func ownerEval(ctx context.Context, client *clients.Client, m *message.Message, 
 	if errText != "" {
 		parts = append(parts, fmt.Sprintf("Stderr:\n%s", errText))
 	}
-
 	if err != nil {
 		parts = append(parts, fmt.Sprintf("Error:\n%s", err.Error()))
 	} else if res.IsValid() && res.CanInterface() {
-		val := res.Interface()
-		valStr := formatEvalValue(val)
-
-		if outText == "" || (valStr != "" && valStr != "<nil>") {
+		valStr := formatEvalValue(res.Interface())
+		if outText == "" && valStr != "" && valStr != "<nil>" {
 			parts = append(parts, valStr)
 		}
 	} else if len(parts) == 0 {
 		parts = append(parts, "nil")
 	}
 
-	reply := strings.TrimSpace(strings.Join(parts, "\n\n"))
-	if len(reply) > ownerEvalMaxReplySize {
-		reply = reply[:ownerEvalMaxReplySize-10] + "\n\n..."
-	}
-
+	reply := truncateOwnerEvalReply(strings.TrimSpace(strings.Join(parts, "\n\n")))
 	_, _ = m.Reply(ctx, reply)
+}
+
+func truncateOwnerEvalReply(reply string) string {
+	if len(reply) <= ownerEvalMaxReplySize {
+		return reply
+	}
+	suffix := "\n\n..."
+	if i := strings.LastIndex(reply, "[output dipotong]"); i >= 0 {
+		suffix = "\n\n... [output dipotong]"
+		reply = reply[:i]
+	}
+	limit := ownerEvalMaxReplySize - len(suffix)
+	for len(reply) > limit {
+		_, size := utf8.DecodeLastRuneInString(reply)
+		reply = reply[:len(reply)-size]
+	}
+	return reply + suffix
 }
 
 func formatEvalValue(val any) string {
 	if val == nil {
 		return "nil"
 	}
-
 	switch v := val.(type) {
 	case string:
 		if pretty, ok := tryPrettyJSON(v); ok {
 			return pretty
 		}
 		return v
-
 	case []byte:
 		if pretty, ok := tryPrettyJSON(string(v)); ok {
 			return pretty
 		}
 		return string(v)
-
 	case error:
 		return v.Error()
 	}
-
-	res := Inspect(val, 2)
-	return res
+	return Inspect(val, 2)
 }
 
 func Inspect(val any, maxDepth int) string {
 	visited := make(map[uintptr]bool)
-	return inspectValue(reflect.ValueOf(val), 0, maxDepth, "  ", visited)
+	out := inspectValue(reflect.ValueOf(val), 0, maxDepth, "  ", visited)
+	switch reflect.TypeOf(val).Kind() {
+	case reflect.Map, reflect.Slice, reflect.Array, reflect.Struct:
+		return "```\n" + out + "\n```"
+	default:
+		return out
+	}
 }
 
 func inspectValue(v reflect.Value, depth, maxDepth int, indent string, visited map[uintptr]bool) string {
 	if !v.IsValid() {
 		return "nil"
 	}
-
 	if v.Kind() == reflect.Pointer || v.Kind() == reflect.Interface {
 		if v.IsNil() {
 			return "nil"
@@ -174,7 +260,6 @@ func inspectValue(v reflect.Value, depth, maxDepth int, indent string, visited m
 
 	curIndent := strings.Repeat(indent, depth)
 	nextIndent := strings.Repeat(indent, depth+1)
-
 	switch v.Kind() {
 	case reflect.String:
 		return strconv.Quote(v.String())
@@ -190,20 +275,19 @@ func inspectValue(v reflect.Value, depth, maxDepth int, indent string, visited m
 		return "[Function]"
 	case reflect.Chan:
 		return "[Channel]"
-
 	case reflect.Slice, reflect.Array:
+
 		if v.Len() == 0 {
 			return "[]"
 		}
 		if depth >= maxDepth {
 			return fmt.Sprintf("[Array(%d)]", v.Len())
 		}
-		var items []string
+		items := make([]string, 0, v.Len())
 		for i := 0; i < v.Len(); i++ {
 			items = append(items, nextIndent+inspectValue(v.Index(i), depth+1, maxDepth, indent, visited))
 		}
 		return "[\n" + strings.Join(items, ",\n") + "\n" + curIndent + "]"
-
 	case reflect.Map:
 		if v.Len() == 0 {
 			return "{}"
@@ -215,7 +299,7 @@ func inspectValue(v reflect.Value, depth, maxDepth int, indent string, visited m
 		sort.Slice(keys, func(i, j int) bool {
 			return fmt.Sprint(keys[i].Interface()) < fmt.Sprint(keys[j].Interface())
 		})
-		var pairs []string
+		pairs := make([]string, 0, len(keys))
 		for _, k := range keys {
 			kStr := fmt.Sprint(k.Interface())
 			if k.Kind() != reflect.String {
@@ -225,7 +309,6 @@ func inspectValue(v reflect.Value, depth, maxDepth int, indent string, visited m
 			pairs = append(pairs, nextIndent+kStr+": "+valStr)
 		}
 		return "{\n" + strings.Join(pairs, ",\n") + "\n" + curIndent + "}"
-
 	case reflect.Struct:
 		t := v.Type()
 		if depth >= maxDepth {
@@ -235,7 +318,7 @@ func inspectValue(v reflect.Value, depth, maxDepth int, indent string, visited m
 			}
 			return fmt.Sprintf("[%s]", name)
 		}
-		var fields []string
+		fields := make([]string, 0, v.NumField())
 		for i := 0; i < v.NumField(); i++ {
 			f := t.Field(i)
 			fv := v.Field(i)
@@ -253,7 +336,6 @@ func inspectValue(v reflect.Value, depth, maxDepth int, indent string, visited m
 			return prefix + "{}"
 		}
 		return prefix + "{\n" + strings.Join(fields, ",\n") + "\n" + curIndent + "}"
-
 	default:
 		return fmt.Sprintf("%v", v.Interface())
 	}
@@ -261,29 +343,28 @@ func inspectValue(v reflect.Value, depth, maxDepth int, indent string, visited m
 
 func tryPrettyJSON(s string) (string, bool) {
 	trimmed := strings.TrimSpace(s)
-	if len(trimmed) < 2 {
+	if len(trimmed) < 2 || len(trimmed) > ownerEvalMaxOutputSize {
 		return "", false
 	}
 	first, last := trimmed[0], trimmed[len(trimmed)-1]
 	if (first != '{' || last != '}') && (first != '[' || last != ']') {
 		return "", false
 	}
-
 	var out bytes.Buffer
-	if err := json.Indent(&out, []byte(trimmed), "", "  "); err == nil {
-		return out.String(), true
+	if err := json.Indent(&out, []byte(trimmed), "", "  "); err != nil {
+		return "", false
 	}
-	return "", false
+	return "```json\n" + out.String() + "\n```", true
 }
 
 func init() {
 	commands.Register(&commands.Command{
 		Name:        ">",
-		Description: "Evaluasi kode Go runtime menggunakan Yaegi (full akses)",
-		As:          []string{">", "=>"},
+		Description: "Evaluasi kode Go owner menggunakan Yaegi (akses penuh, chat pribadi)",
+		As:          []string{"=>"},
 		Tags:        "owner",
-		IsPrefix:    false,
 		IsOwner:     true,
+		IsPrivate:   true,
 		IsQuery:     true,
 		Exec:        ownerEval,
 	})

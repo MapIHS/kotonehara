@@ -17,7 +17,12 @@ import (
 	"github.com/google/uuid"
 )
 
-const maxTelegramStickers = 30
+const (
+	maxTelegramStickers        = 30
+	maxTelegramStickersPerCall = 120
+	maxTelegramPackBytes       = 32 << 20
+	maxTelegramLottieBytes     = 4 << 20
+)
 
 type telegramStickerDeps struct {
 	getStickerSet func(ctx context.Context, name string) (*telegram.StickerSet, error)
@@ -74,6 +79,9 @@ func sendTelegramStickers(ctx context.Context, set *telegram.StickerSet, deps te
 	}
 
 	stickers := set.Stickers
+	if len(stickers) > maxTelegramStickersPerCall {
+		stickers = stickers[:maxTelegramStickersPerCall]
+	}
 	total = len(stickers)
 
 	// If no sticker pack sender is configured, use legacy sequential sending
@@ -143,9 +151,11 @@ func sendTelegramStickers(ctx context.Context, set *telegram.StickerSet, deps te
 		}
 		chunk := stickers[start:end]
 
-		// Download and build stickers for this chunk
+		// Download and build stickers for this chunk. Keep the converted bytes
+		// bounded even when a source pack contains many compressed Lottie files.
 		var converted []sticker.StickerPackItem
 		var firstThumb []byte
+		packBytes := 0
 
 		for _, s := range chunk {
 			if ctx.Err() != nil {
@@ -164,6 +174,11 @@ func sendTelegramStickers(ctx context.Context, set *telegram.StickerSet, deps te
 				if err != nil {
 					return err
 				}
+				if len(data) > maxTelegramPackBytes-packBytes ||
+					(isLottie && len(data) > maxTelegramLottieBytes) {
+					return sticker.ErrAnimatedStickerTooLarge
+				}
+				packBytes += len(data)
 
 				if len(firstThumb) == 0 && deps.makeThumb != nil {
 					if isLottie {
