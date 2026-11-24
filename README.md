@@ -36,6 +36,7 @@ Variabel penting:
 
 | Variable | Keterangan | Default |
 | --- | --- | --- |
+| `APP_ENV` | Environment aplikasi, misalnya `dev` atau `production`. | `dev` |
 | `LOGIN_METHOD` | Metode login WhatsApp: `qr` atau `pairing`. | `qr` |
 | `PAIRING_PHONE_NUMBER` | Nomor telepon internasional (tanpa `+`) untuk `LOGIN_METHOD=pairing`. | kosong |
 | `DB_DRIVER` | Driver database: `postgres` atau `sqlite`. | `postgres` |
@@ -50,6 +51,7 @@ Variabel penting:
 | `BASEAPI_URL` | Base URL Hararest untuk downloader dan generator quote. | kosong |
 | `BASES3_URL` | Base URL go-tempupload dengan endpoint `POST /upload/presign`. Bot meminta URL lalu PUT file langsung ke storage. | kosong |
 | `REMOVEBG_URL` | Endpoint API untuk command `removebg`. | kosong |
+| `TELEGRAM_BOT_TOKEN` | Token bot Telegram untuk `.telesticker`. | kosong |
 | `OPENAI_BASE_URL` | Base URL API OpenAI-compatible. | `https://api.openai.com/v1` |
 | `OPENAI_API_KEY` | API key untuk command AI. | kosong |
 | `OPENAI_MODEL` | Model AI yang digunakan. | kosong |
@@ -58,9 +60,35 @@ Variabel penting:
 | `OPENAI_TIMEOUT` | Timeout request AI. | `90s` |
 | `OPENAI_SYSTEM_PROMPT` | System prompt untuk command AI. | prompt Bahasa Indonesia bawaan |
 
+Konfigurasi opsional:
+
+| Variable | Keterangan | Default |
+| --- | --- | --- |
+| `TAILSCALE_AUTHKEY` | Auth key untuk menjalankan Tailscale dari entrypoint container. | kosong |
+| `TAILSCALE_SOCKS5` | Set `1` untuk merutekan HTTP client internal melalui SOCKS5 Tailscale di `127.0.0.1:1055`. | `0` |
+| `RPG_ENABLED` | Aktifkan service RPG browser. | `false` |
+| `RPG_PUBLIC_URL` | Origin publik Hararest tanpa `/rpg` atau path lain. | kosong |
+| `RPG_LISTEN_ADDR` | Alamat listener RPG. `PORT` dari platform mengambil prioritas. | `127.0.0.1:8089` |
+| `RPG_GATEWAY_SECRET` | Secret acak minimal 32 karakter yang sama dengan Hararest. | kosong |
+
+Konfigurasi RPG production dan panduan gateway tersedia di [dokumentasi RPG](docs/rpg.md). Daftar lengkap nilai contoh tersedia di [`.env.sample`](.env.sample).
+
 Contoh minimal:
 
 ```env
+APP_ENV=dev
+OWNER=0123456789@lid
+PREFIX=.
+COOLDOWN=3s
+ADMIN_TTL=45s
+DISABLE_CONTACT_IMPORT=true
+FREE_DAILY_LIMIT=10
+QUOTA_FAIL_OPEN=true
+
+LOGIN_METHOD=qr
+# Wajib hanya untuk LOGIN_METHOD=pairing; tanpa '+' atau angka 0 di depan.
+PAIRING_PHONE_NUMBER=6281234567890
+
 # PostgreSQL (default)
 DB_DRIVER=postgres
 DATABASE_URL=postgres://user:password@localhost:5432/kotonehara?sslmode=disable
@@ -68,19 +96,25 @@ DATABASE_URL=postgres://user:password@localhost:5432/kotonehara?sslmode=disable
 # Atau SQLite (tanpa perlu server database terpisah)
 # DB_DRIVER=sqlite
 # DATABASE_URL=file:kotonehara.db?_pragma=foreign_keys(1)&_pragma=busy_timeout(5000)
-OWNER=0123456789@lid
-PREFIX=.
-COOLDOWN=3s
-ADMIN_TTL=45s
+
 BASEAPI_URL=
 BASES3_URL=https://s3.example.com
 REMOVEBG_URL=
+TELEGRAM_BOT_TOKEN=
 
 OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_API_KEY=
 OPENAI_MODEL=
 OPENAI_TIMEOUT=90s
 OPENAI_SYSTEM_PROMPT=Kamu adalah Kotonehara, asisten WhatsApp yang membantu dengan jawaban jelas, ringkas, dan ramah dalam Bahasa Indonesia.
+
+# Opsional: isi hanya jika fitur terkait digunakan.
+TAILSCALE_AUTHKEY=
+TAILSCALE_SOCKS5=0
+RPG_ENABLED=false
+RPG_PUBLIC_URL=
+RPG_LISTEN_ADDR=127.0.0.1:8089
+RPG_GATEWAY_SECRET=
 ```
 
 ### Rotasi provider AI
