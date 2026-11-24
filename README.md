@@ -6,7 +6,7 @@ Kotonehara adalah bot WhatsApp berbasis Go yang dibangun dengan [`whatsmeow`](ht
 
 Untuk menjalankan langsung di host:
 
-- Go 1.26.6 atau lebih baru.
+- Go 1.26.11 atau lebih baru (toolchain 1.26.11 direkomendasikan oleh `go.mod`).
 - PostgreSQL atau SQLite (pilih salah satu, lihat `DB_DRIVER`).
 - Git.
 - `webp` / `webpmux` untuk fitur sticker.

@@ -2,6 +2,8 @@ module github.com/MapIHS/kotonehara
 
 go 1.26.0
 
+toolchain go1.26.11
+
 require (
 	github.com/chai2010/webp v1.4.0
 	github.com/google/uuid v1.6.0

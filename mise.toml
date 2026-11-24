@@ -1,5 +1,5 @@
 [tools]
-go = "1.26.6"
+go = "1.26.11"
 
 [tasks]
 tidy = "go mod tidy && go fmt ./..."
