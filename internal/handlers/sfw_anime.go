@@ -19,6 +19,7 @@ func init() {
 		Tags:        "anime",
 		Description: "Gambar waifu (SFW)",
 		IsPrefix:    true,
+		Disable:     true,
 		Exec:        sfwAnime("waifu"),
 	})
 	commands.Register(&commands.Command{
@@ -27,6 +28,7 @@ func init() {
 		Tags:        "anime",
 		Description: "Gambar maid (SFW)",
 		IsPrefix:    true,
+		Disable:     true,
 		Exec:        sfwAnime("maid"),
 	})
 	commands.Register(&commands.Command{
@@ -35,6 +37,7 @@ func init() {
 		Tags:        "anime",
 		Description: "Gambar uniform (SFW)",
 		IsPrefix:    true,
+		Disable:     true,
 		Exec:        sfwAnime("uniform"),
 	})
 	commands.Register(&commands.Command{
@@ -43,6 +46,7 @@ func init() {
 		Tags:        "anime",
 		Description: "Gambar selfie anime (SFW)",
 		IsPrefix:    true,
+		Disable:     true,
 		Exec:        sfwAnime("selfies"),
 	})
 }

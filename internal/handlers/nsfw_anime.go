@@ -19,6 +19,7 @@ func init() {
 		Tags:        "nsfw",
 		IsPrefix:    true,
 		IsPrivate:   true,
+		Disable:     true,
 		Exec:        nsfwAnime("waifu"),
 	})
 	commands.Register(&commands.Command{
@@ -38,6 +39,7 @@ func init() {
 		Tags:        "nsfw",
 		IsPrefix:    true,
 		IsPrivate:   true,
+		Disable:     true,
 		Exec:        nsfwAnime("hentai"),
 	})
 	commands.Register(&commands.Command{
@@ -46,6 +48,7 @@ func init() {
 		Tags:        "nsfw",
 		IsPrefix:    true,
 		IsPrivate:   true,
+		Disable:     true,
 		Exec:        nsfwAnime("oppai"),
 	})
 	commands.Register(&commands.Command{
@@ -55,6 +58,7 @@ func init() {
 		Tags:        "nsfw",
 		IsPrefix:    true,
 		IsPrivate:   true,
+		Disable:     true,
 		Exec:        nsfwAnime("ero"),
 	})
 	commands.Register(&commands.Command{
@@ -63,6 +67,7 @@ func init() {
 		Tags:        "nsfw",
 		IsPrefix:    true,
 		IsPrivate:   true,
+		Disable:     true,
 		Exec:        nsfwAnime("maid"),
 	})
 }
