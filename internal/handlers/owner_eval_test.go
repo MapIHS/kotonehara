@@ -131,12 +131,12 @@ func TestTruncateOwnerEvalReplyPreservesUTF8(t *testing.T) {
 	}
 }
 
-func TestOwnerEvalIsPrivateOwnerOnly(t *testing.T) {
+func TestOwnerEvalIsOwnerOnlyInPrivateAndGroupChats(t *testing.T) {
 	for _, cmd := range commands.Commands() {
 		if cmd.Name != ">" {
 			continue
 		}
-		if !cmd.IsOwner || !cmd.IsPrivate || !cmd.IsQuery || cmd.IsPrefix {
+		if !cmd.IsOwner || cmd.IsPrivate || !cmd.IsQuery || cmd.IsPrefix {
 			t.Fatalf("unexpected owner eval command policy: %+v", cmd)
 		}
 		return

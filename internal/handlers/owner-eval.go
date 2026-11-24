@@ -360,11 +360,10 @@ func tryPrettyJSON(s string) (string, bool) {
 func init() {
 	commands.Register(&commands.Command{
 		Name:        ">",
-		Description: "Evaluasi kode Go owner menggunakan Yaegi (akses penuh, chat pribadi)",
+		Description: "Evaluasi kode Go owner menggunakan Yaegi (akses penuh)",
 		As:          []string{"=>"},
 		Tags:        "owner",
 		IsOwner:     true,
-		IsPrivate:   true,
 		IsQuery:     true,
 		Exec:        ownerEval,
 	})
