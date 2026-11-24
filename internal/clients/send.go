@@ -253,6 +253,69 @@ func (c *Client) SendImage(ctx context.Context, to types.JID, data []byte, capti
 	return c.WA.SendMessage(ctx, to, msg)
 }
 
+func (c *Client) SendAudioSticker(ctx context.Context, to types.JID, stickerData []byte, audioData []byte, isAnimate bool, opts *waE2E.ContextInfo) (whatsmeow.SendResponse, error) {
+	// Upload sticker WebP (same media type as a regular sticker).
+	stickerUp, err := c.WA.Upload(ctx, stickerData, whatsmeow.MediaImage)
+	if err != nil {
+		return whatsmeow.SendResponse{}, fmt.Errorf("upload sticker: %w", err)
+	}
+
+	// Upload audio Opus.
+	audioUp, err := c.WA.Upload(ctx, audioData, whatsmeow.MediaAudio)
+	if err != nil {
+		return whatsmeow.SendResponse{}, fmt.Errorf("upload audio: %w", err)
+	}
+
+	stickerMime := http.DetectContentType(stickerData)
+
+	// Build the StickerMessage with AudioMessage nested via the Audio oneof.
+	stickerMsg := &waE2E.StickerMessage{
+		URL:           proto.String(stickerUp.URL),
+		DirectPath:    proto.String(stickerUp.DirectPath),
+		MediaKey:      stickerUp.MediaKey,
+		Mimetype:      proto.String(stickerMime),
+		FileEncSHA256: stickerUp.FileEncSHA256,
+		FileSHA256:    stickerUp.FileSHA256,
+		FileLength:    proto.Uint64(uint64(len(stickerData))),
+		IsAnimated:    proto.Bool(isAnimate),
+		StickerSentTS: proto.Int64(time.Now().Unix()),
+		ContextInfo: &waE2E.ContextInfo{
+			ExperienceIDs: []uint32{13007},
+		},
+		Audio: &waE2E.StickerMessage_AudioMessage{
+			AudioMessage: &waE2E.AudioMessage{
+				URL:           proto.String(audioUp.URL),
+				DirectPath:    proto.String(audioUp.DirectPath),
+				MediaKey:      audioUp.MediaKey,
+				Mimetype:      proto.String("audio/ogg; codecs=opus"),
+				FileEncSHA256: audioUp.FileEncSHA256,
+				FileSHA256:    audioUp.FileSHA256,
+				FileLength:    &audioUp.FileLength,
+			},
+		},
+	}
+
+	// Merge caller-provided ContextInfo (quoted message, etc.) into the
+	// sticker's ContextInfo without overwriting ExperienceIDs.
+	if opts != nil {
+		stickerMsg.ContextInfo.StanzaID = opts.StanzaID
+		stickerMsg.ContextInfo.Participant = opts.Participant
+		stickerMsg.ContextInfo.QuotedMessage = opts.QuotedMessage
+		stickerMsg.ContextInfo.RemoteJID = opts.RemoteJID
+	}
+
+	// Wrap in AudioStickerMessage (FutureProofMessage envelope).
+	msg := &waE2E.Message{
+		AudioStickerMessage: &waE2E.FutureProofMessage{
+			Message: &waE2E.Message{
+				StickerMessage: stickerMsg,
+			},
+		},
+	}
+
+	return c.WA.SendMessage(ctx, to, msg)
+}
+
 func (c *Client) SendDocument(ctx context.Context, to types.JID, data []byte, filename, caption string, opts *waE2E.ContextInfo) (whatsmeow.SendResponse, error) {
 	up, err := c.WA.Upload(ctx, data, whatsmeow.MediaDocument)
 	if err != nil {
