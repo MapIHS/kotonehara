@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,9 +17,12 @@ import (
 	exec "github.com/MapIHS/kotonehara/internal/service/mediaproc"
 )
 
-// extractOpusAudio extracts the first audio stream from raw media bytes and
-// encodes it as Opus in an OGG container. Returns the Opus bytes.
+var errStickerAudioStream = errors.New("media tidak memiliki audio")
+
 func extractOpusAudio(ctx context.Context, raw []byte) ([]byte, error) {
+	if len(raw) == 0 {
+		return nil, errors.New("media kosong")
+	}
 	if _, err := exec.LookPath("ffmpeg"); err != nil {
 		return nil, fmt.Errorf("ffmpeg belum terpasang")
 	}
@@ -54,10 +58,20 @@ func extractOpusAudio(ctx context.Context, raw []byte) ([]byte, error) {
 		if ctx.Err() != nil {
 			return nil, ctx.Err()
 		}
+		if bytes.Contains(out, []byte("matches no streams")) {
+			return nil, errStickerAudioStream
+		}
 		return nil, fmt.Errorf("extract audio: %w: %s", err, bytes.TrimSpace(out))
 	}
 
-	return os.ReadFile(outFile)
+	audio, err := os.ReadFile(outFile)
+	if err != nil {
+		return nil, err
+	}
+	if len(audio) == 0 {
+		return nil, errors.New("hasil audio kosong")
+	}
+	return audio, nil
 }
 
 func stickerAudio(ctx context.Context, client *clients.Client, m *message.Message, _ config.Config) {
@@ -72,8 +86,12 @@ func stickerAudio(ctx context.Context, client *clients.Client, m *message.Messag
 
 	// Extract audio from the video/GIF.
 	audioData, err := extractOpusAudio(opCtx, raw)
+	if errors.Is(err, errStickerAudioStream) {
+		_, _ = m.Reply(ctx, "Videonya tidak memiliki audio. Pilih video yang ada suaranya, yaa.")
+		return
+	}
 	if err != nil {
-		_, _ = m.Reply(ctx, fmt.Sprintf("Audionya belum bisa diekstrak: %s", err))
+		_, _ = m.Reply(ctx, "Audio belum bisa diekstrak. Pastikan videonya valid dan coba lagi, yaa.")
 		return
 	}
 
