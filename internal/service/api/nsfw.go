@@ -6,7 +6,59 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 )
+
+// ---------------------------------------------------------------------------
+// Rule34 (proxied via hararest)
+// ---------------------------------------------------------------------------
+
+type Rule34Post struct {
+	ID         int    `json:"id"`
+	FileURL    string `json:"file_url"`
+	SampleURL  string `json:"sample_url"`
+	PreviewURL string `json:"preview_url"`
+	Tags       string `json:"tags"`
+	Score      int    `json:"score"`
+	Width      int    `json:"width"`
+	Height     int    `json:"height"`
+	Rating     string `json:"rating"`
+}
+
+// Rule34 fetches posts from Rule34 via the hararest NSFW proxy.
+func (c *Client) Rule34(ctx context.Context, tags string, limit int) ([]Rule34Post, error) {
+	tags = strings.TrimSpace(tags)
+	if tags == "" {
+		return nil, fmt.Errorf("tags tidak boleh kosong")
+	}
+	if limit <= 0 {
+		limit = 10
+	}
+
+	reqURL := fmt.Sprintf("%s/api/nsfw/rule34?tags=%s&limit=%d", c.BaseURL, url.QueryEscape(tags), limit)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := c.HTTP.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, readAPIError("rule34", resp)
+	}
+
+	// hararest returns { status: "success", data: [...posts] }
+	var payload APIResponse[[]Rule34Post]
+	if err := decodeAPIResponse(resp, &payload); err != nil {
+		return nil, err
+	}
+	return payload.Data, nil
+}
 
 // ---------------------------------------------------------------------------
 // Waifu.im (proxied via hararest)
