@@ -41,7 +41,7 @@ func handleAvscan(ctx context.Context, client *clients.Client, m *message.Messag
 
 	if (m.IsImage || m.IsQuotedImage) && m.Media != nil {
 		dlCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
-		raw, err := client.WA.Download(dlCtx, m.Media)
+		raw, err := client.DownloadMedia(dlCtx, m)
 		cancel()
 		if err != nil || len(raw) == 0 {
 			_, _ = m.Reply(ctx, "Gambarnya belum bisa diunduh.")

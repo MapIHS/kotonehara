@@ -42,7 +42,13 @@ func toURLCmd(ctx context.Context, client *clients.Client, m *message.Message, c
 	opCtx, cancel := context.WithTimeout(ctx, toURLTimeout)
 	defer cancel()
 
-	data, err := client.WA.Download(opCtx, target.media)
+	var data []byte
+	var err error
+	if m.IsQuotedViewOnce {
+		data, err = client.DownloadMedia(opCtx, m)
+	} else {
+		data, err = client.WA.Download(opCtx, target.media)
+	}
 	if err != nil || len(data) == 0 {
 		m.Reply(ctx, "Media belum bisa diambil, yaa.")
 		return

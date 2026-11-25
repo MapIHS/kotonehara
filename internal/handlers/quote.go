@@ -189,7 +189,13 @@ func quoteCmd(ctx context.Context, client *clients.Client, m *message.Message, c
 	// Media handling
 	var media *quote.Media
 	if img := qMsg.GetImageMessage(); img != nil {
-		data, err := client.WA.Download(opCtx, img)
+		var data []byte
+		var err error
+		if m.IsQuotedViewOnce {
+			data, err = client.DownloadMedia(opCtx, m)
+		} else {
+			data, err = client.WA.Download(opCtx, img)
+		}
 		if err == nil && len(data) > 0 {
 			mimeType := img.GetMimetype()
 			if mimeType == "" {

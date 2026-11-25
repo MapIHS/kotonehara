@@ -175,6 +175,9 @@ func TestBusinessProfileRegistrationLoginAndRePair(t *testing.T) {
 		if ua.GetPlatform() != waWa6.ClientPayload_UserAgent_SMB_ANDROID || ua.GetDevice() != "Android 13" || ua.GetOsVersion() != "13.0.0" {
 			t.Fatalf("wrong Business profile: %v", ua)
 		}
+		if payload.GetWebInfo() == nil || payload.GetWebInfo().GetWebSubPlatform() != waWa6.ClientPayload_WebInfo_WEB_BROWSER {
+			t.Fatalf("Business profile lost webInfo: %v", payload.GetWebInfo())
+		}
 	}
 	registration := client.GetClientPayload()
 	check(registration)

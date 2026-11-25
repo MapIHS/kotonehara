@@ -14,19 +14,21 @@ type Client struct {
 	WA    *whatsmeow.Client
 	Calls *meowcaller.Client
 
-	admins *adminCache
-	albums *albumCache
-	cfg    config.Config
-	HTTP   *http.Client
+	admins   *adminCache
+	albums   *albumCache
+	viewOnce *viewOnceCache
+	cfg      config.Config
+	HTTP     *http.Client
 }
 
 func New(c *whatsmeow.Client, cfg config.Config, callClient *meowcaller.Client) *Client {
 	return &Client{
-		WA:     c,
-		Calls:  callClient,
-		cfg:    cfg,
-		admins: newAdminCache(cfg.AdminTTL),
-		albums: newAlbumCache(),
-		HTTP:   httpclient.New("", 20*time.Second).HTTP,
+		WA:       c,
+		Calls:    callClient,
+		cfg:      cfg,
+		admins:   newAdminCache(cfg.AdminTTL),
+		albums:   newAlbumCache(),
+		viewOnce: newViewOnceCache(),
+		HTTP:     httpclient.New("", 20*time.Second).HTTP,
 	}
 }

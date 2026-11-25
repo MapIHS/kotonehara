@@ -139,8 +139,8 @@ func CommandExec(ctx context.Context, c *clients.Client, m *message.Message, cfg
 
 	// Quota is charged only after every precondition passes, so a rejected
 	// invocation (missing media/query, wrong chat, not admin) costs nothing.
-	// Exempt: SkipQuota commands, owner commands, and the bot account itself.
-	if !cmd.SkipQuota && !cmd.IsOwner && !m.IsBot && quotaCheck != nil {
+	// Exempt: SkipQuota commands, owner-only commands, owner accounts, and the bot itself.
+	if !cmd.SkipQuota && !cmd.IsOwner && !m.IsOwner && !m.IsBot && quotaCheck != nil {
 		allowed, blockMsg, err := quotaCheck(ctx, m.Identity.StateJID(), m.Identity.AliasStrings())
 		if err != nil {
 			// The checker already applied its fail-open/fail-closed policy;

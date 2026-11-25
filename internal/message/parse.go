@@ -16,6 +16,10 @@ import (
 
 type IdentityResolver func(ctx context.Context, primary, alternate types.JID) (identity.Identity, error)
 
+type QuotedMediaCache interface {
+	CachedViewOnceMessage(chat types.JID, id string) (*waE2E.Message, bool)
+}
+
 type Parser struct {
 	Client          WAClient
 	ResolveIdentity IdentityResolver
@@ -93,6 +97,16 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 	quotedRaw := pickQuoted(mess)
 	isQuotedViewOnce := IsViewOnceMessage(quotedRaw)
 	quotedMsg := UnwrapMessage(quotedRaw)
+	ctxInfo := quoteContextInfo(mess)
+	if isQuotedViewOnce && ctxInfo.GetStanzaID() != "" {
+		if cache, ok := p.Client.(QuotedMediaCache); ok {
+			if original, ok := cache.CachedViewOnceMessage(mess.Info.Chat, ctxInfo.GetStanzaID()); ok {
+				if mediaMsg := UnwrapMessage(original); pickMedia(mediaMsg, nil) != nil {
+					quotedMsg = mediaMsg
+				}
+			}
+		}
+	}
 	media := pickMedia(quotedMsg, mess)
 	if strings.EqualFold(cmd, "tomp3") {
 		if audio := quotedMsg.GetAudioMessage(); audio != nil {
@@ -112,7 +126,6 @@ func (p *Parser) Parse(ctx context.Context, mess *events.Message) *Message {
 	isQuotedStickerGif := quotedMsg != nil && quotedMsg.GetStickerMessage() != nil && quotedMsg.GetStickerMessage().GetIsAnimated()
 
 	msgID := extractQuoteContext(mess)
-	ctxInfo := quoteContextInfo(mess)
 	quotedAlbumID := ""
 	if quotedMsg.GetAlbumMessage() != nil {
 		quotedAlbumID = ctxInfo.GetStanzaID()

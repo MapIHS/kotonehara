@@ -7,6 +7,7 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	"image/png"
+	"net/http"
 	"strings"
 
 	"github.com/MapIHS/kotonehara/internal/clients"
@@ -25,9 +26,16 @@ func init() {
 		IsPrefix:    true,
 		IsMedia:     true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
-			data, err := client.WA.Download(ctx, m.Media)
+			data, err := client.DownloadMedia(ctx, m)
 			if err != nil || len(data) == 0 {
 				m.Reply(ctx, "Media belum bisa diambil, yaa.")
+				return
+			}
+			mime := http.DetectContentType(data)
+			if mime == "image/jpeg" || mime == "image/png" || mime == "image/webp" {
+				if _, err := client.SendImage(ctx, m.From, data, getCaption(m), m.ID); err != nil {
+					m.Reply(ctx, "Gambarnya belum bisa dikirim, yaa.")
+				}
 				return
 			}
 			img, _, err := image.Decode(bytes.NewReader(data))

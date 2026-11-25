@@ -29,7 +29,7 @@ func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 		bottomText = strings.TrimSpace(parts[1])
 	}
 
-	raw, err := client.WA.Download(ctx, m.Media)
+	raw, err := client.DownloadMedia(ctx, m)
 	if err != nil || len(raw) == 0 {
 		m.Reply(ctx, "Gambarnya belum bisa diambil, yaa.")
 		return

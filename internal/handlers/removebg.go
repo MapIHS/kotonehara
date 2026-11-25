@@ -38,13 +38,19 @@ func removeBGCommand(ctx context.Context, client *clients.Client, m *message.Mes
 	if quality == "" {
 		quality = "fast"
 	}
-	process := func(ctx context.Context, media whatsmeow.DownloadableMessage) error {
+	process := func(ctx context.Context, media whatsmeow.DownloadableMessage, source *message.Message) error {
 		opCtx, cancel := context.WithTimeout(ctx, 120*time.Second)
 		defer cancel()
 		if sized, ok := media.(interface{ GetFileLength() uint64 }); ok && sized.GetFileLength() > uint64(clients.MaxAlbumMediaBytes) {
 			return clients.ErrAlbumLimit
 		}
-		raw, err := client.WA.Download(opCtx, media)
+		var raw []byte
+		var err error
+		if source != nil {
+			raw, err = client.DownloadMedia(opCtx, source)
+		} else {
+			raw, err = client.WA.Download(opCtx, media)
+		}
 		if err != nil {
 			return err
 		}
@@ -73,7 +79,9 @@ func removeBGCommand(ctx context.Context, client *clients.Client, m *message.Mes
 		}
 		batchCtx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 		defer cancel()
-		sent, total := removeBGAlbum(batchCtx, items, process)
+		sent, total := removeBGAlbum(batchCtx, items, func(ctx context.Context, media whatsmeow.DownloadableMessage) error {
+			return process(ctx, media, nil)
+		})
 		if total == 0 {
 			m.Reply(ctx, "Album ini tidak berisi foto, yaa.")
 		} else if sent == 0 {
@@ -87,7 +95,7 @@ func removeBGCommand(ctx context.Context, client *clients.Client, m *message.Mes
 		m.Reply(ctx, "Gambarnya dibutuhkan, yaa.")
 		return
 	}
-	if err := process(ctx, m.Media); err != nil {
+	if err := process(ctx, m.Media, m); err != nil {
 		m.Reply(ctx, "Gagal menghapus background atau mengirim hasilnya, yaa.")
 	}
 }

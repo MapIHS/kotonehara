@@ -63,7 +63,7 @@ func init() {
 			opCtx, cancel := context.WithTimeout(ctx, 90*time.Second)
 			defer cancel()
 
-			data, err := client.WA.Download(opCtx, m.Media)
+			data, err := client.DownloadMedia(opCtx, m)
 			if err != nil || len(data) == 0 {
 				m.Reply(ctx, "Media belum bisa diambil, yaa.")
 				return

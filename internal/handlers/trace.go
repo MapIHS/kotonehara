@@ -56,7 +56,7 @@ func init() {
 			opCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
 			defer cancel()
 
-			raw, err := client.WA.Download(opCtx, m.Media)
+			raw, err := client.DownloadMedia(opCtx, m)
 			if err != nil || len(raw) == 0 {
 				m.Reply(ctx, "Gambarnya belum bisa diunduh.")
 				return

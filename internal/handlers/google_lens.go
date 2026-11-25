@@ -63,7 +63,7 @@ func handleGoogleLens(ctx context.Context, client *clients.Client, m *message.Me
 	}
 	opCtx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
-	raw, err := client.WA.Download(opCtx, m.Media)
+	raw, err := client.DownloadMedia(opCtx, m)
 	if err != nil || len(raw) == 0 {
 		m.Reply(ctx, "Gambarnya belum bisa diunduh.")
 		return

@@ -38,6 +38,12 @@ func businessClientPayload(dev *store.Device) *waWa6.ClientPayload {
 	store.SetOSInfo("Android 13", [3]uint32{13, 0, 0})
 	store.BaseClientPayload.UserAgent.Platform = waWa6.ClientPayload_UserAgent_SMB_ANDROID.Enum()
 	store.BaseClientPayload.UserAgent.Device = proto.String("Android 13")
+	// Business companion registration requires webInfo even with an Android UA.
+	if store.BaseClientPayload.WebInfo == nil {
+		store.BaseClientPayload.WebInfo = &waWa6.ClientPayload_WebInfo{
+			WebSubPlatform: waWa6.ClientPayload_WebInfo_WEB_BROWSER.Enum(),
+		}
+	}
 	return dev.GetClientPayload()
 }
 
@@ -184,7 +190,8 @@ func (d *Devices) NewClient(dev *store.Device) *whatsmeow.Client {
 	// whatsmeow would otherwise derive PairClientAndroid from ANDROID_PHONE.
 	client.QRClientType = whatsmeow.PairClientChrome
 	client.GetClientPayload = func() *waWa6.ClientPayload { return businessClientPayload(dev) }
-	d.log.Infof("device identity: WhatsApp Business Android 13 (QR pairing as Chrome)")
+	payload := client.GetClientPayload()
+	d.log.Infof("companion payload: platform=%s os=%s device=%s web_info=%t qr_pair_type=%s", payload.GetUserAgent().GetPlatform(), payload.GetUserAgent().GetOsVersion(), payload.GetUserAgent().GetDevice(), payload.GetWebInfo() != nil, client.QRClientType)
 	callClient := meowcaller.NewClient(client)
 	callClient.OnIncomingCall(func(call *meowcaller.Call) {
 		d.log.Infof("incoming call from %s (%s)", call.Peer().String(), call.ID())
@@ -206,6 +213,7 @@ func (d *Devices) registerEventHandler(client *whatsmeow.Client, callClient *meo
 			if d.ctx.Err() != nil {
 				return
 			}
+			c.RememberViewOnce(d.ctx, v)
 			c.RememberAlbumChild(v)
 			parse := m.Parse(d.ctx, v)
 
@@ -224,6 +232,11 @@ func (d *Devices) registerEventHandler(client *whatsmeow.Client, callClient *meo
 
 				commands.CommandExec(d.ctx, c, parse, d.cfg)
 			})
+
+		case *events.UndecryptableMessage:
+			if v.UnavailableType == events.UnavailableTypeViewOnce {
+				d.log.Warnf("WhatsApp delivered view-once as unavailable (is_unavailable=%t)", v.IsUnavailable)
+			}
 
 		case *events.Connected:
 			if d.cfg.DisableContactImport {

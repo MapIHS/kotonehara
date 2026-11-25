@@ -29,7 +29,7 @@ func stc(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 	opCtx, cancel := context.WithTimeout(ctx, 90*time.Second)
 	defer cancel()
 
-	raw, err := client.WA.Download(opCtx, m.Media)
+	raw, err := client.DownloadMedia(opCtx, m)
 	if err != nil || len(raw) == 0 {
 		_, _ = m.Reply(ctx, "Gambarnya belum bisa diambil, yaa.")
 		return

@@ -78,7 +78,7 @@ func stickerAudio(ctx context.Context, client *clients.Client, m *message.Messag
 	opCtx, cancel := context.WithTimeout(ctx, 120*time.Second)
 	defer cancel()
 
-	raw, err := client.WA.Download(opCtx, m.Media)
+	raw, err := client.DownloadMedia(opCtx, m)
 	if err != nil || len(raw) == 0 {
 		_, _ = m.Reply(ctx, "Media belum bisa diambil, yaa.")
 		return
