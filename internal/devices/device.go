@@ -43,7 +43,7 @@ func applyClientBrowserProfileLocked(isAndroid bool) {
 	if isAndroid {
 		store.DeviceProps.PlatformType = waCompanionReg.DeviceProps_ANDROID_PHONE.Enum()
 		store.SetOSInfo("Android 13", [3]uint32{13, 0, 0})
-		store.BaseClientPayload.UserAgent.Platform = waWa6.ClientPayload_UserAgent_WEB.Enum()
+		store.BaseClientPayload.UserAgent.Platform = waWa6.ClientPayload_UserAgent_SMB_ANDROID.Enum()
 		store.BaseClientPayload.UserAgent.Device = proto.String("Android 13")
 		return
 	}
@@ -145,7 +145,7 @@ func (m *clientIdentityManager) waitForLIDAndRestart(ctx context.Context) {
 		case <-waitCtx.Done():
 			timer.Stop()
 			if m.log != nil && ctx.Err() == nil {
-				m.log.Warnf("timed out waiting for @lid before switching profile to Android 13")
+				m.log.Warnf("timed out waiting for @lid before switching profile to SMB_ANDROID (Android 13)")
 			}
 			return
 		case <-timer.C:
@@ -157,7 +157,7 @@ func (m *clientIdentityManager) waitForLIDAndRestart(ctx context.Context) {
 	}
 	applyClientBrowserProfile(true)
 	if m.log != nil {
-		m.log.Infof("logged in with LID %s; switching profile to Android 13 and restarting connection", lid)
+		m.log.Infof("logged in with LID %s; switching profile to SMB_ANDROID (Android 13) and restarting connection", lid)
 	}
 	if m.restartConn != nil {
 		m.restartConn()

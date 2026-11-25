@@ -242,8 +242,11 @@ func TestClientBrowserProfileBeforeAndAfterLogin(t *testing.T) {
 	if androidPayload.GetDevicePairingData() != nil {
 		t.Fatal("logged-in payload should not include DevicePairingData")
 	}
-	if androidPayload.GetUserAgent().GetPlatform() != waWa6.ClientPayload_UserAgent_WEB {
-		t.Fatalf("logged-in platform = %v, want WEB", androidPayload.GetUserAgent().GetPlatform())
+	if androidPayload.GetUserAgent().GetPlatform() != waWa6.ClientPayload_UserAgent_SMB_ANDROID {
+		t.Fatalf("logged-in platform = %v, want SMB_ANDROID", androidPayload.GetUserAgent().GetPlatform())
+	}
+	if androidPayload.GetWebInfo().GetWebSubPlatform() != waWa6.ClientPayload_WebInfo_WEB_BROWSER {
+		t.Fatalf("logged-in webSubPlatform = %v, want WEB_BROWSER", androidPayload.GetWebInfo().GetWebSubPlatform())
 	}
 	if androidPayload.GetUserAgent().GetDevice() != "Android 13" {
 		t.Fatalf("logged-in device = %q, want Android 13", androidPayload.GetUserAgent().GetDevice())
@@ -258,12 +261,12 @@ func TestClientBrowserProfileBeforeAndAfterLogin(t *testing.T) {
 		t.Fatalf("logged-in PlatformType = %v, want ANDROID_PHONE", store.DeviceProps.GetPlatformType())
 	}
 
-	// 4. Restarting with stored JID + @lid starts straight in Android 13 profile without restarting again.
+	// 4. Restarting with stored JID + @lid starts straight in SMB_ANDROID (Android 13) profile without restarting again.
 	dev.LID = lid
 	client2 := d.NewClient(dev)
 	loginPayload2 := client2.GetClientPayload()
-	if loginPayload2.GetUserAgent().GetDevice() != "Android 13" || loginPayload2.GetUserAgent().GetOsVersion() != "13.0.0" {
-		t.Fatalf("restarted logged-in client got device=%q os=%q", loginPayload2.GetUserAgent().GetDevice(), loginPayload2.GetUserAgent().GetOsVersion())
+	if loginPayload2.GetUserAgent().GetPlatform() != waWa6.ClientPayload_UserAgent_SMB_ANDROID || loginPayload2.GetUserAgent().GetDevice() != "Android 13" || loginPayload2.GetUserAgent().GetOsVersion() != "13.0.0" {
+		t.Fatalf("restarted logged-in client got platform=%v device=%q os=%q", loginPayload2.GetUserAgent().GetPlatform(), loginPayload2.GetUserAgent().GetDevice(), loginPayload2.GetUserAgent().GetOsVersion())
 	}
 
 	// 5. LoggedOut resets back to Chrome Windows browser profile.
@@ -272,7 +275,7 @@ func TestClientBrowserProfileBeforeAndAfterLogin(t *testing.T) {
 	dev.ID = nil
 	dev.LID = types.EmptyJID
 	resetPayload := mgr.payload()
-	if resetPayload.GetUserAgent().GetDevice() != "Desktop" || store.DeviceProps.GetPlatformType() != waCompanionReg.DeviceProps_CHROME {
-		t.Fatalf("logged-out profile not reset to browser: device=%q platform=%v", resetPayload.GetUserAgent().GetDevice(), store.DeviceProps.GetPlatformType())
+	if resetPayload.GetUserAgent().GetPlatform() != waWa6.ClientPayload_UserAgent_WEB || resetPayload.GetUserAgent().GetDevice() != "Desktop" || store.DeviceProps.GetPlatformType() != waCompanionReg.DeviceProps_CHROME {
+		t.Fatalf("logged-out profile not reset to browser: platform=%v device=%q platformType=%v", resetPayload.GetUserAgent().GetPlatform(), resetPayload.GetUserAgent().GetDevice(), store.DeviceProps.GetPlatformType())
 	}
 }
