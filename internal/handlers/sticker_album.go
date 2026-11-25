@@ -30,7 +30,7 @@ type albumStickerDeps struct {
 	publisher string
 }
 
-func stickerFromAlbum(ctx context.Context, client *clients.Client, m *message.Message) {
+func stickerFromAlbum(ctx context.Context, client *clients.Client, m *message.Message, crop sticker.Crop) {
 	items := client.AlbumMedia(m.From, m.QuotedAlbumID)
 	if len(items) == 0 {
 		_, _ = m.Reply(ctx, "Foto di album ini belum tersimpan (mungkin dikirim sebelum bot aktif). Balas salah satu fotonya langsung, yaa.")
@@ -51,7 +51,7 @@ func stickerFromAlbum(ctx context.Context, client *clients.Client, m *message.Me
 			return client.WA.Download(ctx, media)
 		},
 		build: func(ctx context.Context, raw []byte, animated bool) ([]byte, error) {
-			return sticker.BuildSticker(ctx, raw, m.PushName, false, animated)
+			return sticker.BuildStickerWithCrop(ctx, raw, m.PushName, false, animated, crop)
 		},
 		makeThumb: func(ctx context.Context, raw []byte, animated bool) ([]byte, error) {
 			if animated {

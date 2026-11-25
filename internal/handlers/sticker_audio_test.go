@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 func TestExtractOpusAudio(t *testing.T) {
@@ -17,7 +18,7 @@ func TestExtractOpusAudio(t *testing.T) {
 	for _, format := range []string{"mp4", "webm"} {
 		t.Run(format, func(t *testing.T) {
 			video := makeStickerAudioTestVideo(t, format, true)
-			audio, err := extractOpusAudio(context.Background(), video)
+			audio, err := extractOpusAudio(context.Background(), video, time.Second)
 			if err != nil {
 				t.Fatalf("extractOpusAudio() error = %v", err)
 			}
@@ -36,7 +37,7 @@ func TestExtractOpusAudioRejectsVideoWithoutAudio(t *testing.T) {
 	for _, format := range []string{"mp4", "webm"} {
 		t.Run(format, func(t *testing.T) {
 			video := makeStickerAudioTestVideo(t, format, false)
-			if _, err := extractOpusAudio(context.Background(), video); !errors.Is(err, errStickerAudioStream) {
+			if _, err := extractOpusAudio(context.Background(), video, time.Second); !errors.Is(err, errStickerAudioStream) {
 				t.Fatalf("extractOpusAudio() error = %v, want errStickerAudioStream", err)
 			}
 		})
@@ -44,7 +45,7 @@ func TestExtractOpusAudioRejectsVideoWithoutAudio(t *testing.T) {
 }
 
 func TestExtractOpusAudioRejectsEmptyMedia(t *testing.T) {
-	if _, err := extractOpusAudio(context.Background(), nil); err == nil {
+	if _, err := extractOpusAudio(context.Background(), nil, time.Second); err == nil {
 		t.Fatal("extractOpusAudio() menerima media kosong")
 	}
 }

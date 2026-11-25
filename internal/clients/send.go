@@ -253,7 +253,7 @@ func (c *Client) SendImage(ctx context.Context, to types.JID, data []byte, capti
 	return c.WA.SendMessage(ctx, to, msg)
 }
 
-func (c *Client) SendAudioSticker(ctx context.Context, to types.JID, stickerData []byte, audioData []byte, isAnimate bool, opts *waE2E.ContextInfo) (whatsmeow.SendResponse, error) {
+func (c *Client) SendAudioSticker(ctx context.Context, to types.JID, stickerData []byte, audioData []byte, duration time.Duration, opts *waE2E.ContextInfo) (whatsmeow.SendResponse, error) {
 	// Upload sticker WebP (same media type as a regular sticker).
 	stickerUp, err := c.WA.Upload(ctx, stickerData, whatsmeow.MediaImage)
 	if err != nil {
@@ -277,7 +277,7 @@ func (c *Client) SendAudioSticker(ctx context.Context, to types.JID, stickerData
 		FileEncSHA256: stickerUp.FileEncSHA256,
 		FileSHA256:    stickerUp.FileSHA256,
 		FileLength:    proto.Uint64(uint64(len(stickerData))),
-		IsAnimated:    proto.Bool(isAnimate),
+		IsAnimated:    proto.Bool(true),
 		StickerSentTS: proto.Int64(time.Now().Unix()),
 		ContextInfo: &waE2E.ContextInfo{
 			ExperienceIDs: []uint32{13007},
@@ -288,6 +288,7 @@ func (c *Client) SendAudioSticker(ctx context.Context, to types.JID, stickerData
 				DirectPath:    proto.String(audioUp.DirectPath),
 				MediaKey:      audioUp.MediaKey,
 				Mimetype:      proto.String("audio/ogg; codecs=opus"),
+				Seconds:       proto.Uint32(uint32((duration + time.Second - 1) / time.Second)),
 				FileEncSHA256: audioUp.FileEncSHA256,
 				FileSHA256:    audioUp.FileSHA256,
 				FileLength:    &audioUp.FileLength,

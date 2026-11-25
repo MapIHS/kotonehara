@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/MapIHS/kotonehara/internal/clients"
@@ -20,9 +21,42 @@ import (
 	_ "golang.org/x/image/webp"
 )
 
-func stc(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
+const stickerCropUsage = "Opsi: -c center/atas/bawah/kiri/kanan/fit. Contoh: -c atas."
+
+func parseStickerCrop(query string) (sticker.Crop, bool) {
+	args := strings.Fields(strings.ToLower(query))
+	if len(args) == 0 {
+		return sticker.CropDefault, true
+	}
+	if len(args) != 2 || (args[0] != "-c" && args[0] != "--crop") {
+		return sticker.CropDefault, false
+	}
+	switch args[1] {
+	case "center", "tengah":
+		return sticker.CropCenter, true
+	case "top", "atas":
+		return sticker.CropTop, true
+	case "bottom", "bawah":
+		return sticker.CropBottom, true
+	case "left", "kiri":
+		return sticker.CropLeft, true
+	case "right", "kanan":
+		return sticker.CropRight, true
+	case "fit":
+		return sticker.CropFit, true
+	default:
+		return sticker.CropDefault, false
+	}
+}
+
+func stc(ctx context.Context, client *clients.Client, m *message.Message, _ config.Config) {
+	crop, ok := parseStickerCrop(m.Query)
+	if !ok {
+		_, _ = m.Reply(ctx, stickerCropUsage)
+		return
+	}
 	if m.Media == nil && m.QuotedAlbumID != "" {
-		stickerFromAlbum(ctx, client, m)
+		stickerFromAlbum(ctx, client, m, crop)
 		return
 	}
 
@@ -57,6 +91,10 @@ func stc(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 	}
 
 	if isLottie {
+		if crop != sticker.CropDefault {
+			_, _ = m.Reply(ctx, "Crop belum tersedia untuk stiker Lottie, yaa.")
+			return
+		}
 		stc, err := sticker.BuildLottieSticker(raw, m.PushName)
 		if err != nil {
 			_, _ = m.Reply(ctx, fmt.Sprintf("Lottie/WAS belum bisa diedit: %s\n%s", err, sticker.DescribeStickerData(raw, stickerMsg)))
@@ -68,14 +106,14 @@ func stc(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 		return
 	}
 
-	stc, err := sticker.BuildSticker(opCtx, raw, m.PushName, isSticker, isGif)
+	stc, err := sticker.BuildStickerWithCrop(opCtx, raw, m.PushName, isSticker, isGif, crop)
 	if err != nil {
 		if errors.Is(err, sticker.ErrAnimatedStickerTooLarge) {
 			_, _ = m.Reply(ctx, "Stiker animasinya masih lebih dari 500 KB. Coba potong GIF jadi lebih pendek, yaa.")
 			return
 		}
 		if stickerMsg != nil && len(stickerMsg.GetPngThumbnail()) > 0 {
-			stc, err = sticker.BuildSticker(opCtx, stickerMsg.GetPngThumbnail(), m.PushName, false, false)
+			stc, err = sticker.BuildStickerWithCrop(opCtx, stickerMsg.GetPngThumbnail(), m.PushName, false, false, crop)
 			if err == nil {
 				if _, err := client.SendSticker(opCtx, m.From, stc, false, false, m.ID); err != nil {
 					_, _ = m.Reply(ctx, "Stikernya belum bisa dikirim, yaa.")
@@ -83,7 +121,7 @@ func stc(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 				return
 			}
 		}
-		if isGif {
+		if isGif || isAnimated || sticker.IsGIF(raw) {
 			_, _ = m.Reply(ctx, fmt.Sprintf("Sticker animasi/video belum bisa dibuat: %s\n%s", err, sticker.DescribeStickerData(raw, stickerMsg)))
 			return
 		}
@@ -91,7 +129,7 @@ func stc(ctx context.Context, client *clients.Client, m *message.Message, cfg co
 		return
 	}
 
-	if _, err := client.SendSticker(opCtx, m.From, stc, isLottie, isAnimated || isGif, m.ID); err != nil {
+	if _, err := client.SendSticker(opCtx, m.From, stc, false, sticker.IsAnimatedWebP(stc), m.ID); err != nil {
 		_, _ = m.Reply(ctx, "Stikernya belum bisa dikirim, yaa.")
 		return
 	}
@@ -124,7 +162,7 @@ func stickerMessage(msg *waE2E.Message) *waE2E.StickerMessage {
 func init() {
 	commands.Register(&commands.Command{
 		Name:        "sticker",
-		Description: "Ubah gambar, video, atau GIF menjadi stiker",
+		Description: "Ubah gambar, video, atau GIF menjadi stiker. " + stickerCropUsage,
 		As:          []string{"s", "stiker"},
 		Tags:        "convert",
 		IsPrefix:    true,

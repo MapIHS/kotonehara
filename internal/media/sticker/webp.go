@@ -22,7 +22,7 @@ import (
 	_ "golang.org/x/image/webp"
 )
 
-func toWebP512(b []byte) ([]byte, error) {
+func toWebP512(b []byte, crop Crop) ([]byte, error) {
 	img, _, err := image.Decode(bytes.NewReader(b))
 	if err != nil {
 		return nil, err
@@ -30,16 +30,32 @@ func toWebP512(b []byte) ([]byte, error) {
 	const sz = 512
 	dst := image.NewRGBA(image.Rect(0, 0, sz, sz))
 	idraw.Draw(dst, dst.Bounds(), image.Transparent, image.Point{}, idraw.Src)
-	bw, bh := img.Bounds().Dx(), img.Bounds().Dy()
+	src := img.Bounds()
+	if crop != CropDefault && crop != CropFit {
+		side := min(src.Dx(), src.Dy())
+		offset := image.Pt((src.Dx()-side)/2, (src.Dy()-side)/2)
+		switch crop {
+		case CropTop:
+			offset.Y = 0
+		case CropBottom:
+			offset.Y = src.Dy() - side
+		case CropLeft:
+			offset.X = 0
+		case CropRight:
+			offset.X = src.Dx() - side
+		}
+		src = image.Rect(0, 0, side, side).Add(src.Min.Add(offset))
+	}
+	bw, bh := src.Dx(), src.Dy()
 	scale := float64(sz) / float64(bw)
 	if float64(bh)*scale > float64(sz) {
 		scale = float64(sz) / float64(bh)
 	}
-	w := int(float64(bw) * scale)
-	h := int(float64(bh) * scale)
+	w := max(1, int(float64(bw)*scale))
+	h := max(1, int(float64(bh)*scale))
 	x := (sz - w) / 2
 	y := (sz - h) / 2
-	xdraw.CatmullRom.Scale(dst, image.Rect(x, y, x+w, y+h), img, img.Bounds(), xdraw.Over, nil)
+	xdraw.CatmullRom.Scale(dst, image.Rect(x, y, x+w, y+h), img, src, xdraw.Over, nil)
 	var out bytes.Buffer
 	if err := webpenc.Encode(&out, dst, &webpenc.Options{Quality: 80}); err != nil {
 		return nil, err
@@ -47,7 +63,26 @@ func toWebP512(b []byte) ([]byte, error) {
 	return out.Bytes(), nil
 }
 
-func videoToWebP(ctx context.Context, data, exif []byte, animatedWebP bool) ([]byte, error) {
+func animationFilter(crop Crop) string {
+	const fps = "fps=15:start_time=0,"
+	if crop == CropFit {
+		return fps + "format=yuva420p,scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=black@0,setsar=1"
+	}
+	x, y := "(iw-ow)/2", "(ih-oh)/2"
+	switch crop {
+	case CropTop:
+		y = "0"
+	case CropBottom:
+		y = "ih-oh"
+	case CropLeft:
+		x = "0"
+	case CropRight:
+		x = "iw-ow"
+	}
+	return fmt.Sprintf("%scrop=w='min(iw,ih)':h='min(iw,ih)':x='%s':y='%s':exact=1,scale=512:512,setsar=1", fps, x, y)
+}
+
+func videoToWebP(ctx context.Context, data, exif []byte, animatedWebP bool, crop Crop) ([]byte, error) {
 	if _, err := exec.LookPath("ffmpeg"); err != nil {
 		return nil, errors.New("ffmpeg belum terpasang")
 	}
@@ -78,18 +113,27 @@ func videoToWebP(ctx context.Context, data, exif []byte, animatedWebP bool) ([]b
 		inFile = gifFile
 	}
 
-	// Keep the original duration on the first retries. Shorten only when
-	// reducing quality still cannot meet the upload limit. Keep motion at 15 fps.
+	// A zero duration encodes the entire clip. Lower quality before trimming.
+	filter := animationFilter(crop)
 	for _, preset := range []struct{ quality, seconds int }{
-		{45, 10}, {30, 10}, {20, 10}, {15, 6}, {10, 3}, {8, 2},
+		{45, 0}, {30, 0}, {20, 0}, {10, 0},
+		{20, 10}, {15, 6}, {10, 3}, {8, 2},
 	} {
-		filter := "fps=15,crop=w='min(iw,ih)':h='min(iw,ih)':x='(iw-ow)/2':y='(ih-oh)/2':exact=1,scale=512:512,setsar=1"
-		cmd := exec.CommandContext(ctx, "ffmpeg",
+		args := []string{
 			"-hide_banner", "-loglevel", "error", "-y",
-			"-t", strconv.Itoa(preset.seconds), "-i", inFile,
-			"-an", "-sn", "-dn", "-vcodec", "libwebp", "-vf", filter,
+			"-copyts", "-start_at_zero", "-i", inFile,
+		}
+		if preset.seconds > 0 {
+			args = append(args, "-t", strconv.Itoa(preset.seconds))
+		}
+		// Stop oversized encodes early. The cutoff sits above the upload
+		// limit so a file cut off by FFmpeg cannot pass the size check.
+		args = append(args,
+			"-fs", strconv.Itoa(maxAnimatedStickerBytes+16_384),
+			"-map", "0:V:0", "-an", "-sn", "-dn", "-vcodec", "libwebp", "-vf", filter,
 			"-lossless", "0", "-q:v", strconv.Itoa(preset.quality),
 			"-compression_level", "4", "-loop", "0", "-preset", "default", "-vsync", "0", outFile)
+		cmd := exec.CommandContext(ctx, "ffmpeg", args...)
 		if out, err := cmd.CombinedOutput(); err != nil {
 			if ctx.Err() != nil {
 				return nil, ctx.Err()

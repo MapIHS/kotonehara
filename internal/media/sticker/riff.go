@@ -6,9 +6,44 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"time"
 )
 
 const webpVP8XEXIFFlag = 0x08
+
+// AnimationDuration returns the sum of the encoded WebP frame delays.
+func AnimationDuration(data []byte) (time.Duration, error) {
+	if !IsAnimatedWebP(data) {
+		return 0, errors.New("WebP tidak memiliki animasi")
+	}
+	end := uint64(binary.LittleEndian.Uint32(data[4:8])) + 8
+	if end > uint64(len(data)) || end < 30 {
+		return 0, errors.New("ukuran WebP invalid")
+	}
+	var ms uint64
+	for pos := uint64(12); pos < end; {
+		if end-pos < 8 {
+			return 0, errors.New("header WebP terpotong")
+		}
+		size := uint64(binary.LittleEndian.Uint32(data[pos+4 : pos+8]))
+		next := pos + 8 + size + size%2
+		if next > end {
+			return 0, errors.New("chunk WebP terpotong")
+		}
+		if string(data[pos:pos+4]) == "ANMF" {
+			if size < 16 {
+				return 0, errors.New("frame WebP invalid")
+			}
+			delay := data[pos+20 : pos+23]
+			ms += uint64(delay[0]) | uint64(delay[1])<<8 | uint64(delay[2])<<16
+		}
+		pos = next
+	}
+	if ms == 0 {
+		return 0, errors.New("durasi animasi WebP kosong")
+	}
+	return time.Duration(ms) * time.Millisecond, nil
+}
 
 type webpRIFFChunk struct {
 	start     int

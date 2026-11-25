@@ -19,9 +19,12 @@ import (
 
 var errStickerAudioStream = errors.New("media tidak memiliki audio")
 
-func extractOpusAudio(ctx context.Context, raw []byte) ([]byte, error) {
+func extractOpusAudio(ctx context.Context, raw []byte, duration time.Duration) ([]byte, error) {
 	if len(raw) == 0 {
 		return nil, errors.New("media kosong")
+	}
+	if duration <= 0 {
+		return nil, errors.New("durasi audio invalid")
 	}
 	if _, err := exec.LookPath("ffmpeg"); err != nil {
 		return nil, fmt.Errorf("ffmpeg belum terpasang")
@@ -42,9 +45,13 @@ func extractOpusAudio(ctx context.Context, raw []byte) ([]byte, error) {
 
 	cmd := exec.CommandContext(ctx, "ffmpeg",
 		"-hide_banner", "-loglevel", "error", "-y",
-		"-i", inFile,
+		"-copyts", "-start_at_zero", "-i", inFile,
 		"-map", "0:a:0",
 		"-vn",
+		// Match the animation's zero-based timeline, preserving any initial
+		// audio delay and filling the end with silence when needed.
+		"-af", "aresample=48000:async=1:first_pts=0,apad",
+		"-t", fmt.Sprintf("%.3f", duration.Seconds()),
 		"-c:a", "libopus",
 		"-b:a", "128k",
 		"-ac", "2",
@@ -75,6 +82,12 @@ func extractOpusAudio(ctx context.Context, raw []byte) ([]byte, error) {
 }
 
 func stickerAudio(ctx context.Context, client *clients.Client, m *message.Message, _ config.Config) {
+	crop, ok := parseStickerCrop(m.Query)
+	if !ok {
+		_, _ = m.Reply(ctx, stickerCropUsage)
+		return
+	}
+
 	opCtx, cancel := context.WithTimeout(ctx, 120*time.Second)
 	defer cancel()
 
@@ -84,8 +97,28 @@ func stickerAudio(ctx context.Context, client *clients.Client, m *message.Messag
 		return
 	}
 
-	// Extract audio from the video/GIF.
-	audioData, err := extractOpusAudio(opCtx, raw)
+	if sticker.IsGIF(raw) {
+		_, _ = m.Reply(ctx, "GIF biasa tidak punya suara. Pilih video yang ada audionya, yaa.")
+		return
+	}
+
+	stickerData, err := sticker.BuildStickerWithCrop(opCtx, raw, m.PushName, false, true, crop)
+	if err != nil {
+		if errors.Is(err, sticker.ErrAnimatedStickerTooLarge) {
+			_, _ = m.Reply(ctx, "Stiker animasinya masih lebih dari 500 KB. Coba pakai video yang lebih pendek, yaa.")
+			return
+		}
+		_, _ = m.Reply(ctx, fmt.Sprintf("Stikernya belum bisa dibuat: %s", err))
+		return
+	}
+	// Compression can shorten the animation, so use the final frame timing.
+	duration, err := sticker.AnimationDuration(stickerData)
+	if err != nil {
+		_, _ = m.Reply(ctx, "Animasinya belum bisa dibuat. Coba video yang lebih panjang, yaa.")
+		return
+	}
+
+	audioData, err := extractOpusAudio(opCtx, raw, duration)
 	if errors.Is(err, errStickerAudioStream) {
 		_, _ = m.Reply(ctx, "Videonya tidak memiliki audio. Pilih video yang ada suaranya, yaa.")
 		return
@@ -95,14 +128,7 @@ func stickerAudio(ctx context.Context, client *clients.Client, m *message.Messag
 		return
 	}
 
-	// Build animated sticker from the same video.
-	stickerData, err := sticker.BuildSticker(opCtx, raw, m.PushName, false, true)
-	if err != nil {
-		_, _ = m.Reply(ctx, fmt.Sprintf("Stikernya belum bisa dibuat: %s", err))
-		return
-	}
-
-	if _, err := client.SendAudioSticker(opCtx, m.From, stickerData, audioData, true, m.ID); err != nil {
+	if _, err := client.SendAudioSticker(opCtx, m.From, stickerData, audioData, duration, m.ID); err != nil {
 		_, _ = m.Reply(ctx, "Stiker audio belum bisa dikirim, yaa.")
 		return
 	}
@@ -112,7 +138,7 @@ func init() {
 	commands.Register(&commands.Command{
 		Name:        "stickeraudio",
 		As:          []string{"sa", "audiosticker", "stkaud"},
-		Description: "Ubah video/GIF menjadi stiker GIF dengan audio",
+		Description: "Ubah video bersuara menjadi stiker animasi dengan audio. " + stickerCropUsage,
 		Tags:        "convert",
 		IsPrefix:    true,
 		IsMedia:     true,
