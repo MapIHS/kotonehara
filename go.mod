@@ -13,7 +13,7 @@ require (
 	github.com/purpshell/meowcaller v0.0.0-20260626012300-0f1265d7ebee
 	github.com/subosito/gotenv v1.6.0
 	github.com/traefik/yaegi v0.16.3
-	go.mau.fi/whatsmeow v0.0.0-20261116172437-19d61352436f
+	go.mau.fi/whatsmeow v0.0.0-20261124172153-494ae5d707ac
 	golang.org/x/image v0.45.0
 	golang.org/x/net v0.62.0
 	google.golang.org/protobuf v1.36.12
