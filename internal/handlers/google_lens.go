@@ -79,14 +79,14 @@ func handleGoogleLens(ctx context.Context, client *clients.Client, m *message.Me
 func init() {
 	commands.Register(&commands.Command{
 		Name: "lens", As: []string{"googlelens", "lensvisual"}, Tags: "search", Description: "Cari sumber dan gambar serupa dengan Google Lens",
-		IsPrefix: true, IsMedia: true, ShowWait: true,
+		IsPrefix: true, IsMedia: true, ShowWait: true, Disable: true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			handleGoogleLens(ctx, client, m, cfg, "visual")
 		},
 	})
 	commands.Register(&commands.Command{
 		Name: "lensai", As: []string{"googlelensai"}, Tags: "search", Description: "Tanyakan gambar ke Google Lens AI",
-		IsPrefix: true, IsMedia: true, ShowWait: true,
+		IsPrefix: true, IsMedia: true, ShowWait: true, Disable: true,
 		Exec: func(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
 			handleGoogleLens(ctx, client, m, cfg, "ai")
 		},
