@@ -35,7 +35,7 @@ func applyClientBrowserProfile() {
 }
 
 func applyClientBrowserProfileLocked() {
-	store.DeviceProps.PlatformType = waCompanionReg.DeviceProps_DESKTOP.Enum()
+	store.DeviceProps.PlatformType = waCompanionReg.DeviceProps_ANDROID_PHONE.Enum()
 	store.SetOSInfo("Android 13", [3]uint32{13, 0, 0})
 	store.BaseClientPayload.UserAgent.Platform = waWa6.ClientPayload_UserAgent_WEB.Enum()
 	store.BaseClientPayload.UserAgent.Device = proto.String("Android 13")
