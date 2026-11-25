@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/MapIHS/kotonehara/internal/clients"
@@ -20,156 +19,26 @@ import (
 	"go.mau.fi/whatsmeow/proto/waWa6"
 	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/store/sqlstore"
-	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
 	waLog "go.mau.fi/whatsmeow/util/log"
 	"google.golang.org/protobuf/proto"
 )
 
-const (
-	defaultLIDWaitTimeout  = 30 * time.Second
-	defaultLIDPollInterval = 250 * time.Millisecond
-)
-
 var clientPayloadMu sync.Mutex
 
-func applyClientBrowserProfile(isAndroid bool) {
-	clientPayloadMu.Lock()
-	defer clientPayloadMu.Unlock()
-	applyClientBrowserProfileLocked(isAndroid)
-}
-
-func applyClientBrowserProfileLocked(isAndroid bool) {
-	if isAndroid {
-		store.DeviceProps.PlatformType = waCompanionReg.DeviceProps_ANDROID_PHONE.Enum()
-		store.SetOSInfo("Android 13", [3]uint32{13, 0, 0})
-		store.BaseClientPayload.UserAgent.Platform = waWa6.ClientPayload_UserAgent_SMB_ANDROID.Enum()
-		store.BaseClientPayload.UserAgent.Device = proto.String("Android 13")
-		return
-	}
-	store.DeviceProps.PlatformType = waCompanionReg.DeviceProps_CHROME.Enum()
-	store.SetOSInfo("Windows", [3]uint32{10, 0, 0})
-	store.BaseClientPayload.UserAgent.Platform = waWa6.ClientPayload_UserAgent_WEB.Enum()
-	store.BaseClientPayload.UserAgent.Device = proto.String("Desktop")
-}
-
-func hasDeviceLID(dev *store.Device) bool {
-	if dev == nil || dev.ID == nil || dev.ID.IsEmpty() {
-		return false
-	}
-	lid := dev.GetLID()
-	return !lid.IsEmpty() && lid.Server == types.HiddenUserServer
-}
-
-type clientIdentityManager struct {
-	dev           *store.Device
-	androidActive atomic.Bool
-	switching     atomic.Bool
-	restartConn   func()
-	log           waLog.Logger
-	pollInterval  time.Duration
-	waitTimeout   time.Duration
-}
-
-func newClientIdentityManager(dev *store.Device, log waLog.Logger, restartConn func()) *clientIdentityManager {
-	m := &clientIdentityManager{
-		dev:          dev,
-		restartConn:  restartConn,
-		log:          log,
-		pollInterval: defaultLIDPollInterval,
-		waitTimeout:  defaultLIDWaitTimeout,
-	}
-	hasLID := hasDeviceLID(dev)
-	m.androidActive.Store(hasLID)
-	applyClientBrowserProfile(hasLID)
-	return m
-}
-
-func (m *clientIdentityManager) payload() *waWa6.ClientPayload {
-	if m == nil || m.dev == nil {
+// DeviceProps and BaseClientPayload are whatsmeow package globals. Build the
+// payload under one lock so registration and reconnect use the same profile.
+func businessClientPayload(dev *store.Device) *waWa6.ClientPayload {
+	if dev == nil {
 		return nil
 	}
 	clientPayloadMu.Lock()
 	defer clientPayloadMu.Unlock()
-	applyClientBrowserProfileLocked(m.androidActive.Load())
-	return m.dev.GetClientPayload()
-}
-
-func (m *clientIdentityManager) resolveLID(ctx context.Context) types.JID {
-	if m.dev == nil || m.dev.ID == nil || m.dev.ID.IsEmpty() {
-		return types.EmptyJID
-	}
-	if lid := m.dev.GetLID(); !lid.IsEmpty() && lid.Server == types.HiddenUserServer {
-		return lid
-	}
-	if m.dev.LIDs != nil {
-		if lid, err := m.dev.LIDs.GetLIDForPN(ctx, m.dev.GetJID()); err == nil && !lid.IsEmpty() && lid.Server == types.HiddenUserServer {
-			return lid
-		}
-	}
-	return types.EmptyJID
-}
-
-func (m *clientIdentityManager) onConnected(ctx context.Context) {
-	if m == nil || m.androidActive.Load() {
-		return
-	}
-	if !m.switching.CompareAndSwap(false, true) {
-		return
-	}
-	go m.waitForLIDAndRestart(ctx)
-}
-
-func (m *clientIdentityManager) waitForLIDAndRestart(ctx context.Context) {
-	defer m.switching.Store(false)
-
-	if ctx == nil {
-		ctx = context.Background()
-	}
-	waitCtx, cancel := context.WithTimeout(ctx, m.waitTimeout)
-	defer cancel()
-
-	interval := m.pollInterval
-	if interval <= 0 {
-		interval = defaultLIDPollInterval
-	}
-
-	var lid types.JID
-	for {
-		lid = m.resolveLID(waitCtx)
-		if !lid.IsEmpty() {
-			break
-		}
-		timer := time.NewTimer(interval)
-		select {
-		case <-waitCtx.Done():
-			timer.Stop()
-			if m.log != nil && ctx.Err() == nil {
-				m.log.Warnf("timed out waiting for @lid before switching profile to SMB_ANDROID (Android 13)")
-			}
-			return
-		case <-timer.C:
-		}
-	}
-
-	if !m.androidActive.CompareAndSwap(false, true) {
-		return
-	}
-	applyClientBrowserProfile(true)
-	if m.log != nil {
-		m.log.Infof("logged in with LID %s; switching profile to SMB_ANDROID (Android 13) and restarting connection", lid)
-	}
-	if m.restartConn != nil {
-		m.restartConn()
-	}
-}
-
-func (m *clientIdentityManager) onLoggedOut() {
-	if m == nil {
-		return
-	}
-	m.androidActive.Store(false)
-	applyClientBrowserProfile(false)
+	store.DeviceProps.PlatformType = waCompanionReg.DeviceProps_ANDROID_PHONE.Enum()
+	store.SetOSInfo("Android 13", [3]uint32{13, 0, 0})
+	store.BaseClientPayload.UserAgent.Platform = waWa6.ClientPayload_UserAgent_SMB_ANDROID.Enum()
+	store.BaseClientPayload.UserAgent.Device = proto.String("Android 13")
+	return dev.GetClientPayload()
 }
 
 const (
@@ -311,8 +180,11 @@ func (d *Devices) NewClient(dev *store.Device) *whatsmeow.Client {
 	}
 
 	client := whatsmeow.NewClient(dev, clientLog)
-	identity := newClientIdentityManager(dev, d.log, client.ResetConnection)
-	client.GetClientPayload = identity.payload
+	// Keep QR client type independent from the Android companion properties.
+	// whatsmeow would otherwise derive PairClientAndroid from ANDROID_PHONE.
+	client.QRClientType = whatsmeow.PairClientChrome
+	client.GetClientPayload = func() *waWa6.ClientPayload { return businessClientPayload(dev) }
+	d.log.Infof("device identity: WhatsApp Business Android 13 (QR pairing as Chrome)")
 	callClient := meowcaller.NewClient(client)
 	callClient.OnIncomingCall(func(call *meowcaller.Call) {
 		d.log.Infof("incoming call from %s (%s)", call.Peer().String(), call.ID())
@@ -320,11 +192,11 @@ func (d *Devices) NewClient(dev *store.Device) *whatsmeow.Client {
 	if d.cfg.DisableContactImport {
 		disableContactImportForDevice(client.Store)
 	}
-	client.AddEventHandler(d.registerEventHandler(client, callClient, identity))
+	client.AddEventHandler(d.registerEventHandler(client, callClient))
 	return client
 }
 
-func (d *Devices) registerEventHandler(client *whatsmeow.Client, callClient *meowcaller.Client, identity *clientIdentityManager) func(evt interface{}) {
+func (d *Devices) registerEventHandler(client *whatsmeow.Client, callClient *meowcaller.Client) func(evt interface{}) {
 	c := clients.New(client, d.cfg, callClient)
 	m := message.NewParser(c, d.cfg)
 	m.ResolveIdentity = c.ResolveIdentity
@@ -358,9 +230,8 @@ func (d *Devices) registerEventHandler(client *whatsmeow.Client, callClient *meo
 				disableContactImportForDevice(client.Store)
 			}
 			d.log.Infof("connected")
-			identity.onConnected(d.ctx)
 		case *events.LoggedOut:
-			identity.onLoggedOut()
+			d.log.Warnf("logged out")
 		case *events.Disconnected:
 			d.log.Warnf("disconnected")
 		}
