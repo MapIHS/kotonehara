@@ -165,26 +165,26 @@ func TestClientBrowserProfileBeforeAndAfterLogin(t *testing.T) {
 	d := New(container, config.Config{}, context.Background())
 	client := d.NewClient(dev)
 
-	// Before login: Chrome on Windows Desktop.
+	// Before login (QR pairing): Android 13 with DESKTOP platform type so Linked Devices shows "Android 13".
 	regPayload := client.GetClientPayload()
 	if regPayload.GetUserAgent().GetPlatform() != waWa6.ClientPayload_UserAgent_WEB {
 		t.Fatalf("unpaired platform = %v, want WEB", regPayload.GetUserAgent().GetPlatform())
 	}
-	if regPayload.GetUserAgent().GetDevice() != "Desktop" {
-		t.Fatalf("unpaired device = %q, want Desktop", regPayload.GetUserAgent().GetDevice())
+	if regPayload.GetUserAgent().GetDevice() != "Android 13" {
+		t.Fatalf("unpaired device = %q, want Android 13", regPayload.GetUserAgent().GetDevice())
 	}
-	if regPayload.GetUserAgent().GetOsVersion() != "10.0.0" {
-		t.Fatalf("unpaired osVersion = %q, want 10.0.0", regPayload.GetUserAgent().GetOsVersion())
+	if regPayload.GetUserAgent().GetOsVersion() != "13.0.0" {
+		t.Fatalf("unpaired osVersion = %q, want 13.0.0", regPayload.GetUserAgent().GetOsVersion())
 	}
 	var regProps waCompanionReg.DeviceProps
 	if err := proto.Unmarshal(regPayload.GetDevicePairingData().GetDeviceProps(), &regProps); err != nil {
 		t.Fatalf("unmarshal registration DeviceProps: %v", err)
 	}
-	if regProps.GetPlatformType() != waCompanionReg.DeviceProps_CHROME {
-		t.Fatalf("unpaired PlatformType = %v, want CHROME", regProps.GetPlatformType())
+	if regProps.GetPlatformType() != waCompanionReg.DeviceProps_DESKTOP {
+		t.Fatalf("unpaired PlatformType = %v, want DESKTOP", regProps.GetPlatformType())
 	}
-	if regProps.GetOs() != "Windows" {
-		t.Fatalf("unpaired Os = %q, want Windows", regProps.GetOs())
+	if regProps.GetOs() != "Android 13" {
+		t.Fatalf("unpaired Os = %q, want Android 13", regProps.GetOs())
 	}
 
 	// Simulate completed pairing / existing login session.
@@ -208,11 +208,11 @@ func TestClientBrowserProfileBeforeAndAfterLogin(t *testing.T) {
 	if loginPayload.GetUserAgent().GetOsBuildNumber() != "13.0.0" {
 		t.Fatalf("logged-in osBuildNumber = %q, want 13.0.0", loginPayload.GetUserAgent().GetOsBuildNumber())
 	}
-	if store.DeviceProps.GetPlatformType() != waCompanionReg.DeviceProps_ANDROID_PHONE {
-		t.Fatalf("logged-in PlatformType = %v, want ANDROID_PHONE", store.DeviceProps.GetPlatformType())
+	if store.DeviceProps.GetPlatformType() != waCompanionReg.DeviceProps_DESKTOP {
+		t.Fatalf("logged-in PlatformType = %v, want DESKTOP", store.DeviceProps.GetPlatformType())
 	}
-	if store.DeviceProps.GetOs() != "Android" {
-		t.Fatalf("logged-in DeviceProps.Os = %q, want Android", store.DeviceProps.GetOs())
+	if store.DeviceProps.GetOs() != "Android 13" {
+		t.Fatalf("logged-in DeviceProps.Os = %q, want Android 13", store.DeviceProps.GetOs())
 	}
 
 	// New client created for an already-logged-in device starts in Android 13 profile immediately.

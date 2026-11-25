@@ -26,26 +26,19 @@ import (
 
 var clientPayloadMu sync.Mutex
 
-// applyClientBrowserProfile configures whatsmeow's client identity:
-// Chrome on Windows Desktop before pairing, and Android 13 once logged in.
-func applyClientBrowserProfile(loggedIn bool) {
+// applyClientBrowserProfile configures whatsmeow's client identity to Android 13
+// for both QR pairing registration and subsequent logged-in sessions.
+func applyClientBrowserProfile() {
 	clientPayloadMu.Lock()
 	defer clientPayloadMu.Unlock()
-	applyClientBrowserProfileLocked(loggedIn)
+	applyClientBrowserProfileLocked()
 }
 
-func applyClientBrowserProfileLocked(loggedIn bool) {
-	if loggedIn {
-		store.DeviceProps.PlatformType = waCompanionReg.DeviceProps_ANDROID_PHONE.Enum()
-		store.SetOSInfo("Android", [3]uint32{13, 0, 0})
-		store.BaseClientPayload.UserAgent.Platform = waWa6.ClientPayload_UserAgent_WEB.Enum()
-		store.BaseClientPayload.UserAgent.Device = proto.String("Android 13")
-		return
-	}
-	store.DeviceProps.PlatformType = waCompanionReg.DeviceProps_CHROME.Enum()
-	store.SetOSInfo("Windows", [3]uint32{10, 0, 0})
+func applyClientBrowserProfileLocked() {
+	store.DeviceProps.PlatformType = waCompanionReg.DeviceProps_DESKTOP.Enum()
+	store.SetOSInfo("Android 13", [3]uint32{13, 0, 0})
 	store.BaseClientPayload.UserAgent.Platform = waWa6.ClientPayload_UserAgent_WEB.Enum()
-	store.BaseClientPayload.UserAgent.Device = proto.String("Desktop")
+	store.BaseClientPayload.UserAgent.Device = proto.String("Android 13")
 }
 
 func clientPayloadForDevice(dev *store.Device) *waWa6.ClientPayload {
@@ -54,7 +47,7 @@ func clientPayloadForDevice(dev *store.Device) *waWa6.ClientPayload {
 	}
 	clientPayloadMu.Lock()
 	defer clientPayloadMu.Unlock()
-	applyClientBrowserProfileLocked(dev.ID != nil)
+	applyClientBrowserProfileLocked()
 	return dev.GetClientPayload()
 }
 
@@ -196,7 +189,7 @@ func (d *Devices) NewClient(dev *store.Device) *whatsmeow.Client {
 		disableContactImportForDevice(dev)
 	}
 
-	applyClientBrowserProfile(dev != nil && dev.ID != nil)
+	applyClientBrowserProfile()
 
 	client := whatsmeow.NewClient(dev, clientLog)
 	client.GetClientPayload = func() *waWa6.ClientPayload {
