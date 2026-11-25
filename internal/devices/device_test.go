@@ -3,10 +3,19 @@ package devices
 import (
 	"context"
 	"errors"
+	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/MapIHS/kotonehara/internal/infra/config"
+	"github.com/jmoiron/sqlx"
+	"go.mau.fi/whatsmeow/proto/waCompanionReg"
+	"go.mau.fi/whatsmeow/proto/waWa6"
+	"go.mau.fi/whatsmeow/store"
+	"go.mau.fi/whatsmeow/store/sqlstore"
+	"go.mau.fi/whatsmeow/types"
+	"google.golang.org/protobuf/proto"
+	_ "modernc.org/sqlite"
 )
 
 func TestConcurrencyLimitAndShutdownDrain(t *testing.T) {
@@ -126,5 +135,90 @@ func TestCanceledRootRejectsCommandsAndDrains(t *testing.T) {
 	}
 	if d.tryStartCommand(nil) {
 		t.Fatal("accepted nil command")
+	}
+}
+
+func TestClientBrowserProfileBeforeAndAfterLogin(t *testing.T) {
+	origProps := proto.Clone(store.DeviceProps).(*waCompanionReg.DeviceProps)
+	origPayload := proto.Clone(store.BaseClientPayload).(*waWa6.ClientPayload)
+	t.Cleanup(func() {
+		clientPayloadMu.Lock()
+		defer clientPayloadMu.Unlock()
+		store.DeviceProps = origProps
+		store.BaseClientPayload = origPayload
+	})
+
+	db, err := sqlx.Connect("sqlite", filepath.Join(t.TempDir(), "device.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { db.Close() })
+	if _, err := db.Exec("PRAGMA foreign_keys=ON"); err != nil {
+		t.Fatal(err)
+	}
+	container := sqlstore.NewWithDB(db.DB, "sqlite", nil)
+	if err := container.Upgrade(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+
+	dev := container.NewDevice()
+	d := New(container, config.Config{}, context.Background())
+	client := d.NewClient(dev)
+
+	// Before login: Chrome on Windows Desktop.
+	regPayload := client.GetClientPayload()
+	if regPayload.GetUserAgent().GetPlatform() != waWa6.ClientPayload_UserAgent_WEB {
+		t.Fatalf("unpaired platform = %v, want WEB", regPayload.GetUserAgent().GetPlatform())
+	}
+	if regPayload.GetUserAgent().GetDevice() != "Desktop" {
+		t.Fatalf("unpaired device = %q, want Desktop", regPayload.GetUserAgent().GetDevice())
+	}
+	if regPayload.GetUserAgent().GetOsVersion() != "10.0.0" {
+		t.Fatalf("unpaired osVersion = %q, want 10.0.0", regPayload.GetUserAgent().GetOsVersion())
+	}
+	var regProps waCompanionReg.DeviceProps
+	if err := proto.Unmarshal(regPayload.GetDevicePairingData().GetDeviceProps(), &regProps); err != nil {
+		t.Fatalf("unmarshal registration DeviceProps: %v", err)
+	}
+	if regProps.GetPlatformType() != waCompanionReg.DeviceProps_CHROME {
+		t.Fatalf("unpaired PlatformType = %v, want CHROME", regProps.GetPlatformType())
+	}
+	if regProps.GetOs() != "Windows" {
+		t.Fatalf("unpaired Os = %q, want Windows", regProps.GetOs())
+	}
+
+	// Simulate completed pairing / existing login session.
+	jid := types.NewJID("6281234567890", types.DefaultUserServer)
+	jid.Device = 1
+	dev.ID = &jid
+
+	loginPayload := client.GetClientPayload()
+	if loginPayload.GetDevicePairingData() != nil {
+		t.Fatal("logged-in payload should not include DevicePairingData")
+	}
+	if loginPayload.GetUserAgent().GetPlatform() != waWa6.ClientPayload_UserAgent_WEB {
+		t.Fatalf("logged-in platform = %v, want WEB", loginPayload.GetUserAgent().GetPlatform())
+	}
+	if loginPayload.GetUserAgent().GetDevice() != "Android 13" {
+		t.Fatalf("logged-in device = %q, want Android 13", loginPayload.GetUserAgent().GetDevice())
+	}
+	if loginPayload.GetUserAgent().GetOsVersion() != "13.0.0" {
+		t.Fatalf("logged-in osVersion = %q, want 13.0.0", loginPayload.GetUserAgent().GetOsVersion())
+	}
+	if loginPayload.GetUserAgent().GetOsBuildNumber() != "13.0.0" {
+		t.Fatalf("logged-in osBuildNumber = %q, want 13.0.0", loginPayload.GetUserAgent().GetOsBuildNumber())
+	}
+	if store.DeviceProps.GetPlatformType() != waCompanionReg.DeviceProps_ANDROID_PHONE {
+		t.Fatalf("logged-in PlatformType = %v, want ANDROID_PHONE", store.DeviceProps.GetPlatformType())
+	}
+	if store.DeviceProps.GetOs() != "Android" {
+		t.Fatalf("logged-in DeviceProps.Os = %q, want Android", store.DeviceProps.GetOs())
+	}
+
+	// New client created for an already-logged-in device starts in Android 13 profile immediately.
+	client2 := d.NewClient(dev)
+	loginPayload2 := client2.GetClientPayload()
+	if loginPayload2.GetUserAgent().GetDevice() != "Android 13" || loginPayload2.GetUserAgent().GetOsVersion() != "13.0.0" {
+		t.Fatalf("restarted logged-in client got device=%q os=%q", loginPayload2.GetUserAgent().GetDevice(), loginPayload2.GetUserAgent().GetOsVersion())
 	}
 }

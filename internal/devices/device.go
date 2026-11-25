@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/MapIHS/kotonehara/internal/clients"
@@ -14,11 +15,48 @@ import (
 	meowcaller "github.com/purpshell/meowcaller"
 
 	"go.mau.fi/whatsmeow"
+	"go.mau.fi/whatsmeow/proto/waCompanionReg"
+	"go.mau.fi/whatsmeow/proto/waWa6"
 	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/store/sqlstore"
 	"go.mau.fi/whatsmeow/types/events"
 	waLog "go.mau.fi/whatsmeow/util/log"
+	"google.golang.org/protobuf/proto"
 )
+
+var clientPayloadMu sync.Mutex
+
+// applyClientBrowserProfile configures whatsmeow's client identity:
+// Chrome on Windows Desktop before pairing, and Android 13 once logged in.
+func applyClientBrowserProfile(loggedIn bool) {
+	clientPayloadMu.Lock()
+	defer clientPayloadMu.Unlock()
+	applyClientBrowserProfileLocked(loggedIn)
+}
+
+func applyClientBrowserProfileLocked(loggedIn bool) {
+	if loggedIn {
+		store.DeviceProps.PlatformType = waCompanionReg.DeviceProps_ANDROID_PHONE.Enum()
+		store.SetOSInfo("Android", [3]uint32{13, 0, 0})
+		store.BaseClientPayload.UserAgent.Platform = waWa6.ClientPayload_UserAgent_WEB.Enum()
+		store.BaseClientPayload.UserAgent.Device = proto.String("Android 13")
+		return
+	}
+	store.DeviceProps.PlatformType = waCompanionReg.DeviceProps_CHROME.Enum()
+	store.SetOSInfo("Windows", [3]uint32{10, 0, 0})
+	store.BaseClientPayload.UserAgent.Platform = waWa6.ClientPayload_UserAgent_WEB.Enum()
+	store.BaseClientPayload.UserAgent.Device = proto.String("Desktop")
+}
+
+func clientPayloadForDevice(dev *store.Device) *waWa6.ClientPayload {
+	if dev == nil {
+		return nil
+	}
+	clientPayloadMu.Lock()
+	defer clientPayloadMu.Unlock()
+	applyClientBrowserProfileLocked(dev.ID != nil)
+	return dev.GetClientPayload()
+}
 
 const (
 	// maxConcurrentEvents bounds handlers running at once (downloads, ffmpeg, ...).
@@ -158,7 +196,12 @@ func (d *Devices) NewClient(dev *store.Device) *whatsmeow.Client {
 		disableContactImportForDevice(dev)
 	}
 
+	applyClientBrowserProfile(dev != nil && dev.ID != nil)
+
 	client := whatsmeow.NewClient(dev, clientLog)
+	client.GetClientPayload = func() *waWa6.ClientPayload {
+		return clientPayloadForDevice(dev)
+	}
 	callClient := meowcaller.NewClient(client)
 	callClient.OnIncomingCall(func(call *meowcaller.Call) {
 		d.log.Infof("incoming call from %s (%s)", call.Peer().String(), call.ID())

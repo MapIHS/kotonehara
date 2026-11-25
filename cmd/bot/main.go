@@ -216,7 +216,7 @@ func runPairingLogin(ctx context.Context, client *whatsmeow.Client, qrChan <-cha
 				continue
 			}
 
-			code, err := client.PairPhone(ctx, phoneNumber, true, whatsmeow.PairClientChrome, "Chrome (Linux)")
+			code, err := client.PairPhone(ctx, phoneNumber, true, whatsmeow.PairClientChrome, "Chrome (Windows)")
 			if err != nil {
 				return fmt.Errorf("minta kode pairing: %w", err)
 			}
