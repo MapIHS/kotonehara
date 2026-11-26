@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	exec "github.com/MapIHS/kotonehara/internal/service/mediaproc"
 	"image"
 	"image/draw"
 	"image/png"
 	"os"
 	"path/filepath"
+
+	"github.com/MapIHS/kotonehara/internal/media/sticker"
+	exec "github.com/MapIHS/kotonehara/internal/service/mediaproc"
 )
 
 // RenderOverlay creates a 512x512 transparent PNG with meme text.
@@ -59,6 +61,11 @@ func RenderAnimated(ctx context.Context, data []byte, opts Options) ([]byte, err
 		return nil, err
 	}
 
+	crop := opts.Crop
+	if crop == sticker.CropDefault {
+		crop = sticker.CropFit
+	}
+	filter := "[0:v]fps=15," + crop.ScaleFilter() + "[bg];[bg][1:v]overlay=0:0:format=auto[outv]"
 	runFfmpeg := func(inputFile string) error {
 		cmd := exec.CommandContext(ctx, "ffmpeg",
 			"-hide_banner",
@@ -70,7 +77,7 @@ func RenderAnimated(ctx context.Context, data []byte, opts Options) ([]byte, err
 			"-i", overlayFile,
 			"-an", "-sn", "-dn",
 			"-vcodec", "libwebp",
-			"-filter_complex", "[0:v]fps=15,scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:-1:-1:color=0x00000000@0,setsar=1[bg]; [bg][1:v]overlay=0:0[outv]",
+			"-filter_complex", filter,
 			"-map", "[outv]",
 			"-lossless", "0",
 			"-q:v", "45",
@@ -82,13 +89,14 @@ func RenderAnimated(ctx context.Context, data []byte, opts Options) ([]byte, err
 		return cmd.Run()
 	}
 
-	// Try ffmpeg first (works for most MP4s and GIFs)
-	if err := runFfmpeg(inFile); err == nil {
-		if outData, err := os.ReadFile(outFile); err == nil {
-			return outData, nil
+	// Animated WebP needs coalescing because FFmpeg may decode just one frame.
+	if !sticker.IsAnimatedWebP(data) {
+		if err := runFfmpeg(inFile); err == nil {
+			return os.ReadFile(outFile)
 		}
-	} else if ctx.Err() != nil {
-		return nil, ctx.Err()
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
 	}
 
 	// If ffmpeg fails (e.g. WhatsApp Animated WebP), use ImageMagick to decode to a temporary GIF,

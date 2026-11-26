@@ -13,20 +13,26 @@ import (
 	"github.com/MapIHS/kotonehara/internal/message"
 )
 
-func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg config.Config) {
-	_ = cfg
-
+func smeme(ctx context.Context, client *clients.Client, m *message.Message, _ config.Config) {
 	args := strings.TrimSpace(m.Query)
-	parts := strings.Split(args, "|")
-
-	topText := ""
-	bottomText := ""
-
-	if len(parts) >= 1 {
-		topText = strings.TrimSpace(parts[0])
+	crop := sticker.CropDefault
+	fields := strings.Fields(args)
+	if len(fields) > 0 && (strings.EqualFold(fields[0], "-c") || strings.EqualFold(fields[0], "--crop")) {
+		var ok bool
+		if len(fields) >= 2 {
+			crop, ok = parseStickerCrop(fields[0] + " " + fields[1])
+		}
+		if !ok {
+			_, _ = m.Reply(ctx, "Format: .smeme -c atas teks atas|teks bawah. "+stickerCropUsage)
+			return
+		}
+		args = strings.TrimSpace(strings.TrimPrefix(args, fields[0]))
+		args = strings.TrimSpace(strings.TrimPrefix(args, fields[1]))
 	}
+	parts := strings.Split(args, "|")
+	opts := meme.Options{TopText: strings.TrimSpace(parts[0]), Crop: crop}
 	if len(parts) >= 2 {
-		bottomText = strings.TrimSpace(parts[1])
+		opts.BottomText = strings.TrimSpace(parts[1])
 	}
 
 	raw, err := client.DownloadMedia(ctx, m)
@@ -35,19 +41,14 @@ func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 		return
 	}
 
-	isVideo := m.IsVideo || m.IsQuotedVideo || m.IsGif || m.IsQuotedGif || m.IsQuotedStickerGif
+	isVideo := m.IsVideo || m.IsQuotedVideo || m.IsGif || m.IsQuotedGif ||
+		m.IsQuotedStickerGif || sticker.IsGIF(raw) || sticker.IsAnimatedWebP(raw)
 	var memeData []byte
 
 	if isVideo {
-		memeData, err = meme.RenderAnimated(ctx, raw, meme.Options{
-			TopText:    topText,
-			BottomText: bottomText,
-		})
+		memeData, err = meme.RenderAnimated(ctx, raw, opts)
 	} else {
-		memeData, err = meme.Render(raw, meme.Options{
-			TopText:    topText,
-			BottomText: bottomText,
-		})
+		memeData, err = meme.Render(raw, opts)
 	}
 
 	if err != nil {
@@ -61,7 +62,7 @@ func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 		return
 	}
 
-	if _, err := client.SendSticker(ctx, m.From, stc, false, false, m.ID); err != nil {
+	if _, err := client.SendSticker(ctx, m.From, stc, false, sticker.IsAnimatedWebP(stc), m.ID); err != nil {
 		m.Reply(ctx, "Stikernya belum bisa dikirim, yaa.")
 		return
 	}
@@ -70,7 +71,7 @@ func smeme(ctx context.Context, client *clients.Client, m *message.Message, cfg 
 func init() {
 	commands.Register(&commands.Command{
 		Name:        "smeme",
-		Description: "Buat stiker meme dari gambar. Format: .smeme teks atas|teks bawah",
+		Description: "Buat stiker meme. Format: .smeme teks atas|teks bawah atau .smeme -c atas teks atas|teks bawah. " + stickerCropUsage,
 		As:          []string{"stickermeme"},
 		Tags:        "convert",
 		IsPrefix:    true,

@@ -30,22 +30,7 @@ func toWebP512(b []byte, crop Crop) ([]byte, error) {
 	const sz = 512
 	dst := image.NewRGBA(image.Rect(0, 0, sz, sz))
 	idraw.Draw(dst, dst.Bounds(), image.Transparent, image.Point{}, idraw.Src)
-	src := img.Bounds()
-	if crop != CropDefault && crop != CropFit {
-		side := min(src.Dx(), src.Dy())
-		offset := image.Pt((src.Dx()-side)/2, (src.Dy()-side)/2)
-		switch crop {
-		case CropTop:
-			offset.Y = 0
-		case CropBottom:
-			offset.Y = src.Dy() - side
-		case CropLeft:
-			offset.X = 0
-		case CropRight:
-			offset.X = src.Dx() - side
-		}
-		src = image.Rect(0, 0, side, side).Add(src.Min.Add(offset))
-	}
+	src := crop.Bounds(img.Bounds())
 	bw, bh := src.Dx(), src.Dy()
 	scale := float64(sz) / float64(bw)
 	if float64(bh)*scale > float64(sz) {
@@ -63,10 +48,30 @@ func toWebP512(b []byte, crop Crop) ([]byte, error) {
 	return out.Bytes(), nil
 }
 
-func animationFilter(crop Crop) string {
-	const fps = "fps=15:start_time=0,"
+// Bounds selects the source area for a still image.
+func (crop Crop) Bounds(src image.Rectangle) image.Rectangle {
+	if crop == CropDefault || crop == CropFit {
+		return src
+	}
+	side := min(src.Dx(), src.Dy())
+	offset := image.Pt((src.Dx()-side)/2, (src.Dy()-side)/2)
+	switch crop {
+	case CropTop:
+		offset.Y = 0
+	case CropBottom:
+		offset.Y = src.Dy() - side
+	case CropLeft:
+		offset.X = 0
+	case CropRight:
+		offset.X = src.Dx() - side
+	}
+	return image.Rect(0, 0, side, side).Add(src.Min.Add(offset))
+}
+
+// ScaleFilter formats an FFmpeg video stream as a square sticker canvas.
+func (crop Crop) ScaleFilter() string {
 	if crop == CropFit {
-		return fps + "format=yuva420p,scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=black@0,setsar=1"
+		return "format=yuva420p,scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=black@0,setsar=1"
 	}
 	x, y := "(iw-ow)/2", "(ih-oh)/2"
 	switch crop {
@@ -79,7 +84,7 @@ func animationFilter(crop Crop) string {
 	case CropRight:
 		x = "iw-ow"
 	}
-	return fmt.Sprintf("%scrop=w='min(iw,ih)':h='min(iw,ih)':x='%s':y='%s':exact=1,scale=512:512,setsar=1", fps, x, y)
+	return fmt.Sprintf("crop=w='min(iw,ih)':h='min(iw,ih)':x='%s':y='%s':exact=1,scale=512:512,setsar=1", x, y)
 }
 
 func videoToWebP(ctx context.Context, data, exif []byte, animatedWebP bool, crop Crop) ([]byte, error) {
@@ -114,7 +119,7 @@ func videoToWebP(ctx context.Context, data, exif []byte, animatedWebP bool, crop
 	}
 
 	// A zero duration encodes the entire clip. Lower quality before trimming.
-	filter := animationFilter(crop)
+	filter := "fps=15:start_time=0," + crop.ScaleFilter()
 	for _, preset := range []struct{ quality, seconds int }{
 		{45, 0}, {30, 0}, {20, 0}, {10, 0},
 		{20, 10}, {15, 6}, {10, 3}, {8, 2},

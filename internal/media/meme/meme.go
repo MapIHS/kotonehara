@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/MapIHS/kotonehara/internal/media/sticker"
 	xdraw "golang.org/x/image/draw"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
@@ -40,6 +41,7 @@ var memegenThickTTF []byte
 type Options struct {
 	TopText      string
 	BottomText   string
+	Crop         sticker.Crop
 	MaxDimension int
 	MinDimension int
 }
@@ -63,7 +65,7 @@ func Render(data []byte, opts Options) ([]byte, error) {
 		minDim = defaultMinDimension
 	}
 
-	canvas := scaleForMeme(src, minDim, maxDim)
+	canvas := scaleForMeme(src, opts.Crop.Bounds(src.Bounds()), minDim, maxDim)
 	if text := normalizeMemeText(opts.TopText); text != "" {
 		if err := drawMemeText(canvas, text, true); err != nil {
 			return nil, err
@@ -107,8 +109,7 @@ func isAnimatedWebP(data []byte) bool {
 	return bytes.Contains(data, []byte("ANIM")) || bytes.Contains(data, []byte("ANMF"))
 }
 
-func scaleForMeme(src image.Image, minDim, maxDim int) *image.RGBA {
-	b := src.Bounds()
+func scaleForMeme(src image.Image, b image.Rectangle, minDim, maxDim int) *image.RGBA {
 	w, h := b.Dx(), b.Dy()
 	longest := max(w, h)
 	if longest <= 0 {

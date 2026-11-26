@@ -20,6 +20,9 @@ func ExtractBody(mess *events.Message) string {
 	if s := mess.Message.GetVideoMessage().GetCaption(); s != "" {
 		return s
 	}
+	if s := UnwrapMessage(mess.Message).GetDocumentMessage().GetCaption(); s != "" {
+		return s
+	}
 	if s := mess.Message.GetConversation(); s != "" {
 		return s
 	}
