@@ -105,7 +105,7 @@ func stickerAudio(ctx context.Context, client *clients.Client, m *message.Messag
 	stickerData, err := sticker.BuildStickerWithCrop(opCtx, raw, m.PushName, false, true, crop)
 	if err != nil {
 		if errors.Is(err, sticker.ErrAnimatedStickerTooLarge) {
-			_, _ = m.Reply(ctx, "Stiker animasinya masih lebih dari 500 KB. Coba pakai video yang lebih pendek, yaa.")
+			_, _ = m.Reply(ctx, "Stiker animasinya masih lebih dari 1 MB. Coba pakai video yang lebih pendek, yaa.")
 			return
 		}
 		_, _ = m.Reply(ctx, fmt.Sprintf("Stikernya belum bisa dibuat: %s", err))

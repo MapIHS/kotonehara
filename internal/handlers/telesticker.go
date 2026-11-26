@@ -357,7 +357,7 @@ func handleTelegramSticker(ctx context.Context, client *clients.Client, m *messa
 	log.Printf("telegram sticker: sent=%d requested=%d tooLarge=%d", sent, total, tooLarge)
 	switch {
 	case sent == 0 && tooLarge > 0 && tooLarge == total:
-		_, _ = m.Reply(ctx, "Stiker animasi melebihi 500 KB dan belum bisa dikonversi, yaa.")
+		_, _ = m.Reply(ctx, "Stiker animasi melebihi 1 MB dan belum bisa dikonversi, yaa.")
 	case sent == 0:
 		_, _ = m.Reply(ctx, "Stiker dari pack Telegram ini belum bisa dibuat, yaa.")
 	default:

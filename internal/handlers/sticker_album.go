@@ -78,7 +78,7 @@ func stickerFromAlbum(ctx context.Context, client *clients.Client, m *message.Me
 	log.Printf("album sticker: sent=%d requested=%d", sent, total)
 	switch {
 	case sent == 0 && tooLarge > 0 && tooLarge == total:
-		_, _ = m.Reply(ctx, "Stiker animasinya masih lebih dari 500 KB. Coba potong videonya jadi lebih pendek, yaa.")
+		_, _ = m.Reply(ctx, "Stiker animasinya masih lebih dari 1 MB. Coba potong videonya jadi lebih pendek, yaa.")
 	case sent == 0:
 		_, _ = m.Reply(ctx, "Stiker dari album ini belum bisa dibuat, yaa.")
 	default:

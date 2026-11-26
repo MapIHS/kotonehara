@@ -18,9 +18,9 @@ const (
 	CropRight   Crop = "right"
 )
 
-const maxAnimatedStickerBytes = 500_000
+const maxAnimatedStickerBytes = 1_000_000
 
-var ErrAnimatedStickerTooLarge = errors.New("stiker animasi masih melebihi 500 KB setelah dikompres")
+var ErrAnimatedStickerTooLarge = errors.New("stiker animasi masih melebihi 1 MB setelah dikompres")
 
 func BuildSticker(ctx context.Context, data []byte, author string, isSticker bool, isVideo bool) ([]byte, error) {
 	return BuildStickerWithCrop(ctx, data, author, isSticker, isVideo, CropDefault)

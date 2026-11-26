@@ -109,7 +109,7 @@ func stc(ctx context.Context, client *clients.Client, m *message.Message, _ conf
 	stc, err := sticker.BuildStickerWithCrop(opCtx, raw, m.PushName, isSticker, isGif, crop)
 	if err != nil {
 		if errors.Is(err, sticker.ErrAnimatedStickerTooLarge) {
-			_, _ = m.Reply(ctx, "Stiker animasinya masih lebih dari 500 KB. Coba potong GIF jadi lebih pendek, yaa.")
+			_, _ = m.Reply(ctx, "Stiker animasinya masih lebih dari 1 MB. Coba potong GIF jadi lebih pendek, yaa.")
 			return
 		}
 		if stickerMsg != nil && len(stickerMsg.GetPngThumbnail()) > 0 {
